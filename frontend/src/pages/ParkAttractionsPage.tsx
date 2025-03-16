@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -13,6 +14,7 @@ import {
   Chip,
   Stack,
   Divider,
+  CardActionArea,
 } from '@mui/material';
 import { Search, Place, Speed, Height, Timer, Group, Event } from '@mui/icons-material';
 import { motion, Variants } from 'framer-motion';
@@ -34,9 +36,14 @@ const categories = ['all', 'thrill', 'family', 'children', 'water', 'interactive
 type Category = typeof categories[number];
 
 const ParkAttractionsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<Category>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAttractions, setFilteredAttractions] = useState<Attraction[]>([]);
+
+  const handleAttractionClick = (attractionId: string) => {
+    navigate(`/attraction/${attractionId}`);
+  };
 
   useEffect(() => {
     const attractions = (attractionsJson.attractions as unknown as Attraction[]).map(attraction => ({
@@ -129,87 +136,91 @@ const ParkAttractionsPage: React.FC = () => {
                     '&:hover': {
                       transform: 'translateY(-4px)',
                       boxShadow: (theme) => theme.shadows[8],
+                      cursor: 'pointer',
                     },
                   }}
+                  onClick={() => handleAttractionClick(attraction.id)}
                 >
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      paddingTop: '56.25%', // 16:9 aspect ratio
-                      overflow: 'hidden',
-                    }}
-                  >
+                  <CardActionArea>
                     <Box
-                      component="img"
-                      src={attraction.imageUrl}
-                      alt={attraction.name}
                       sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease-in-out',
-                        '&:hover': {
-                          transform: 'scale(1.05)',
-                        },
+                        position: 'relative',
+                        paddingTop: '56.25%', // 16:9 aspect ratio
+                        overflow: 'hidden',
                       }}
-                    />
-                    <Chip
-                      label={attraction.category}
-                      sx={{
-                        position: 'absolute',
-                        top: 16,
-                        right: 16,
-                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                        color: 'white',
-                      }}
-                    />
-                  </Box>
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography variant="h5" gutterBottom component="h2">
-                      {attraction.name}
-                    </Typography>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      <Place sx={{ verticalAlign: 'middle', mr: 0.5 }} fontSize="small" />
-                      {attraction.area}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" paragraph>
-                      {attraction.short_description}
-                    </Typography>
-                    <Divider sx={{ my: 2 }} />
-                    <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
-                      {attraction.keyFacts.type && (
-                        <Chip
-                          size="small"
-                          icon={<Speed />}
-                          label={attraction.keyFacts.type}
-                        />
-                      )}
-                      {attraction.keyFacts.duration && (
-                        <Chip
-                          size="small"
-                          icon={<Timer />}
-                          label={attraction.keyFacts.duration}
-                        />
-                      )}
-                      {attraction.keyFacts.min_height && (
-                        <Chip
-                          size="small"
-                          icon={<Height />}
-                          label={attraction.keyFacts.min_height}
-                        />
-                      )}
-                      {attraction.keyFacts.opening_year && (
-                        <Chip
-                          size="small"
-                          icon={<Event />}
-                          label={attraction.keyFacts.opening_year}
-                        />
-                      )}
-                    </Stack>
-                  </CardContent>
+                    >
+                      <Box
+                        component="img"
+                        src={attraction.imageUrl}
+                        alt={attraction.name}
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease-in-out',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                          },
+                        }}
+                      />
+                      <Chip
+                        label={attraction.category}
+                        sx={{
+                          position: 'absolute',
+                          top: 16,
+                          right: 16,
+                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                          color: 'white',
+                        }}
+                      />
+                    </Box>
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Typography variant="h5" gutterBottom component="h2">
+                        {attraction.name}
+                      </Typography>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        <Place sx={{ verticalAlign: 'middle', mr: 0.5 }} fontSize="small" />
+                        {attraction.area}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" paragraph>
+                        {attraction.short_description}
+                      </Typography>
+                      <Divider sx={{ my: 2 }} />
+                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
+                        {attraction.keyFacts.type && (
+                          <Chip
+                            size="small"
+                            icon={<Speed />}
+                            label={attraction.keyFacts.type}
+                          />
+                        )}
+                        {attraction.keyFacts.duration && (
+                          <Chip
+                            size="small"
+                            icon={<Timer />}
+                            label={attraction.keyFacts.duration}
+                          />
+                        )}
+                        {attraction.keyFacts.min_height && (
+                          <Chip
+                            size="small"
+                            icon={<Height />}
+                            label={attraction.keyFacts.min_height}
+                          />
+                        )}
+                        {attraction.keyFacts.opening_year && (
+                          <Chip
+                            size="small"
+                            icon={<Event />}
+                            label={attraction.keyFacts.opening_year}
+                          />
+                        )}
+                      </Stack>
+                    </CardContent>
+                  </CardActionArea>
                 </Card>
               </motion.div>
             </Grid>
