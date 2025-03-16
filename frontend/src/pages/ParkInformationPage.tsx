@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import 'flag-icons/css/flag-icons.min.css';
 import {
   Box,
   Container,
@@ -24,6 +25,12 @@ import {
   IconButton,
   Tooltip,
   Link,
+  Modal,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from '@mui/material';
 import {
   Timeline,
@@ -71,13 +78,30 @@ import {
   Lock,
   AccessibleForward as Wheelchair,
   Wifi,
+  Close as CloseIcon,
+  LocalActivity,
+  DinnerDining,
+  Lightbulb,
+  NavigateNext,
 } from '@mui/icons-material';
 
 // Import park data
 import parkData from '../data/europapark.json';
 
+// Import themed areas data
+import themedAreasData from '../data/themed_areas.json';
+
 const ParkInformationPage: React.FC = () => {
   const theme = useTheme();
+  const [selectedArea, setSelectedArea] = useState<any>(null);
+
+  const handleAreaClick = (area: any) => {
+    setSelectedArea(area);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedArea(null);
+  };
 
   const getHotelLink = (hotelName: string): string => {
     const hotelLinks: { [key: string]: string } = {
@@ -367,21 +391,342 @@ const ParkInformationPage: React.FC = () => {
             Themed Areas
           </Typography>
           <Grid container spacing={2}>
-            {parkData.parkInfo.themedAreas.map((area, index) => (
+            {themedAreasData.themedAreas.map((area, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <Card elevation={3}>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom color="black">
-                      {area.name}
-                    </Typography>
-                    <Typography variant="body2" color="black">
-                      {area.description}
-                    </Typography>
-                  </CardContent>
+                  <CardActionArea onClick={() => handleAreaClick(area)}>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom color="black">
+                        {area.name}
+                      </Typography>
+                      <Typography variant="body2" color="black">
+                        {area.description.substring(0, 150)}...
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
                 </Card>
               </Grid>
             ))}
           </Grid>
+
+          {/* Detailed Area Modal */}
+          <Dialog
+            open={Boolean(selectedArea)}
+            onClose={handleCloseModal}
+            maxWidth="md"
+            fullWidth
+            scroll="paper"
+            PaperProps={{
+              sx: {
+                borderRadius: 2,
+                bgcolor: '#ffffff',
+              }
+            }}
+          >
+            {selectedArea && (
+              <>
+                <DialogTitle
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    bgcolor: '#ffffff',
+                    color: '#000000',
+                    py: 2,
+                  }}
+                >
+                  <Typography variant="h5" component="div" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#000000' }}>
+                    <span className={`fi fi-${selectedArea.countryCode?.toLowerCase()}`} style={{ fontSize: '1.5em' }} /> {selectedArea.name}
+                  </Typography>
+                  <IconButton
+                    edge="end"
+                    onClick={handleCloseModal}
+                    aria-label="close"
+                    sx={{ color: '#000000' }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </DialogTitle>
+                <DialogContent dividers sx={{ p: 3 }}>
+                  <Stack spacing={4}>
+                    {/* Description */}
+                    <Box>
+                      <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#000000' }}>
+                        {selectedArea.description}
+                      </Typography>
+                    </Box>
+
+                    {/* Attractions */}
+                    <Box>
+                      <Typography variant="h6" gutterBottom sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        color: '#000000',
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        pb: 1
+                      }}>
+                        <LocalActivity sx={{ color: '#000000' }} /> Attractions
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedArea.attractions.map((attraction: any, index: number) => (
+                          <Grid item xs={12} sm={6} key={index}>
+                            <Card 
+                              variant="outlined" 
+                              sx={{ 
+                                height: '100%',
+                                transition: 'transform 0.2s, box-shadow 0.2s',
+                                '&:hover': {
+                                  transform: 'translateY(-4px)',
+                                  boxShadow: 4,
+                                }
+                              }}
+                            >
+                              <CardContent>
+                                <Stack spacing={1}>
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#000000' }}>
+                                    {attraction.name}
+                                  </Typography>
+                                  <Chip
+                                    icon={<AttractionsOutlined sx={{ color: '#000000' }} />}
+                                    label={attraction.type}
+                                    size="small"
+                                    sx={{ 
+                                      alignSelf: 'flex-start',
+                                      color: '#000000',
+                                      '& .MuiChip-label': { color: '#000000' },
+                                      borderColor: '#000000'
+                                    }}
+                                    variant="outlined"
+                                  />
+                                  <Typography variant="body2" color="#000000">
+                                    {attraction.description}
+                                  </Typography>
+                                </Stack>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+
+                    {/* Dining */}
+                    <Box>
+                      <Typography variant="h6" gutterBottom sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        color: '#000000',
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        pb: 1
+                      }}>
+                        <DinnerDining sx={{ color: '#000000' }} /> Dining
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedArea.dining.map((restaurant: any, index: number) => (
+                          <Grid item xs={12} sm={6} key={index}>
+                            <Card 
+                              variant="outlined"
+                              sx={{ 
+                                height: '100%',
+                                transition: 'transform 0.2s, box-shadow 0.2s',
+                                '&:hover': {
+                                  transform: 'translateY(-4px)',
+                                  boxShadow: 4,
+                                }
+                              }}
+                            >
+                              <CardContent>
+                                <Stack spacing={1}>
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#000000' }}>
+                                    {restaurant.name}
+                                  </Typography>
+                                  <Stack direction="row" spacing={1}>
+                                    <Chip
+                                      icon={<Restaurant sx={{ color: '#000000' }} />}
+                                      label={restaurant.type}
+                                      size="small"
+                                      sx={{ 
+                                        color: '#000000',
+                                        '& .MuiChip-label': { color: '#000000' },
+                                        borderColor: '#000000'
+                                      }}
+                                      variant="outlined"
+                                    />
+                                    <Chip
+                                      label={restaurant.cuisine}
+                                      size="small"
+                                      sx={{ 
+                                        color: '#000000',
+                                        '& .MuiChip-label': { color: '#000000' },
+                                        borderColor: '#000000'
+                                      }}
+                                      variant="outlined"
+                                    />
+                                  </Stack>
+                                  <Typography variant="body2" color="#000000">
+                                    {restaurant.description}
+                                  </Typography>
+                                </Stack>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+
+                    {/* Shopping */}
+                    <Box>
+                      <Typography variant="h6" gutterBottom sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        color: '#000000',
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        pb: 1
+                      }}>
+                        <Store sx={{ color: '#000000' }} /> Shopping
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedArea.shopping.map((shop: any, index: number) => (
+                          <Grid item xs={12} sm={6} key={index}>
+                            <Card 
+                              variant="outlined"
+                              sx={{ 
+                                height: '100%',
+                                transition: 'transform 0.2s, box-shadow 0.2s',
+                                '&:hover': {
+                                  transform: 'translateY(-4px)',
+                                  boxShadow: 4,
+                                }
+                              }}
+                            >
+                              <CardContent>
+                                <Stack spacing={1}>
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#000000' }}>
+                                    {shop.name}
+                                  </Typography>
+                                  <Chip
+                                    icon={<ShoppingBag sx={{ color: '#000000' }} />}
+                                    label={shop.type}
+                                    size="small"
+                                    sx={{ 
+                                      alignSelf: 'flex-start',
+                                      color: '#000000',
+                                      '& .MuiChip-label': { color: '#000000' },
+                                      borderColor: '#000000'
+                                    }}
+                                    variant="outlined"
+                                  />
+                                  <Typography variant="body2" color="#000000">
+                                    {shop.description}
+                                  </Typography>
+                                </Stack>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+
+                    {/* Events */}
+                    <Box>
+                      <Typography variant="h6" gutterBottom sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        color: '#000000',
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        pb: 1
+                      }}>
+                        <Event sx={{ color: '#000000' }} /> Special Events
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedArea.events.map((event: string, index: number) => (
+                          <Grid item xs={12} sm={6} key={index}>
+                            <Paper 
+                              elevation={0} 
+                              variant="outlined"
+                              sx={{ 
+                                p: 2,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                transition: 'transform 0.2s, box-shadow 0.2s',
+                                '&:hover': {
+                                  transform: 'translateY(-2px)',
+                                  boxShadow: 2,
+                                }
+                              }}
+                            >
+                              <Event sx={{ color: '#000000' }} />
+                              <Typography variant="body1" color="#000000">
+                                {event}
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+
+                    {/* Fun Facts */}
+                    <Box>
+                      <Typography variant="h6" gutterBottom sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        color: '#000000',
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        pb: 1
+                      }}>
+                        <Lightbulb sx={{ color: '#000000' }} /> Fun Facts
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedArea.funFacts.map((fact: string, index: number) => (
+                          <Grid item xs={12} key={index}>
+                            <Paper 
+                              elevation={0}
+                              variant="outlined"
+                              sx={{ 
+                                p: 2,
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 1,
+                                bgcolor: 'primary.50',
+                                transition: 'transform 0.2s',
+                                '&:hover': {
+                                  transform: 'translateX(8px)',
+                                }
+                              }}
+                            >
+                              <NavigateNext sx={{ mt: 0.5, color: '#000000' }} />
+                              <Typography variant="body1" color="#000000">
+                                {fact}
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+                  </Stack>
+                </DialogContent>
+                <DialogActions sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Button 
+                    onClick={handleCloseModal}
+                    variant="contained"
+                    startIcon={<CloseIcon />}
+                  >
+                    Close
+                  </Button>
+                </DialogActions>
+              </>
+            )}
+          </Dialog>
         </Grid>
 
         {/* Accommodation */}

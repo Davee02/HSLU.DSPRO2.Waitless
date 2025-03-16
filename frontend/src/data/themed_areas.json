@@ -1,0 +1,1314 @@
+{
+    "themedAreas": [
+    {
+      "name": "Germany",
+      "countryCode": "de",
+      "description": "The entrance area of the park, serving as the gateway to all the European countries. This section showcases traditional German architecture with half-timbered buildings, cobblestone streets, and a charming town square. The Germania clock tower stands prominently in the central square, offering a perfect meeting point for visitors. The area celebrates German culture, craftsmanship, and folklore, with beautiful flower displays and an authentic atmosphere that immediately transports visitors to a quintessential German town.",
+      "attractions": [
+        {
+          "name": "Voletarium",
+          "type": "Flying Theater",
+          "description": "Europe's largest flying theater that takes guests on a breathtaking aerial journey over European landmarks."
+        },
+        {
+          "name": "Jim Button - Journey Through Morrowland",
+          "type": "Dark Ride",
+          "description": "A family-friendly dark ride based on the popular German children's book character Jim Knopf."
+        },
+        {
+          "name": "EP-Express",
+          "type": "Transport Monorail",
+          "description": "A monorail system that transports guests around the perimeter of the park with stops in various countries."
+        },
+        {
+          "name": "Panorama Train",
+          "type": "Scenic Railway",
+          "description": "A traditional train that circles the park with stations in different country areas."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Food Loop",
+          "type": "Interactive Restaurant",
+          "cuisine": "International",
+          "description": "A unique dining experience where food is delivered via roller coaster rails directly to your table."
+        },
+        {
+          "name": "Café Konditorei",
+          "type": "Café",
+          "cuisine": "German Pastries",
+          "description": "Traditional German bakery offering fresh pastries, Black Forest cake, and coffee specialties."
+        },
+        {
+          "name": "Schildkröte",
+          "type": "Quick Service",
+          "cuisine": "German",
+          "description": "Serving traditional German sausages, pretzels, and regional favorites."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Europa-Park Store",
+          "type": "Main Park Merchandise",
+          "description": "The park's flagship store offering a wide range of souvenirs, apparel, and collectibles."
+        },
+        {
+          "name": "Historic Carousel Shop",
+          "type": "Specialty Gifts",
+          "description": "Antique-style shop with unique gifts and keepsakes."
+        }
+      ],
+      "events": [
+        "Daily musical performances in the square",
+        "Traditional German folk dancing (seasonal)",
+        "Christmas market during winter season"
+      ],
+      "funFacts": [
+        "The original section of the park when it opened in 1975",
+        "The iconic clock tower plays a musical show every hour",
+        "Contains the main entrance to the park and guest services"
+      ]
+    },
+    {
+      "name": "Italy",
+      "countryCode": "it",
+      "description": "A romantic recreation of Renaissance Italy featuring beautiful piazzas, fountains, and Mediterranean architecture. Visitors can stroll through a charming Italian village filled with cypress trees, elegant colonnades, and a replica of the famous Trevi Fountain. The area captures the essence of Italy with its warm color palette, artistic details, and vibrant atmosphere. Ornate facades and decorative elements make this one of the most picturesque sections of the park, especially beautiful as the sun sets and the lighting creates a magical evening ambiance.",
+      "attractions": [
+        {
+          "name": "Volo da Vinci",
+          "type": "Suspended Pedal Ride",
+          "description": "Pedal-powered flying machines based on Leonardo da Vinci's designs, allowing guests to control their own flight path above the Italian landscape."
+        },
+        {
+          "name": "Castello dei Medici",
+          "type": "Dark Boat Ride",
+          "description": "A tranquil boat journey through scenes of Renaissance Italy and the influential Medici family."
+        },
+        {
+          "name": "Piccolo Mondo",
+          "type": "Dark Ride",
+          "description": "A cheerful dark ride celebrating Italy's contributions to art, music, and culture in a whimsical style."
+        },
+        {
+          "name": "Teatro di Roma",
+          "type": "Show Venue",
+          "description": "A theater featuring various performances including music, acrobatics, and seasonal shows."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Pizzeria La Romantica",
+          "type": "Full-service Restaurant",
+          "cuisine": "Italian",
+          "description": "Authentic pizzas baked in a wood-fired oven, along with pasta dishes and antipasti."
+        },
+        {
+          "name": "Gelateria",
+          "type": "Ice Cream Stand",
+          "cuisine": "Italian Desserts",
+          "description": "Traditional Italian ice cream in multiple flavors, plus coffee and espresso."
+        },
+        {
+          "name": "Taverna",
+          "type": "Quick Service",
+          "cuisine": "Italian",
+          "description": "Fast casual Italian fare including paninis, pasta, and tiramisu."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "La Bottega",
+          "type": "Italian Goods",
+          "description": "Shop selling Italian specialties like olive oil, pasta, and decorative items from various regions of Italy."
+        },
+        {
+          "name": "Vetreria",
+          "type": "Glass Shop",
+          "description": "Beautiful hand-blown glass items and Venetian-style masks."
+        }
+      ],
+      "events": [
+        "Opera performances on the balcony of the palazzo",
+        "Venetian Carnival celebration (seasonal)",
+        "Italian street performers"
+      ],
+      "funFacts": [
+        "The Trevi Fountain replica is a popular photo spot",
+        "The intricate ceiling paintings in the Palazzo were hand-painted by Italian artists",
+        "One of the most romantic areas of the park, especially at night"
+      ]
+    },
+    {
+      "name": "France",
+      "countryCode": "fr",
+      "description": "An elegant homage to French culture featuring a beautiful Parisian boulevard lined with authentic French façades, stylish lampposts, and charming cafés with outdoor seating. The centerpiece is a scaled replica of the Moulin Rouge, complete with its iconic red windmill and dazzling lights. This area offers a blend of French architectural styles from different periods, from Parisian grandeur to provincial charm. Flower beds, topiary gardens, and fountains add to the sophisticated atmosphere, while the sounds of accordion music and the scent of fresh pastries complete the immersive French experience.",
+      "attractions": [
+        {
+          "name": "Eurosat CanCan Coaster",
+          "type": "Indoor Roller Coaster",
+          "description": "A high-speed indoor coaster housed in a large geodesic dome, themed around the Moulin Rouge and Parisian nightlife."
+        },
+        {
+          "name": "Silver Star",
+          "type": "Hyper Coaster",
+          "description": "One of Europe's tallest and fastest roller coasters, sponsored by Mercedes-Benz with a height of 73 meters."
+        },
+        {
+          "name": "Madame Freudenreich Curiosités",
+          "type": "Dark Ride",
+          "description": "A charming dark ride through the home of an elderly Alsatian woman who raises dinosaurs in her backyard and feeds them cheese."
+        },
+        {
+          "name": "Bellevue Ferris Wheel",
+          "type": "Observation Wheel",
+          "description": "A traditional Ferris wheel offering panoramic views of the park and surrounding Black Forest."
+        },
+        {
+          "name": "Eden Palais",
+          "type": "Historic Carousel",
+          "description": "A beautifully restored antique carousel from 1900 housed in an ornate French-style pavilion."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Le Bistro",
+          "type": "Sit-down Restaurant",
+          "cuisine": "French",
+          "description": "Classic French dishes like coq au vin, beef bourguignon, and crêpes in an elegant bistro setting."
+        },
+        {
+          "name": "Café de Paris",
+          "type": "Café",
+          "cuisine": "French Pastries",
+          "description": "French pastries, baguette sandwiches, and coffee served in a traditional Parisian café atmosphere."
+        },
+        {
+          "name": "La Côte d'Azur",
+          "type": "Quick Service",
+          "cuisine": "Mediterranean French",
+          "description": "Light fare inspired by southern France including salads, quiches, and fresh seafood."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Boutique Française",
+          "type": "French Goods",
+          "description": "French-themed souvenirs, perfumes, and gourmet products."
+        },
+        {
+          "name": "Euro-Maus",
+          "type": "Character Shop",
+          "description": "Europa-Park merchandise featuring the park's mascot, Euro-Maus."
+        }
+      ],
+      "events": [
+        "Can-Can dance performances at the Moulin Rouge",
+        "Bastille Day celebrations (July)",
+        "French music and street performances"
+      ],
+      "funFacts": [
+        "The area was modeled after the iconic Montmartre district of Paris",
+        "Silver Star was named after the Mercedes-Benz symbol",
+        "The Eurosat dome was inspired by the Spaceship Earth attraction but redesigned with a Parisian theme in 2018"
+      ]
+    },
+    {
+      "name": "England",
+      "countryCode": "gb",
+      "description": "A charming recreation of London and the English countryside, featuring iconic British elements like red telephone booths, double-decker buses, and Tudor-style architecture. The area includes a miniature version of Shakespeare's Globe Theatre, a traditional English garden with manicured hedges, and a vibrant London square. The attention to detail extends to authentic street signs, Victorian lampposts, and even a replica of Big Ben. The atmosphere shifts between the bustling energy of London and the quaint tranquility of a rural English village, complete with a duck pond and cottage gardens.",
+      "attractions": [
+        {
+          "name": "Dancing Dingie",
+          "type": "Spinning Ride",
+          "description": "A family ride featuring rotating boats that move in a wave-like pattern, themed around British maritime history."
+        },
+        {
+          "name": "Arena of Football - Be Part of It",
+          "type": "Interactive Experience",
+          "description": "An interactive football (soccer) attraction where visitors can test their skills in various challenges."
+        },
+        {
+          "name": "London Bus",
+          "type": "Transport Ride",
+          "description": "A double-decker bus that takes guests on a tour around the England area."
+        },
+        {
+          "name": "Globe Theatre",
+          "type": "Show Venue",
+          "description": "A replica of Shakespeare's famous theater hosting various performances throughout the day."
+        }
+      ],
+      "dining": [
+        {
+          "name": "The Three Pigeons",
+          "type": "Traditional Pub",
+          "cuisine": "British",
+          "description": "Authentic British pub food including fish and chips, shepherd's pie, and a selection of beers."
+        },
+        {
+          "name": "Tea Time",
+          "type": "Café",
+          "cuisine": "British Afternoon Tea",
+          "description": "Traditional English tea service with scones, finger sandwiches, and pastries."
+        },
+        {
+          "name": "London Street Food",
+          "type": "Quick Service",
+          "cuisine": "British Street Food",
+          "description": "Quick British favorites like bangers and mash, meat pies, and jacket potatoes."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "London Souvenirs",
+          "type": "British Gifts",
+          "description": "Classic London souvenirs, English tea, and British-themed merchandise."
+        },
+        {
+          "name": "Victorian Emporium",
+          "type": "Period Goods",
+          "description": "Vintage-style gifts, toys, and decorative items inspired by Victorian England."
+        }
+      ],
+      "events": [
+        "Street performances by actors portraying famous British characters",
+        "Royal Guard changing ceremony (several times daily)",
+        "Shakespeare-inspired mini-plays at the Globe Theatre"
+      ],
+      "funFacts": [
+        "The red telephone booths are actual decommissioned booths from London",
+        "The area features plants and flowers typical of English gardens",
+        "Big Ben chimes on the hour with authentic Westminster chimes"
+      ]
+    },
+    {
+      "name": "Spain",
+      "countryCode": "es",
+      "description": "A vibrant celebration of Spanish culture featuring a picturesque plaza with a central fountain surrounded by colorful Mediterranean buildings with ornate ironwork balconies and terracotta rooftops. The area captures the essence of different Spanish regions, from Andalusian courtyards with mosaic details to historic castles reminiscent of medieval Spain. Olive trees and flowering bougainvillea add to the Mediterranean atmosphere, while the sounds of flamenco music and the aroma of Spanish cuisine enhance the immersive experience. At night, the warm lighting creates a particularly magical ambiance in this lively and colorful section of the park.",
+      "attractions": [
+        {
+          "name": "Kolumbusjolle",
+          "type": "Swinging Ship",
+          "description": "A large pirate ship attraction themed after Christopher Columbus' journey to the New World."
+        },
+        {
+          "name": "Royal Scotsman",
+          "type": "Powered Coaster",
+          "description": "A family-friendly train coaster that journeys through Spanish landscapes."
+        },
+        {
+          "name": "Columbus Dinghy",
+          "type": "Children's Ride",
+          "description": "A gentler version of Kolumbusjolle for younger guests."
+        },
+        {
+          "name": "Feria Swing",
+          "type": "Swing Ride",
+          "description": "A traditional swing ride themed after Spanish fairs and festivals."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Don Quixote",
+          "type": "Full-service Restaurant",
+          "cuisine": "Spanish",
+          "description": "Authentic Spanish cuisine including paella, tapas, and sangria in a hacienda-style setting."
+        },
+        {
+          "name": "Bodega",
+          "type": "Wine Bar",
+          "cuisine": "Spanish Tapas",
+          "description": "Spanish wines, sherries, and small plates in a rustic cellar atmosphere."
+        },
+        {
+          "name": "Churros Stand",
+          "type": "Quick Service",
+          "cuisine": "Spanish Desserts",
+          "description": "Freshly made churros with chocolate dipping sauce and other Spanish sweets."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "El Bazar",
+          "type": "Spanish Goods",
+          "description": "Shop selling Spanish ceramics, fans, flamenco-inspired items, and souvenirs."
+        },
+        {
+          "name": "Recuerdo de España",
+          "type": "Specialty Shop",
+          "description": "Spanish food products, olive oils, and regional specialties to take home."
+        }
+      ],
+      "events": [
+        "Flamenco performances in the plaza",
+        "Spanish guitar concerts",
+        "La Tomatina festival celebration (seasonal)"
+      ],
+      "funFacts": [
+        "The architecture is inspired by cities like Seville and Barcelona",
+        "Hidden Columbus references can be found throughout the area",
+        "The fountain in the main plaza is modeled after famous Spanish examples"
+      ]
+    },
+    {
+      "name": "Russia",
+      "countryCode": "ru",
+      "description": "An impressive representation of Russian architecture and culture featuring the iconic onion domes and colorful spires reminiscent of Saint Basil's Cathedral in Moscow. The area combines elements of imperial Russia with space-age designs, reflecting both the country's historic grandeur and its achievements in space exploration. The centerpiece is a set of four mirrored towers housing the Euro-Mir spinning coaster, representing the former Soviet Mir space station. Surrounding buildings showcase detailed facades with intricate patterns and vibrant colors typical of Russian architecture. This area is particularly spectacular in winter, when snow adds to the authentic Russian atmosphere.",
+      "attractions": [
+        {
+          "name": "Euro-Mir",
+          "type": "Spinning Coaster",
+          "description": "A unique spinning roller coaster inspired by the Russian Mir space station, featuring multiple rotating cars and a spiral lift inside mirrored towers."
+        },
+        {
+          "name": "Russia Show",
+          "type": "Performance Venue",
+          "description": "Theater showcasing traditional Russian dance, music, and circus performances."
+        },
+        {
+          "name": "Lada Autodrom",
+          "type": "Car Ride",
+          "description": "Self-driving Lada cars that follow a track through Russian scenery."
+        },
+        {
+          "name": "Russian Games",
+          "type": "Skill Games",
+          "description": "Traditional Russian carnival games with prizes."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Dacha",
+          "type": "Full-service Restaurant",
+          "cuisine": "Russian",
+          "description": "Traditional Russian dishes like borscht, beef stroganoff, and pelmeni in a rustic country house setting."
+        },
+        {
+          "name": "Baba Yaga",
+          "type": "Café",
+          "cuisine": "Russian Pastries",
+          "description": "Russian tea service with piroshki, blini, and other Russian baked goods."
+        },
+        {
+          "name": "Kosmonaut",
+          "type": "Quick Service",
+          "cuisine": "Space-themed Russian",
+          "description": "Fast Russian fare served in a futuristic space-themed environment."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Alexanderplatz",
+          "type": "Russian Goods",
+          "description": "Shop selling matryoshka dolls, Russian hats, space memorabilia, and other souvenirs."
+        },
+        {
+          "name": "Mir Gifts",
+          "type": "Space Souvenirs",
+          "description": "Space-themed merchandise and collectibles related to the Euro-Mir attraction."
+        }
+      ],
+      "events": [
+        "Russian folk dancing and balalaika performances",
+        "Space Day celebrations (April 12)",
+        "Winter Festival with special Russian traditions"
+      ],
+      "funFacts": [
+        "The Euro-Mir coaster's soundtrack features a remix of a traditional Russian folk song",
+        "The onion domes are adorned with 24-karat gold leaf, just like their Russian counterparts",
+        "This area combines two themes: traditional Russia and Soviet space exploration"
+      ]
+    },
+    {
+      "name": "Greece",
+      "countryCode": "gr",
+      "description": "A stunning recreation of ancient Greece with pristine white buildings, azure blue domes, and classical columns creating a Mediterranean paradise. The area is designed to evoke both the ancient grandeur of classical Greek architecture and the idyllic island atmosphere of places like Santorini. Temple ruins, statues of Greek gods, and amphitheaters showcase the ancient heritage, while bougainvillea-covered buildings and seaside tavernas capture the charm of modern Greek islands. The Poseidon water coaster serves as the centerpiece, with its impressive Greek temple facade visible from multiple areas of the park. The attention to detail extends to authentic Greek music, the scent of Mediterranean herbs, and the sparkle of the 'Aegean Sea' water features.",
+      "attractions": [
+        {
+          "name": "Poseidon",
+          "type": "Water Coaster",
+          "description": "A combination roller coaster and water ride themed around the Greek god of the sea, featuring a massive temple facade and multiple water and coaster sections."
+        },
+        {
+          "name": "Atlantis Adventure",
+          "type": "Dark Ride",
+          "description": "An immersive journey through the legendary underwater city of Atlantis."
+        },
+        {
+          "name": "Pegasus",
+          "type": "Family Coaster",
+          "description": "A family-friendly roller coaster themed around the mythological flying horse."
+        },
+        {
+          "name": "Greek Theatre",
+          "type": "Show Venue",
+          "description": "An open-air amphitheater hosting various performances inspired by Greek mythology."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Taverna Mykonos",
+          "type": "Full-service Restaurant",
+          "cuisine": "Greek",
+          "description": "Authentic Greek cuisine including moussaka, souvlaki, and baklava in a taverna setting with Mediterranean views."
+        },
+        {
+          "name": "Gyros Stand",
+          "type": "Quick Service",
+          "cuisine": "Greek Street Food",
+          "description": "Fresh gyros, pita bread, and Greek salads served from a traditional street food stand."
+        },
+        {
+          "name": "Poseidon's Bar",
+          "type": "Themed Bar",
+          "cuisine": "Greek Drinks",
+          "description": "Greek wines, ouzo, and cocktails with a view of the Poseidon attraction."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Agora",
+          "type": "Greek Marketplace",
+          "description": "A traditional Greek market selling olive oil, pottery, jewelry, and souvenirs."
+        },
+        {
+          "name": "Olympus Gifts",
+          "type": "Mythology Shop",
+          "description": "Shop focused on Greek mythology with figurines, books, and themed merchandise."
+        }
+      ],
+      "events": [
+        "Greek music and dance performances",
+        "Olympic-inspired competitions (seasonal)",
+        "Mythological character meet-and-greets"
+      ],
+      "funFacts": [
+        "The Poseidon temple facade features authentic Greek architectural details",
+        "Over 10,000 square meters of white paint are used to maintain the Greek buildings' appearance",
+        "The area contains numerous references to Greek myths and legends for visitors to discover"
+      ]
+    },
+    {
+      "name": "Portugal",
+      "countryCode": "pt",
+      "description": "A colorful tribute to Portugal's rich maritime history and Mediterranean charm. This area recreates a Portuguese coastal town with traditional buildings featuring detailed azulejo tile work, wrought iron balconies, and vibrant façades in yellows, blues, and terracottas. Maritime elements dominate the theme, with sailing ships, navigation instruments, and tributes to famous Portuguese explorers like Vasco da Gama and Ferdinand Magellan. Palm trees, citrus plants, and flowering vines add to the coastal Mediterranean atmosphere. The centerpiece is the Atlantica SuperSplash attraction, which represents Portugal's historic connection to the sea and the Age of Discovery, when Portuguese navigators mapped much of the world's oceans.",
+      "attractions": [
+        {
+          "name": "Atlantica SuperSplash",
+          "type": "Water Coaster",
+          "description": "A water coaster featuring two steep drops ending in a splash zone, themed around a Portuguese sailing expedition."
+        },
+        {
+          "name": "Portuguese Carrousel",
+          "type": "Family Ride",
+          "description": "A traditional carousel with hand-painted scenes from Portuguese history."
+        },
+        {
+          "name": "Vasco da Gama",
+          "type": "Boat Ride",
+          "description": "A gentle boat ride through scenes depicting Portuguese discoveries and colonies."
+        },
+        {
+          "name": "Navigators' Playground",
+          "type": "Children's Play Area",
+          "description": "Maritime-themed playground with climbing structures resembling ships and navigation tools."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Porto",
+          "type": "Full-service Restaurant",
+          "cuisine": "Portuguese",
+          "description": "Traditional Portuguese dishes including bacalhau (salt cod), cataplana, and pastéis de nata in a setting overlooking the water attractions."
+        },
+        {
+          "name": "Lisbon Café",
+          "type": "Café",
+          "cuisine": "Portuguese Pastries",
+          "description": "Portuguese coffee specialties and pastries in an elegant café setting with tile work."
+        },
+        {
+          "name": "Magellan's",
+          "type": "Quick Service",
+          "cuisine": "Portuguese Street Food",
+          "description": "Quick Portuguese bites including bifanas (pork sandwiches), grilled sardines, and Portuguese fries."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Descobrimentos",
+          "type": "Maritime Shop",
+          "description": "Shop selling nautical souvenirs, model ships, and Portuguese handicrafts."
+        },
+        {
+          "name": "Casa dos Azulejos",
+          "type": "Specialty Shop",
+          "description": "Traditional Portuguese tiles, pottery, and cork products."
+        }
+      ],
+      "events": [
+        "Fado music performances",
+        "Portuguese folk dancing displays",
+        "Maritime skills demonstrations (rope tying, navigation)"
+      ],
+      "funFacts": [
+        "The buildings feature authentic hand-painted Portuguese tiles created by artisans",
+        "Many plants in this area are native to Portugal, including cork oaks",
+        "The area contains a scale model of the Torre de Belém, a UNESCO World Heritage site in Lisbon"
+      ]
+    },
+    {
+      "name": "Netherlands (Holland)", 
+      "countryCode": "nl",
+      "description": "A picture-perfect recreation of the Netherlands featuring iconic Dutch elements like windmills, tulip gardens, canals with small bridges, and traditional gabled houses painted in distinctive colors. The charming Dutch village atmosphere is enhanced with flower markets, wooden clogs displayed in shop windows, and cheese stalls. The Pirates in Batavia attraction reflects the Netherlands' colonial history and the Dutch East India Company's presence in what is now Indonesia. The area is particularly spectacular during spring when thousands of tulips bloom in carefully designed patterns, creating a vibrant rainbow of colors. The detail extends to working windmills that actually harness wind power, authentic canal boats, and traditional Dutch music playing throughout the area.",
+      "attractions": [
+        {
+          "name": "Pirates in Batavia",
+          "type": "Dark Boat Ride",
+          "description": "An elaborate boat journey through the exotic world of 17th century Batavia (now Jakarta, Indonesia), following the adventures of Bartholomeus van Robbemond and Jopie."
+        },
+        {
+          "name": "Dutch Windmill",
+          "type": "Observation Point",
+          "description": "A working replica of a traditional Dutch windmill that visitors can enter and explore."
+        },
+        {
+          "name": "Amsterdam Canal Boats",
+          "type": "Transport Ride",
+          "description": "Small boat ride through miniature Dutch canals past windmills and traditional houses."
+        },
+        {
+          "name": "Flying Dutchman",
+          "type": "Swing Ride",
+          "description": "A family swing ride themed after the legendary ghost ship."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Frau Holle",
+          "type": "Full-service Restaurant",
+          "cuisine": "Dutch",
+          "description": "Traditional Dutch cuisine including stamppot, poffertjes, and herring in a cozy Netherlands setting."
+        },
+        {
+          "name": "Stroopwafel Stand",
+          "type": "Snack Stand",
+          "cuisine": "Dutch Treats",
+          "description": "Fresh stroopwafels made on site with various toppings and fillings."
+        },
+        {
+          "name": "Cheese Market",
+          "type": "Food Stall",
+          "cuisine": "Dutch Dairy",
+          "description": "Dutch cheeses, dairy products, and accompaniments available for sampling and purchase."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Dutch Delights",
+          "type": "Netherlands Goods",
+          "description": "Traditional Dutch souvenirs including Delft blue pottery, wooden clogs, and tulip bulbs (seasonal)."
+        },
+        {
+          "name": "Batavia Trading Company",
+          "type": "Themed Shop",
+          "description": "Exotic goods and souvenirs related to the Pirates in Batavia attraction and Dutch colonial history."
+        }
+      ],
+      "events": [
+        "Traditional Dutch folk dancing in wooden clogs",
+        "Tulip Festival (spring season)",
+        "Cheese-making demonstrations"
+      ],
+      "funFacts": [
+        "The windmill is a 1/2 scale working replica that actually generates power",
+        "Over 100,000 tulip bulbs are planted annually in this area",
+        "Pirates in Batavia was completely rebuilt after a fire in 2018, reopening in 2020 with enhanced technology and storytelling"
+      ]
+    },
+    {
+      "name": "Switzerland",
+      "countryCode": "ch",
+      "description": "A picturesque Alpine wonderland that captures the essence of the Swiss mountains complete with snow-capped peaks, traditional chalets with flower-adorned balconies, and the sound of cowbells in the distance. The area features cobblestone streets lined with authentic Swiss architecture, including detailed woodwork and painted murals on building facades. Visitors can experience Swiss hospitality while enjoying views of miniature Alpine landscapes with working cable cars, waterfalls, and mountain goats. The Swiss precision and attention to detail are evident throughout this area, from the clocktowers to the intricate music boxes playing traditional melodies.",
+      "attractions": [
+        {
+          "name": "Matterhorn-Blitz",
+          "type": "Wild Mouse Coaster",
+          "description": "A wild mouse style roller coaster with an Alpine theme and unique elevator lift, simulating an out-of-control journey down the Matterhorn in a Swiss sledge."
+        },
+        {
+          "name": "Swiss Bob Run",
+          "type": "Bobsled Coaster",
+          "description": "A bobsled-style roller coaster where vehicles travel freely through a trough-like track simulating an Olympic bobsled run."
+        },
+        {
+          "name": "Alpine Express Enzian",
+          "type": "Powered Coaster",
+          "description": "A gentle powered coaster taking riders through Alpine scenery, miniature villages, and mountain landscapes."
+        },
+        {
+          "name": "Swiss Chocolate Adventure",
+          "type": "Walk-through Exhibit",
+          "description": "Interactive exhibit showcasing Swiss chocolate-making traditions with samples."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Walliser Stube",
+          "type": "Full-service Restaurant",
+          "cuisine": "Swiss Alpine",
+          "description": "Traditional Swiss specialties including fondue, raclette, rösti, and Alpine cheeses in a cozy chalet setting."
+        },
+        {
+          "name": "Swiss Chocolate Factory",
+          "type": "Dessert Shop",
+          "cuisine": "Swiss Confectionery",
+          "description": "Artisanal Swiss chocolates, hot chocolate, and pastries made on-site."
+        },
+        {
+          "name": "Mountain Grill",
+          "type": "Quick Service",
+          "cuisine": "Swiss",
+          "description": "Fast casual Swiss food including bratwurst, potato dishes, and mountain bread."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Swiss Souvenir Chalet",
+          "type": "Alpine Goods",
+          "description": "Shop selling cuckoo clocks, Swiss Army knives, cowbells, and other traditional Swiss merchandise."
+        },
+        {
+          "name": "Matterhorn Shop",
+          "type": "Attraction Merchandise",
+          "description": "Souvenirs and photos related to the Matterhorn-Blitz attraction."
+        }
+      ],
+      "events": [
+        "Swiss alphorn performances",
+        "Yodeling shows",
+        "Swiss flag throwing demonstrations"
+      ],
+      "funFacts": [
+        "The miniature working cable cars actually transport small cargo between buildings",
+        "Real Swiss craftsmen were consulted on the architectural details",
+        "The Matterhorn-Blitz queue features authentic Swiss ski equipment from different eras"
+      ]
+    },
+    {
+      "name": "Scandinavia",
+      "countryCode": "se",
+      "description": "A Nordic wonderland that combines elements from Norway, Sweden, Finland, and Denmark into a cohesive Scandinavian experience. The area features weathered wooden buildings with dragon-head decorations reminiscent of traditional Norse architecture, stave churches, and Viking longhouses. Dense pine forests, crystal-clear lakes, and rocky formations create the impression of a fjord landscape. The Fjord-Rafting attraction forms the centerpiece, surrounded by Nordic mythology references including rune stones, trolls hiding among the rocks, and nods to Norse gods like Thor and Odin. During winter, this area becomes especially magical with snow-covered landscapes and Northern Lights effects.",
+      "attractions": [
+        {
+          "name": "Fjord-Rafting",
+          "type": "River Rapids",
+          "description": "A whitewater rapids ride taking visitors through a Scandinavian-themed landscape with waterfalls, geysers, and Nordic scenery."
+        },
+        {
+          "name": "Vindjammer",
+          "type": "Swinging Ship",
+          "description": "A large swinging ship attraction themed as a Viking longboat with Norse imagery and decoration."
+        },
+        {
+          "name": "Tnnevirvel",
+          "type": "Spinning Raft Ride",
+          "description": "A spinning raft ride where circular platforms rotate while moving through a water channel, themed with Nordic elements."
+        },
+        {
+          "name": "Viking Recruitment Center",
+          "type": "Interactive Experience",
+          "description": "An interactive attraction where guests can test their skills as Viking warriors."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Fjord Restaurant",
+          "type": "Full-service Restaurant",
+          "cuisine": "Scandinavian",
+          "description": "Nordic cuisine including Swedish meatballs, gravlax, smørrebrød, and Finnish salmon in a lodge setting overlooking the water."
+        },
+        {
+          "name": "Viking Feast Hall",
+          "type": "Themed Dining",
+          "cuisine": "Nordic",
+          "description": "Hearty Norse-inspired fare served in a boisterous Viking hall with long tables and rustic decor."
+        },
+        {
+          "name": "Nordic Treats",
+          "type": "Snack Stand",
+          "cuisine": "Scandinavian Desserts",
+          "description": "Danish pastries, Swedish cinnamon buns, and other Nordic sweets."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Nordic Traders",
+          "type": "Scandinavian Goods",
+          "description": "Shop selling trolls, Viking merchandise, Nordic woolens, and traditional Scandinavian crafts."
+        },
+        {
+          "name": "Thor's Hammer",
+          "type": "Mythology Shop",
+          "description": "Norse mythology themed souvenirs, replicas, and gifts."
+        }
+      ],
+      "events": [
+        "Viking battle reenactments",
+        "Traditional Nordic folk music performances",
+        "Midsummer celebration (seasonal)"
+      ],
+      "funFacts": [
+        "The wooden carvings are created using traditional Nordic woodworking techniques",
+        "Hidden trolls can be spotted throughout the area – finding them all is a popular guest activity",
+        "During December, this area hosts a traditional Scandinavian Christmas market"
+      ]
+    },
+    {
+      "name": "Austria",
+      "countryCode": "at",
+      "description": "An immersive recreation of the Austrian Alps and Vienna's imperial splendor, combining rustic Tyrolean charm with the elegance of Habsburg-era architecture. The area features Alpine chalets with intricately carved wooden balconies, colorful flower boxes, and traditional frescoes alongside stately buildings reminiscent of the Schönbrunn Palace and Vienna's grand boulevards. Visitors can explore both mountain village atmospheres and sophisticated Viennese café culture. The Vienna Wave Swing stands as a beautiful centerpiece with its ornate Art Nouveau design, while the Tirol Log Flume offers a journey through Austrian mountain scenery. During the winter season, this area transforms into a magical Alpine Christmas setting with traditional decorations and holiday activities.",
+      "attractions": [
+        {
+          "name": "Vienna Wave Swing - Glckspilz",
+          "type": "Wave Swinger",
+          "description": "An ornate wave swinger ride decorated in the style of classical Vienna with Art Nouveau design elements and gold accents."
+        },
+        {
+          "name": "Josefina's Magical Imperial Journey",
+          "type": "Dark Boat Ride",
+          "description": "An indoor boat ride through a recreation of an Austrian imperial palace, following the adventures of Josefina, a fictional royal chambermaid."
+        },
+        {
+          "name": "Tirol Log Flume",
+          "type": "Log Flume",
+          "description": "A classic log flume water ride set in a picturesque Tyrolean landscape with themed elements like sawmills and mountain villages."
+        },
+        {
+          "name": "Alpenexpress Enzian",
+          "type": "Powered Coaster",
+          "description": "A family-friendly powered roller coaster traveling through Austrian Alpine scenery."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Sacher",
+          "type": "Full-service Restaurant",
+          "cuisine": "Austrian",
+          "description": "Viennese specialties including schnitzel, tafelspitz, and the famous Sachertorte in an elegant setting reminiscent of a grand Viennese café."
+        },
+        {
+          "name": "Alpine Hut",
+          "type": "Rustic Dining",
+          "cuisine": "Tyrolean",
+          "description": "Hearty mountain fare including goulash, käsespätzle, and kaiserschmarrn served in a traditional Alpine hut."
+        },
+        {
+          "name": "Konditorei",
+          "type": "Viennese Café",
+          "cuisine": "Austrian Pastries",
+          "description": "Traditional Viennese coffee specialties and pastries including strudel, palatschinken, and Mozart balls."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Tirol Handcrafts",
+          "type": "Austrian Goods",
+          "description": "Shop selling traditional Austrian souvenirs, handcrafted items, and musical instruments like the alpenhorn."
+        },
+        {
+          "name": "Imperial Gifts",
+          "type": "Luxury Shop",
+          "description": "Fine Austrian products including Swarovski crystal, porcelain, and Habsburg-inspired merchandise."
+        }
+      ],
+      "events": [
+        "Tyrolean folk dancing and music",
+        "Viennese waltz performances",
+        "Alpine horn demonstrations"
+      ],
+      "funFacts": [
+        "The Vienna Wave Swing's decorative paintings were created by Austrian artists",
+        "Real antique furniture from Austria was sourced for Josefina's Imperial Journey",
+        "The area contains a small replica of Vienna's Spanish Riding School arena"
+      ]
+    },
+    {
+      "name": "Iceland",
+      "countryCode": "is",
+      "description": "A dramatic landscape that captures Iceland's unique geology and mythology, featuring volcanic rock formations, geysers, hot springs, and glacial elements. This newer section of the park combines the raw beauty of Icelandic nature with Nordic folklore and mythical elements. The centerpiece attractions Blue Fire Megacoaster and Wodan Timburcoaster represent the dynamic forces of fire and ice central to Icelandic mythology. Runic inscriptions, mystical creatures, and references to Nordic gods add depth to the theming. Whale Adventures and Snorri Touren connect to Iceland's maritime heritage and folklore. The area is designed with sustainable practices in mind, reflecting Iceland's commitment to environmental protection, including energy-efficient lighting that creates an ethereal glow reminiscent of the Northern Lights at night.",
+      "attractions": [
+        {
+          "name": "Blue Fire Megacoaster",
+          "type": "Launched Coaster",
+          "description": "A high-speed launch coaster that propels riders from 0 to 100 km/h in just 2.5 seconds, featuring multiple inversions and representing the 'fire' element of Iceland."
+        },
+        {
+          "name": "Wodan – Timburcoaster",
+          "type": "Wooden Coaster",
+          "description": "A massive wooden roller coaster with Norse mythology theme, named after the Nordic god Odin with Viking theming throughout."
+        },
+        {
+          "name": "Whale Adventures - Northern Lights",
+          "type": "Suspended Dark Ride",
+          "description": "A suspended dark ride that takes visitors on an underwater journey through Arctic waters with special Northern Lights effects."
+        },
+        {
+          "name": "Snorri Touren",
+          "type": "Dark Ride",
+          "description": "An enchanting dark ride that follows Snorri, the mascot of Rulantica water park, on a journey through Icelandic mythology."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Fisherman's Catch",
+          "type": "Full-service Restaurant",
+          "cuisine": "Icelandic Seafood",
+          "description": "Fresh seafood prepared using traditional Icelandic recipes, including fish stew, arctic char, and langoustines."
+        },
+        {
+          "name": "Viking BBQ",
+          "type": "Rustic Dining",
+          "cuisine": "Nordic Grill",
+          "description": "Grilled meats including Icelandic lamb, smoked fish, and traditional sides in a rustic setting."
+        },
+        {
+          "name": "Glacier Bar",
+          "type": "Themed Bar",
+          "cuisine": "Icelandic Beverages",
+          "description": "Featuring Icelandic schnapps, craft beers, and hot beverages in an ice-themed environment."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Nordic Treasures",
+          "type": "Icelandic Goods",
+          "description": "Shop selling Icelandic wool products, lava jewelry, Viking-inspired items, and Blue Fire merchandise."
+        },
+        {
+          "name": "Snorri's Shop",
+          "type": "Character Merchandise",
+          "description": "Toys, apparel, and souvenirs featuring Snorri, the mascot character."
+        }
+      ],
+      "events": [
+        "Northern Lights special effects show (evenings)",
+        "Icelandic storytelling sessions",
+        "Viking games and competitions"
+      ],
+      "funFacts": [
+        "The area features actual Icelandic lava rock imported for authenticity",
+        "The working geysers use a sophisticated system to mimic natural geothermal activity",
+        "Snorri's character was created specifically to bridge the story between Europa-Park and Rulantica water park"
+      ]
+    },
+    {
+      "name": "Ireland - Children's World",
+      "countryCode": "ie",
+      "description": "A whimsical Irish-themed area specifically designed for younger guests, combining the magic of Irish folklore with child-friendly attractions and activities. Lush green landscapes, rainbow motifs, leprechaun houses, and Celtic designs create an enchanting environment where children can explore safely. The area features smaller-scale replicas of traditional Irish cottages, castle ruins, and fairy gardens with interactive elements throughout. Shamrocks, pots of gold, and lucky symbols are incorporated into the colorful design, while gentle music featuring Irish flutes and fiddles enhances the magical atmosphere. This section provides the perfect blend of entertainment and rest areas for families with small children, with plenty of shade, seating, and amenities designed with parents' needs in mind.",
+      "attractions": [
+        {
+          "name": "Baaa Express",
+          "type": "Monorail",
+          "description": "A gentle monorail ride designed for young children, themed around sheep and farm life with cars shaped like fluffy sheep."
+        },
+        {
+          "name": "Old Mac Donald's Tractor Fun",
+          "type": "Track Ride",
+          "description": "A children's ride where young guests can drive miniature tractors through a charming farm setting."
+        },
+        {
+          "name": "Poppy Towers",
+          "type": "Children's Drop Tower",
+          "description": "A gentle drop tower designed specifically for children, themed around colorful flower towers."
+        },
+        {
+          "name": "Irish Playground",
+          "type": "Play Area",
+          "description": "Large playground with climbing structures, slides, and interactive features based on Irish folklore."
+        },
+        {
+          "name": "Leprechaun Village",
+          "type": "Walk-through Attraction",
+          "description": "Miniature village where children can explore tiny leprechaun houses and interact with animatronic characters."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Lucky Clover",
+          "type": "Family Restaurant",
+          "cuisine": "Child-friendly Irish",
+          "description": "Irish-inspired food in child-appropriate portions, plus adult options, served in a festive, family-friendly environment."
+        },
+        {
+          "name": "Rainbow's End",
+          "type": "Ice Cream Parlor",
+          "cuisine": "Desserts",
+          "description": "Colorful ice creams, cookies, and treats, many in fun shapes and designs appealing to children."
+        },
+        {
+          "name": "Parent's Rest Stop",
+          "type": "Café",
+          "cuisine": "Coffee and Snacks",
+          "description": "Coffee, tea, and light refreshments in a relaxed setting with excellent views of the children's attractions."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Toy Cottage",
+          "type": "Toy Shop",
+          "description": "Traditional toys, stuffed animals, and children's souvenirs with Irish and farm themes."
+        },
+        {
+          "name": "Wee Folk",
+          "type": "Children's Accessories",
+          "description": "Child-sized costumes, face painting, and playful accessories with leprechaun and fairy themes."
+        }
+      ],
+      "events": [
+        "Children's storytelling with Irish fairy tales",
+        "Puppet shows featuring Irish folklore",
+        "Character meet-and-greets with park mascots"
+      ],
+      "facilities": [
+        "Baby care center with nursing rooms and changing facilities",
+        "Child-sized restrooms and wash areas",
+        "Stroller parking and rental",
+        "Lost children meeting point"
+      ],
+      "funFacts": [
+        "All attractions are designed so parents can accompany small children",
+        "The area features a special 'quiet zone' for overstimulated children to relax",
+        "Many interactive elements are placed at child height for easy access and exploration"
+      ]
+    },
+    {
+      "name": "Adventure Land",
+      "countryCode": "de",
+      "description": "An exciting themed area dedicated to exploration, discovery, and adventure from around the world. Unlike the country-specific areas, Adventure Land combines elements from different global exploration eras – from ancient archaeological expeditions to jungle adventures and modern-day thrill-seeking. The area features weathered expedition buildings, jungle vegetation, archaeological dig sites, suspension bridges, waterfalls, and mysterious caves. Dense foliage, ambient jungle sounds, and themed props like explorer vehicles, crates, and expedition equipment enhance the immersive environment. This section offers a mix of thrilling attractions and interactive experiences that appeal to visitors seeking excitement and a sense of discovery, with hidden details and Easter eggs throughout for observant explorers to find.",
+      "attractions": [
+        {
+          "name": "Euro-Tower",
+          "type": "Observation Tower",
+          "description": "A 75-meter tall observation tower with a slowly rotating platform that provides 360° panoramic views of the entire park and surrounding Black Forest region."
+        },
+        {
+          "name": "Jungle Rafts",
+          "type": "Water Ride",
+          "description": "A gentle boat journey through exotic landscapes with wildlife animatronics and explorer camps."
+        },
+        {
+          "name": "Adventure Maze",
+          "type": "Interactive Walkthrough",
+          "description": "A challenging maze with puzzles, interactive elements, and hidden treasures to discover."
+        },
+        {
+          "name": "Canyon Coaster",
+          "type": "Family Coaster",
+          "description": "A moderate thrill coaster that takes riders through rocky canyons and cave formations."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Explorer's Club",
+          "type": "Themed Restaurant",
+          "cuisine": "International",
+          "description": "Global cuisine inspired by explorer journeys, served in a restaurant decorated with maps, artifacts, and expedition memorabilia."
+        },
+        {
+          "name": "Bamboe Baai",
+          "type": "Asian Restaurant",
+          "cuisine": "Pan-Asian",
+          "description": "Asian specialties including noodle dishes, stir-fries, and exotic fruits in a tropical bamboo setting."
+        },
+        {
+          "name": "Jungle Juice Bar",
+          "type": "Refreshment Stand",
+          "cuisine": "Tropical Drinks",
+          "description": "Fresh fruit smoothies, coconut water, and exotic non-alcoholic beverages."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Adventure Outfitters",
+          "type": "Explorer Gear",
+          "description": "Adventure-themed clothing, explorer hats, binoculars, compasses, and other expedition equipment."
+        },
+        {
+          "name": "Global Treasures",
+          "type": "Souvenir Shop",
+          "description": "Collectibles and souvenirs inspired by world travel and exploration."
+        }
+      ],
+      "events": [
+        "Explorer character meet-and-greets",
+        "Interactive treasure hunts (with prizes)",
+        "Wildlife presentation shows"
+      ],
+      "funFacts": [
+        "The area contains over 200 hidden expedition artifacts for guests to discover",
+        "Many plants in this area are exotic species maintained in special climate-controlled environments",
+        "The rockwork was hand-carved by artisans to mimic natural formations from around the world"
+      ]
+    },
+    {
+      "name": "Grimm's Enchanted Forest",
+      "countryCode": "de",
+      "description": "A magical realm that brings to life the beloved fairy tales of the Brothers Grimm, immersing visitors in the enchanting world of classic German folklore. This whimsical area features a dense, atmospheric forest with twisted trees, mushroom cottages, and winding paths that lead to various fairy tale scenes. Storybook facades house attractions based on tales like Hansel and Gretel, Snow White, Sleeping Beauty, and Rapunzel. The architecture intentionally features exaggerated proportions and perspectives that make adults feel as though they've shrunk to child-size, enhancing the magical experience. Ambient sounds of forest creatures, magical music, and occasional character appearances create a truly immersive fairy tale environment that appeals to visitors of all ages while honoring Germany's rich literary heritage.",
+      "attractions": [
+        {
+          "name": "Sleeping Beauty's Castle",
+          "type": "Walk-through Attraction",
+          "description": "A beautifully detailed castle where visitors can explore rooms from the famous fairy tale, including the spinning wheel room and enchanted rose garden."
+        },
+        {
+          "name": "Hansel & Gretel's Adventure",
+          "type": "Dark Ride",
+          "description": "A gentle dark ride through the famous story, including the candy house and witch's cottage."
+        },
+        {
+          "name": "Rapunzel's Tower",
+          "type": "Climbing Structure",
+          "description": "A play tower with slides and climbing elements themed around Rapunzel's famous home."
+        },
+        {
+          "name": "Cinderella Carousel",
+          "type": "Family Ride",
+          "description": "A beautifully decorated carousel featuring characters and scenes from Cinderella."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Witch's Kitchen",
+          "type": "Themed Restaurant",
+          "cuisine": "German Fairy Tale",
+          "description": "Hearty German fare served in a slightly spooky yet child-friendly setting inspired by the witch's house from Hansel and Gretel (without being too frightening)."
+        },
+        {
+          "name": "Fairy Tale Treats",
+          "type": "Confectionery",
+          "cuisine": "Themed Sweets",
+          "description": "Cookies, candies, and treats inspired by German fairy tales, including gingerbread houses and 'poison' apple treats."
+        },
+        {
+          "name": "Grandmother's Cottage",
+          "type": "Café",
+          "cuisine": "Traditional German",
+          "description": "Coffee, tea, and traditional German cakes served in a cozy cottage setting reminiscent of Little Red Riding Hood's grandmother's house."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Storybook Store",
+          "type": "Book Shop",
+          "description": "Books, illustrated tales, and literary souvenirs related to the Brothers Grimm and other fairy tale authors."
+        },
+        {
+          "name": "Magic Mirror",
+          "type": "Character Merchandise",
+          "description": "Fairy tale character merchandise, costumes, and themed souvenirs."
+        }
+      ],
+      "events": [
+        "Fairy tale character meet-and-greets",
+        "Interactive storytelling sessions",
+        "Nighttime light shows illuminating the enchanted forest"
+      ],
+      "funFacts": [
+        "The area contains references to over 25 different Grimm fairy tales",
+        "Many of the trees have faces carved into them that 'watch' visitors as they pass by",
+        "The Grimm brothers were born near this region of Germany, making this a tribute to local literary heritage"
+      ]
+    },
+    {
+      "name": "Kingdom of the Minimoys",
+      "countryCode": "fr",
+      "description": "A fantastical area based on Luc Besson's 'Arthur and the Minimoys' film series that creates the illusion of being shrunk down to the size of the tiny Minimoy people. This immersive environment features massive grass blades, enormous flowers, and gigantic insects that tower over visitors, creating a convincing 'miniaturized' perspective. The detailed theming includes mushroom buildings, bioluminescent plants, and intricate Minimoy architecture with natural elements like bark, leaves, and stones incorporated into structures. Special lighting effects create a magical atmosphere, especially as daylight fades, with glowing plants and creatures bringing the microscopic world to life. This highly immersive area succeeds in making visitors feel they've truly entered the fantastical movie universe, with props and scenes directly inspired by the films.",
+      "attractions": [
+        {
+          "name": "Arthur",
+          "type": "Inverted Powered Coaster",
+          "description": "An indoor/outdoor family coaster that takes riders on an adventure through the miniature world of the Minimoys, with elaborate themed environments both inside and outside."
+        },
+        {
+          "name": "Mül's Carousel",
+          "type": "Family Ride",
+          "description": "A themed carousel featuring creatures and characters from the Minimoy world."
+        },
+        {
+          "name": "Poppy's Playground",
+          "type": "Interactive Play Area",
+          "description": "A playground designed to look like insects and plants from the miniaturized Minimoy world, where children can climb, slide, and explore."
+        },
+        {
+          "name": "Minimoy Village",
+          "type": "Walk-through Attraction",
+          "description": "An immersive walk-through experience where guests can explore the tiny village and interact with animated elements."
+        }
+      ],
+      "dining": [
+        {
+          "name": "Jack's Feast",
+          "type": "Themed Restaurant",
+          "cuisine": "Fantasy-inspired",
+          "description": "Family-friendly cuisine served in an environment designed to look like the dining hall from the Minimoy kingdom, with oversized utensils and food-shaped decor."
+        },
+        {
+          "name": "Nectar Bar",
+          "type": "Snack Stand",
+          "cuisine": "Fruit-based Treats",
+          "description": "Fresh fruit drinks, smoothies, and natural treats themed as the 'nectar' that Minimoys consume in the films."
+        },
+        {
+          "name": "Honeydrop Café",
+          "type": "Quick Service",
+          "cuisine": "Kid-friendly",
+          "description": "Simple meals and snacks served in a setting designed to look like a honeycomb with 'honey' dripping from the ceiling."
+        }
+      ],
+      "shopping": [
+        {
+          "name": "Minimoy Market",
+          "type": "Character Shop",
+          "description": "Merchandise featuring Arthur and the Minimoy characters, including toys, apparel, and collectibles from the films."
+        },
+        {
+          "name": "Tiny Treasures",
+          "type": "Fantasy Shop",
+          "description": "Unique gifts inspired by the miniature world, including glow-in-the-dark items and jewelry."
+        }
+      ],
+      "events": [
+        "Character appearances by Arthur, Selenia, and other Minimoy characters",
+        "Special light shows after dark highlighting the bioluminescent elements",
+        "Interactive scavenger hunts through the Minimoy village"
+      ],
+      "funFacts": [
+        "The area features the largest artificial plants in any European theme park",
+        "Special forced perspective techniques make regular-sized elements appear gigantic",
+        "The Arthur attraction was the first ride of its kind when it opened in 2014"
+      ]
+    },
+    {
+      "name": "Croatia",
+      "countryCode": "hr",
+      "description": "One of the newest themed areas in Europa-Park, showcasing the beauty and culture of Croatia through Mediterranean coastal architecture, ancient stone structures, and lush vegetation typical of the Adriatic region. This section features whitewashed buildings with terracotta roofs, stone arches, and colorful flower displays reminiscent of Dubrovnik and other Croatian coastal towns. Olive trees, lavender, and grape vines add to the authentic Mediterranean atmosphere. The area celebrates Croatia's mixture of natural beauty, rich history, and technological innovation, with the Voltron Nevera coaster (named after Croatia's electric hypercar manufacturer Rimac) serving as the perfect blend of traditional Croatian heritage and forward-thinking technology. Water features evoke the famous Croatian coastline, while decorative elements showcase traditional crafts and cultural symbols.",
+        "attractions": [
+          {
+            "name": "Voltron Nevera - Powered by Rimac",
+            "type": "Launched Coaster",
+            "description": "A high-tech launched coaster inspired by the Croatian electric hypercar manufacturer Rimac, featuring multiple acceleration points and futuristic theming."
+          },
+          {
+            "name": "Adriatic Wave Rider",
+            "type": "Water Attraction",
+            "description": "A splash attraction simulating the waves of the Adriatic Sea with interactive water elements."
+          },
+          {
+            "name": "Dalmatian Carousel",
+            "type": "Family Ride",
+            "description": "A carousel featuring animals and marine life found along the Croatian coast."
+          },
+          {
+            "name": "Croatian Heritage Museum",
+            "type": "Interactive Exhibit",
+            "description": "A small exhibit showcasing Croatian culture, history, and technological innovations."
+          }
+        ],
+        "dining": [
+          {
+            "name": "Konoba",
+            "type": "Full-service Restaurant",
+            "cuisine": "Croatian",
+            "description": "Traditional Croatian dishes including seafood, grilled meats, and Dalmatian specialties in a setting reminiscent of a coastal tavern."
+          },
+          {
+            "name": "Rimac Café",
+            "type": "Modern Café",
+            "cuisine": "Contemporary Croatian",
+            "description": "Cutting-edge cuisine and drinks in a sleek, modern setting that reflects Croatia's innovation economy."
+          },
+          {
+            "name": "Adriatic Wine Bar",
+            "type": "Wine Tasting",
+            "cuisine": "Croatian Wines & Tapas",
+            "description": "Croatian wines, olive oils, truffles, and small plates featuring ingredients from different Croatian regions."
+          }
+        ],
+        "shopping": [
+          {
+            "name": "Croatian Artisans",
+            "type": "Craft Shop",
+            "description": "Traditional Croatian handicrafts, lavender products, olive oil, and artisanal souvenirs."
+          },
+          {
+            "name": "Voltron Shop",
+            "type": "Attraction Merchandise",
+            "description": "Tech-themed souvenirs related to the Voltron Nevera coaster and Rimac hypercars."
+          }
+        ],
+        "events": [
+          "Croatian folk music and dance performances",
+          "Electric vehicle demonstrations (sponsored by Rimac)",
+          "Dalmatian klapa singing groups"
+        ],
+        "funFacts": [
+          "The Voltron Nevera coaster is named after the Rimac Nevera, one of the world's fastest electric hypercars",
+          "Real Croatian stone was used in constructing parts of this area for authenticity",
+          "As Europa-Park's newest country addition, Croatia represents the park's commitment to showcasing more diverse European cultures"
+        ]
+      },
+      {
+        "name": "Luxemburg",
+        "countryCode": "lu",
+        "description": "A charming representation of one of Europe's smallest countries, serving as a transitional area that connects several other European themed sections of the park. The area captures Luxembourg's unique position as a cultural crossroads, blending French, German, and Belgian influences. Featuring traditional architecture with steep-pitched roofs, timber framing, and flower boxes, this quaint section recreates the feel of Luxembourg's picturesque small towns and countryside. While smaller than other country areas, it offers exquisite attention to detail with wrought-iron signs, cobblestone pathways, and lush greenery reflective of the verdant Luxembourg landscape.",
+        "attractions": [
+          {
+            "name": "Luxembourg Miniatures",
+            "type": "Walk-through Exhibit",
+            "description": "A detailed miniature village showcasing Luxembourg's most famous landmarks and castles in perfect scale."
+          },
+          {
+            "name": "Grand Ducal Carousel",
+            "type": "Family Ride",
+            "description": "A small, elegant carousel featuring scenes from Luxembourg's history and folklore."
+          }
+        ],
+        "dining": [
+          {
+            "name": "Café Grand-Ducal",
+            "type": "Café",
+            "cuisine": "Luxembourg Specialties",
+            "description": "Traditional Luxembourg pastries, coffee, and light meals including quiche, reuben, judd mat gaardebounen (smoked pork with broad beans), and kachkéis (cooked cheese)."
+          },
+          {
+            "name": "Wine Terrace",
+            "type": "Wine Bar",
+            "cuisine": "Luxembourg Wines",
+            "description": "Selection of wines from Luxembourg's Moselle region with cheese and charcuterie boards."
+          }
+        ],
+        "shopping": [
+          {
+            "name": "Luxembourg Treasures",
+            "type": "Specialty Shop",
+            "description": "Fine goods reflecting Luxembourg's craftsmanship including crystal, porcelain, and handcrafted items."
+          }
+        ],
+        "events": [
+          "Folk music performances",
+          "Wine tasting events (seasonal)",
+          "Luxembourg National Day celebrations (June 23)"
+        ],
+        "funFacts": [
+          "This area subtly incorporates elements from all three official languages of Luxembourg: French, German, and Luxembourgish",
+          "The design incorporates Luxembourg's national motto 'Mir wëlle bleiwe wat mir sinn' (We want to remain what we are)",
+          "Though small, this area serves as an important hub connecting multiple country sections, reflecting Luxembourg's central position in Europe"
+        ]
+      }
+    ]
+}
+
+
+  
+
