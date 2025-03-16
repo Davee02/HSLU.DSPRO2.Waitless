@@ -18,7 +18,7 @@ const drawerWidth = 240;
 
 const menuItems = [
   { text: 'Home', icon: <Home />, path: '/' },
-  { text: 'Park Information', icon: <Info />, path: '/park-info' },
+  { text: 'Park Attractions', icon: <Info />, path: '/park-info' },
   { text: 'Predictions', icon: <Timeline />, path: '/predictions' },
 ];
 
