@@ -84,6 +84,7 @@ import {
   Lightbulb,
   NavigateNext,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 // Import park data
 import parkData from '../data/europapark.json';
@@ -94,6 +95,7 @@ import themedAreasData from '../data/themed_areas.json';
 const ParkInformationPage: React.FC = () => {
   const theme = useTheme();
   const [selectedArea, setSelectedArea] = useState<any>(null);
+  const navigate = useNavigate();
 
   const handleAreaClick = (area: any) => {
     setSelectedArea(area);
@@ -101,6 +103,10 @@ const ParkInformationPage: React.FC = () => {
 
   const handleCloseModal = () => {
     setSelectedArea(null);
+  };
+
+  const handleAttractionClick = (attraction: any) => {
+    navigate(`/attraction/${attraction.id}`);
   };
 
   const getHotelLink = (hotelName: string): string => {
@@ -480,8 +486,10 @@ const ParkInformationPage: React.FC = () => {
                                 '&:hover': {
                                   transform: 'translateY(-4px)',
                                   boxShadow: 4,
+                                  cursor: 'pointer'
                                 }
                               }}
+                              onClick={() => handleAttractionClick(attraction)}
                             >
                               <CardContent>
                                 <Stack spacing={1}>
