@@ -1,0 +1,556 @@
+{
+    "parkInfo": {
+      "name": "Europa-Park",
+      "tagline": "Europe's second most popular theme park resort",
+      "shortDescription": "A leading European theme park and resort with themed areas representing different European countries and cultures.",
+      "longDescription": "Europa-Park is Germany's largest theme park and Europe's second most visited theme park resort after Disneyland Paris. Located in Rust, Baden-Württemberg, it spans over 95 hectares and is divided into 19 themed areas, primarily representing European countries and their cultures. Founded in 1975 by the Mack family, who still own and operate it today, Europa-Park has grown from a showcase for Mack Rides' attractions to a world-class destination with over 100 attractions, including 13 roller coasters, water rides, dark rides, and family attractions. The park is known for its beautiful landscaping, high-quality theming, diverse entertainment offerings, and exceptional gastronomy with over 40 restaurants and bars. Europa-Park operates seasonally from late March to early January, with a special winter season featuring festive decorations and shows. The resort has expanded over the years to include multiple hotels, the Rulantica water park, and the Yullbe virtual reality experience, making it a complete vacation destination that attracts over 5.8 million visitors annually.",
+      "location": {
+        "city": "Rust",
+        "state": "Baden-Württemberg",
+        "country": "Germany",
+        "address": "Europa-Park-Straße 2, 77977 Rust, Germany",
+        "coordinates": {
+          "latitude": 48.2660,
+          "longitude": 7.7220
+        },
+        "howToReach": {
+          "byCar": "Located near the A5 motorway, with direct connections from Karlsruhe, Freiburg, and Strasbourg. Free parking available.",
+          "byPublicTransport": "The nearest train stations are in Ringsheim and Freiburg, with shuttle services connecting to the park. Several bus lines also serve the park directly.",
+          "byPlane": "The closest airports are Strasbourg Airport (40km), EuroAirport Basel-Mulhouse-Freiburg (90km), and Frankfurt Airport (180km)."
+        }
+      },
+      "openingTimes": {
+        "regularSeason": {
+          "period": "Late March to early November",
+          "hours": "Usually 9:00 AM to 6:00 PM (extended to 7:30 PM during peak season)"
+        },
+        "winterSeason": {
+          "period": "Late November to early January",
+          "hours": "11:00 AM to 7:00 PM"
+        },
+        "closedPeriod": "Mid-January to late March (annual maintenance)",
+        "note": "Opening times may vary by date and season. Always check the official website for current hours."
+      },
+      "prices": {
+        "singleDay": {
+          "adult": "€65.00",
+          "child": "€55.00",
+          "senior": "€55.00"
+        },
+        "twoDay": {
+          "adult": "€124.00",
+          "child": "€104.00",
+          "senior": "€104.00"
+        },
+        "threeDay": {
+          "adult": "€164.00",
+          "child": "€136.00",
+          "senior": "€136.00"
+        },
+        "seasonPass": {
+          "standard": "€195.00",
+          "premium": "€275.00"
+        },
+        "specialOffers": [
+          {
+            "name": "Birthday Special",
+            "description": "Free entry on your birthday with valid ID"
+          },
+          {
+            "name": "Evening Ticket",
+            "description": "Discounted admission after 4:00 PM during select periods",
+            "price": "From €32.00"
+          },
+          {
+            "name": "Group Discounts",
+            "description": "Available for groups of 20+ people"
+          }
+        ],
+        "priceNote": "Prices as of 2025. Children aged 4-11, seniors aged 60+. Children under 4 enter free. All prices subject to change."
+      },
+      "attractions": {
+        "total": 100,
+        "byCategory": {
+          "thrill": 16,
+          "family": 54,
+          "water": 9,
+          "children": 14,
+          "interactive": 7
+        },
+        "rollerCoasters": 13,
+        "waterRides": 9,
+        "darkRides": 14,
+        "showVenues": 23,
+        "highlightAttractions": [
+          "Silver Star",
+          "Blue Fire Megacoaster",
+          "Wodan – Timburcoaster",
+          "Euro-Mir",
+          "Poseidon",
+          "Arthur",
+          "Pirates in Batavia",
+          "Voletarium",
+          "Eurosat CanCan Coaster",
+          "Voltron Nevera - Powered by Rimac"
+        ],
+        "attractionsList": [
+          "Silver Star",
+          "Blue Fire Megacoaster",
+          "Wodan – Timburcoaster",
+          "Voletarium",
+          "Alpine Express Enzian",
+          "Arena of Football - Be Part of It",
+          "Arthur",
+          "Atlantica SuperSplash",
+          "Atlantis Adventure",
+          "Baaa Express",
+          "Bellevue Ferris Wheel",
+          "Castello dei Medici",
+          "Dancing Dingie",
+          "Euro-Mir",
+          "Eurosat CanCan Coaster",
+          "Euro-Tower",
+          "Fjord-Rafting",
+          "Jim Button - Journey Through Morrowland",
+          "Josefina's Magical Imperial Journey",
+          "Kolumbusjolle",
+          "Madame Freudenreich Curiosités",
+          "Matterhorn-Blitz",
+          "Old Mac Donald's Tractor Fun",
+          "Pegasus",
+          "Pirates in Batavia",
+          "Poppy Towers",
+          "Poseidon",
+          "Snorri Touren",
+          "Swiss Bob Run",
+          "Tirol Log Flume",
+          "Tnnevirvel",
+          "Vienna Wave Swing - Glckspilz",
+          "Vindjammer",
+          "Volo da Vinci",
+          "Voltron Nevera - Powered by Rimac",
+          "Whale Adventures - Northern Lights"
+        ]
+      },
+      "themedAreas": [
+        {
+          "name": "Germany",
+          "description": "The entrance area of the park, featuring traditional German architecture and attractions like Voletarium and Jim Button."
+        },
+        {
+          "name": "Italy",
+          "description": "Recreates Italian renaissance atmosphere with attractions like Volo da Vinci and Castello dei Medici."
+        },
+        {
+          "name": "France",
+          "description": "Features Parisian architecture, the Eurosat CanCan Coaster, Silver Star, and Madame Freudenreich Curiosités."
+        },
+        {
+          "name": "England",
+          "description": "Themed after London with attractions like Dancing Dingie and traditional English architecture."
+        },
+        {
+          "name": "Spain",
+          "description": "Features Spanish architecture and attractions including Kolumbusjolle."
+        },
+        {
+          "name": "Russia",
+          "description": "Home to the Euro-Mir spinning coaster and Russian-themed buildings."
+        },
+        {
+          "name": "Greece",
+          "description": "Ancient Greek-themed area featuring Poseidon water coaster, Atlantis Adventure, and Pegasus."
+        },
+        {
+          "name": "Portugal",
+          "description": "Maritime-themed area with Atlantica SuperSplash water coaster."
+        },
+        {
+          "name": "Netherlands (Holland)",
+          "description": "Dutch-themed area with Pirates in Batavia dark boat ride and Dutch architectural style."
+        },
+        {
+          "name": "Switzerland",
+          "description": "Alpine-themed area with Matterhorn-Blitz, Swiss Bob Run, and Alpine Express Enzian."
+        },
+        {
+          "name": "Scandinavia",
+          "description": "Nordic-themed area with attractions like Fjord-Rafting, Vindjammer, and Tnnevirvel."
+        },
+        {
+          "name": "Austria",
+          "description": "Tyrolean-themed area with Vienna Wave Swing, Josefina's Imperial Journey, and Tirol Log Flume."
+        },
+        {
+          "name": "Iceland",
+          "description": "Home to Blue Fire Megacoaster, Wodan Timburcoaster, Whale Adventures, and Snorri Touren."
+        },
+        {
+          "name": "Ireland - Children's World",
+          "description": "The park's dedicated children's area with attractions designed for younger guests."
+        },
+        {
+          "name": "Adventure Land",
+          "description": "Features attractions like the Euro-Tower and interactive experiences."
+        },
+        {
+          "name": "Grimm's Enchanted Forest",
+          "description": "Themed around famous fairy tales with attractions for younger visitors."
+        },
+        {
+          "name": "Kingdom of the Minimoys",
+          "description": "Based on the 'Arthur and the Minimoys' films, featuring the Arthur ride and themed environments."
+        },
+        {
+          "name": "Croatia",
+          "description": "One of the newest areas, featuring the Voltron Nevera launched coaster."
+        },
+        {
+          "name": "Luxemburg",
+          "description": "Small themed area connecting other European sections of the park."
+        }
+      ],
+      "accommodation": {
+        "hotels": [
+          {
+            "name": "Hotel Colosseo",
+            "theme": "Italian/Roman",
+            "stars": 4.5,
+            "description": "A luxurious Italian-themed hotel featuring Roman architecture, Mediterranean atmosphere, and pool areas.",
+            "rooms": 350,
+            "amenities": ["Pool", "Wellness Area", "Restaurants", "Bars", "Free WiFi", "Room Service"],
+            "priceRange": "€200 - €450 per night"
+          },
+          {
+            "name": "Hotel Bell Rock",
+            "theme": "New England/Maritime",
+            "stars": 4.5,
+            "description": "A premium hotel styled like a New England lighthouse and maritime estate.",
+            "rooms": 225,
+            "amenities": ["Fine Dining Restaurant", "Wellness Area", "Bars", "Free WiFi", "Room Service"],
+            "priceRange": "€190 - €410 per night"
+          },
+          {
+            "name": "Hotel Krønasår",
+            "theme": "Nordic Museum Hotel",
+            "stars": 4.5,
+            "description": "Themed as a natural history museum with direct access to Rulantica water park.",
+            "rooms": 277,
+            "amenities": ["Direct Water Park Access", "Fine Dining", "Bars", "Free WiFi", "Room Service"],
+            "priceRange": "€210 - €460 per night"
+          },
+          {
+            "name": "Hotel Santa Isabel",
+            "theme": "Portuguese Monastery",
+            "stars": 4.5,
+            "description": "Designed after a Portuguese monastery with tranquil courtyards and Mediterranean ambiance.",
+            "rooms": 290,
+            "amenities": ["Pool", "Wellness Area", "Restaurant", "Bar", "Free WiFi", "Room Service"],
+            "priceRange": "€180 - €400 per night"
+          },
+          {
+            "name": "Hotel El Andaluz",
+            "theme": "Spanish Finca",
+            "stars": 4.5,
+            "description": "Featuring Spanish-Mediterranean architecture with inner courtyards and pools.",
+            "rooms": 250,
+            "amenities": ["Pool", "Mediterranean Restaurant", "Bar", "Free WiFi", "Room Service"],
+            "priceRange": "€180 - €380 per night"
+          },
+          {
+            "name": "Hotel Castillo Alcazar",
+            "theme": "Medieval Spanish Castle",
+            "stars": 4,
+            "description": "Modeled after a medieval Spanish fortress with rustic, castle-themed interiors.",
+            "rooms": 120,
+            "amenities": ["Tavern-style Restaurant", "Bar", "Free WiFi"],
+            "priceRange": "€160 - €350 per night"
+          }
+        ],
+        "otherAccommodations": [
+          {
+            "name": "Camp Resort",
+            "type": "Western-themed Lodging",
+            "description": "Wild West-themed accommodation with covered wagons, log cabins, and tepees for a rustic experience.",
+            "capacity": "500 guests",
+            "amenities": ["Barbecue Areas", "Western-style Restaurant", "Swimming Pool", "Free Parking"],
+            "priceRange": "€70 - €155 per night"
+          },
+          {
+            "name": "Europa-Park Camp Ground",
+            "type": "Campsite",
+            "description": "400 pitches for tents, caravans, and motorhomes, within walking distance of the park.",
+            "capacity": "1200 guests",
+            "amenities": ["Electricity Hookups", "Sanitary Facilities", "Barbecue Areas", "Mini Market"],
+            "priceRange": "€35 - €50 per night plus €12 per person"
+          }
+        ],
+        "benefits": [
+          "Early park entry (1 hour before regular opening)",
+          "Free parking",
+          "Free shuttle service to the park entrance",
+          "On-site restaurants and entertainment",
+          "Direct access to Rulantica water park from certain hotels",
+          "Breakfast included in most room rates"
+        ]
+      },
+      "facilities": {
+        "dining": {
+          "restaurants": 40,
+          "cuisine": ["German", "Italian", "French", "Spanish", "Greek", "American", "Asian"],
+          "highlights": [
+            {
+              "name": "Castillo",
+              "type": "Fine Dining",
+              "cuisine": "International Gourmet",
+              "location": "Near Hotel Castillo Alcazar"
+            },
+            {
+              "name": "Bamboe Baai",
+              "type": "Themed Restaurant",
+              "cuisine": "Asian",
+              "location": "Adventure Land"
+            },
+            {
+              "name": "Don Quixote",
+              "type": "Full-service Restaurant",
+              "cuisine": "Spanish",
+              "location": "Spain area"
+            },
+            {
+              "name": "Food Loop",
+              "type": "Interactive Restaurant",
+              "cuisine": "International",
+              "location": "Germany area",
+              "description": "Food delivered via roller coaster rails system"
+            }
+          ]
+        },
+        "shopping": {
+          "stores": 23,
+          "mainShops": [
+            {
+              "name": "Europa-Park Store",
+              "type": "Main Park Merchandise",
+              "location": "Entrance Area"
+            },
+            {
+              "name": "Historic Carousel Shop",
+              "type": "Specialty Gifts",
+              "location": "Germany area"
+            },
+            {
+              "name": "Alexanderplatz",
+              "type": "Clothing and Souvenirs",
+              "location": "Russian area"
+            }
+          ]
+        },
+        "services": [
+          {
+            "name": "Guest Services",
+            "location": "Main Entrance",
+            "services": ["Information", "Ticket Sales", "Lost and Found", "Package Pickup"]
+          },
+          {
+            "name": "First Aid",
+            "location": "Multiple locations throughout the park"
+          },
+          {
+            "name": "Baby Care Center",
+            "location": "Near the Entrance Area",
+            "services": ["Changing Facilities", "Nursing Area", "Baby Food Warming"]
+          },
+          {
+            "name": "ATMs",
+            "location": "Throughout the park"
+          },
+          {
+            "name": "Lockers",
+            "location": "Main Entrance and near water rides",
+            "price": "€2 - €5 per day"
+          },
+          {
+            "name": "Wheelchair and Stroller Rental",
+            "location": "Main Entrance",
+            "price": "€10 - €15 per day"
+          },
+          {
+            "name": "WiFi",
+            "coverage": "Throughout the park",
+            "price": "Free"
+          }
+        ],
+        "accessibility": {
+          "wheelchairAccess": "Most areas of the park are wheelchair accessible, with special entrances for many attractions",
+          "accessibleAttractions": "70% of attractions are accessible to guests with mobility limitations",
+          "assistiveServices": ["Guide maps in Braille", "Assistance dogs allowed", "Discounted tickets for guests with disabilities"],
+          "rentalServices": "Wheelchairs available for rent at the main entrance"
+        }
+      },
+      "additionalVenues": [
+        {
+          "name": "Rulantica",
+          "type": "Water Park",
+          "description": "A massive indoor/outdoor Nordic-themed water park with slides, wave pools, lazy rivers, and themed areas. Opened in 2019, it features 25 water attractions across 32,600 square meters.",
+          "openingHours": "10:00 AM to 10:00 PM (varies by season)",
+          "pricing": {
+            "adult": "€45.50",
+            "child": "€41.50",
+            "comboWithEuropaPark": "From €95.00"
+          },
+          "location": "Adjacent to Hotel Krønasår",
+          "website": "https://www.rulantica.de/en"
+        },
+        {
+          "name": "Yullbe",
+          "type": "VR Experience",
+          "description": "A state-of-the-art virtual reality facility offering immersive adventures in custom-designed spaces with free-roaming VR technology.",
+          "experiences": ["Yullbe Pro (30-minute premium experience)", "Yullbe Go (10-minute entry-level experience)"],
+          "pricing": {
+            "yullbePro": "€29.00 - €39.00",
+            "yullbeGo": "€14.50 - €17.50"
+          },
+          "location": "Next to the main entrance of Europa-Park",
+          "website": "https://www.yullbe.com/en"
+        },
+        {
+          "name": "Europa-Park Arena",
+          "type": "Event Venue",
+          "description": "A multipurpose arena hosting concerts, shows, and events with a capacity of up to 6,000 people.",
+          "events": ["Concerts", "Sporting Events", "Corporate Functions", "Special Shows"],
+          "location": "Adjacent to the main park"
+        },
+        {
+          "name": "Confertainment Center",
+          "type": "Conference Venue",
+          "description": "Conference and event space offering facilities for business meetings, product launches, and corporate events with a theme park backdrop.",
+          "capacity": "Up to 1,200 people in various configurations",
+          "facilities": ["Meeting Rooms", "Exhibition Space", "Catering Services", "AV Equipment"],
+          "location": "Connected to Hotel Colosseo"
+        }
+      ],
+      "specialEvents": [
+        {
+          "name": "Summer Festival",
+          "period": "July to August",
+          "description": "Extended opening hours, special shows, and Mediterranean nights with music and entertainment."
+        },
+        {
+          "name": "Halloween Season",
+          "period": "Late September to early November",
+          "description": "The park is transformed with elaborate Halloween decorations, spooky shows, and horror nights for adults."
+        },
+        {
+          "name": "Winter Season",
+          "period": "Late November to early January",
+          "description": "Festive decorations, Christmas market, ice skating, winter shows, and special seasonal food offerings."
+        },
+        {
+          "name": "Europa-Park Talent Academy",
+          "period": "Various dates throughout the year",
+          "description": "Special shows featuring young performers and artists from the park's training program."
+        },
+        {
+          "name": "Science Days",
+          "period": "Usually October",
+          "description": "Educational event focusing on science, technology, and innovation with interactive exhibits and demonstrations."
+        }
+      ],
+      "sustainability": {
+        "initiatives": [
+          "Solar power installations providing renewable energy",
+          "Water recycling systems for attractions and landscaping",
+          "EV charging stations in parking areas",
+          "Waste reduction and recycling programs",
+          "Energy-efficient LED lighting throughout the park",
+          "Sustainable food sourcing for restaurants"
+        ],
+        "awards": [
+          "European Clean Energy Award 2022",
+          "Green Tourism Certification",
+          "Sustainable Business Practice Recognition"
+        ]
+      },
+      "contactInfo": {
+        "phone": "+49 7822 77-6688",
+        "email": "info@europapark.de",
+        "websiteURL": "https://www.europapark.de/en",
+        "socialMedia": {
+          "facebook": "https://www.facebook.com/EuropaPark",
+          "instagram": "https://www.instagram.com/europapark/",
+          "twitter": "https://twitter.com/europa_park",
+          "youtube": "https://www.youtube.com/user/EuropaParkTV"
+        }
+      },
+      "awards": [
+        {
+          "name": "World's Best Theme Park",
+          "organization": "Golden Ticket Awards",
+          "years": ["2014", "2015", "2016", "2017", "2018", "2019"]
+        },
+        {
+          "name": "Best European Theme Park",
+          "organization": "European Star Awards",
+          "years": ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"]
+        },
+        {
+          "name": "Best Theme Park Worldwide",
+          "organization": "Travellers' Choice Awards (TripAdvisor)",
+          "years": ["2014", "2015", "2016", "2017", "2018", "2019", "2022", "2023"]
+        }
+      ],
+      "history": {
+        "foundedYear": 1975,
+        "founder": "Franz Mack and his son Roland Mack",
+        "milestones": [
+          {
+            "year": 1975,
+            "event": "Europa-Park opens with just a few attractions and the Schloss Balthasar (castle) as its centerpiece"
+          },
+          {
+            "year": 1982,
+            "event": "Introduction of the first themed country areas"
+          },
+          {
+            "year": 1989,
+            "event": "Opening of the first hotel (El Andaluz)"
+          },
+          {
+            "year": 1995,
+            "event": "Celebration of 20th anniversary with major expansions"
+          },
+          {
+            "year": 2000,
+            "event": "Introduction of Silver Star, then Europe's tallest roller coaster"
+          },
+          {
+            "year": 2012,
+            "event": "Opening of Wodan - Timburcoaster, the park's first wooden roller coaster"
+          },
+          {
+            "year": 2019,
+            "event": "Opening of Rulantica water park and Hotel Krønasår"
+          },
+          {
+            "year": 2020,
+            "event": "Completion of the rebuilt Pirates in Batavia attraction after the 2018 fire"
+          },
+          {
+            "year": 2023,
+            "event": "Opening of Voltron Nevera coaster and Croatia themed area"
+          }
+        ],
+        "ownershipInfo": "Still owned and operated by the Mack family, who also own Mack Rides, a major manufacturer of amusement rides worldwide"
+      },
+      "statistics": {
+        "annualVisitors": "Over 5.8 million",
+        "parkSize": "95 hectares (235 acres)",
+        "employees": {
+          "peakSeason": "Over 4,300",
+          "yearRound": "Approximately 1,300"
+        },
+        "economicImpact": "Major contributor to the regional economy, generating over €850 million annually through direct and indirect spending"
+      }
+    }
+  }

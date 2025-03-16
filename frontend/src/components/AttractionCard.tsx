@@ -13,20 +13,6 @@ import {
 import { AccessTime } from '@mui/icons-material';
 import { Attraction } from '../types';
 
-// Import attraction images
-import silverStar from '../img/attractions/silver_star.jpg';
-import blueFire from '../img/attractions/blue_fire.jpg';
-import wodan from '../img/attractions/wodan.jpg';
-import voletarium from '../img/attractions/voletarium.jpg';
-
-// Map for image imports
-const imageMap: { [key: string]: string } = {
-  '/static/silver_star.jpg': silverStar,
-  '/static/blue_fire.jpg': blueFire,
-  '/static/wodan.jpg': wodan,
-  '/static/voletarium.jpg': voletarium,
-};
-
 interface AttractionCardProps {
   attraction: Attraction;
   showDetails?: boolean;
@@ -38,7 +24,7 @@ const AttractionCard: React.FC<AttractionCardProps> = ({ attraction, showDetails
       <CardMedia
         component="img"
         height="200"
-        image={imageMap[attraction.imageUrl]}
+        image={attraction.imageUrl}
         alt={attraction.name}
         sx={{ objectFit: 'cover' }}
       />
