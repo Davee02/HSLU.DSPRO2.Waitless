@@ -1,0 +1,63 @@
+{
+  "attractions": [
+    {
+      "id": "silver-star",
+      "name": "Silver Star",
+      "description": "As one of Europe's tallest and fastest roller coasters, Silver Star offers an exhilarating experience with its towering heights and swift descents.",
+      "keyFacts": {
+        "type": "Hyper Coaster",
+        "height": "73 meters",
+        "topSpeed": "127 km/h",
+        "duration": "Approximately 3 minutes"
+      },
+      "category": "thrill",
+      "waitTime": null,
+      "predictedWaitTime": null,
+      "imageUrl": "/static/silver_star.jpg"
+    },
+    {
+      "id": "blue-fire",
+      "name": "Blue Fire Megacoaster",
+      "description": "This launch coaster propels riders from 0 to 100 km/h in just 2.5 seconds, featuring multiple inversions and high-speed twists.",
+      "keyFacts": {
+        "type": "Launched Coaster",
+        "inversions": "4",
+        "topSpeed": "100 km/h",
+        "duration": "2 minutes 20 seconds"
+      },
+      "category": "thrill",
+      "waitTime": null,
+      "predictedWaitTime": null,
+      "imageUrl": "/static/blue_fire.jpg"
+    },
+    {
+      "id": "wodan",
+      "name": "Wodan – Timburcoaster",
+      "description": "A wooden coaster that combines traditional design with modern engineering, providing a smooth yet thrilling ride through intricate wooden structures.",
+      "keyFacts": {
+        "type": "Wooden Coaster",
+        "height": "40 meters",
+        "topSpeed": "100 km/h",
+        "duration": "2 minutes 30 seconds"
+      },
+      "category": "thrill",
+      "waitTime": null,
+      "predictedWaitTime": null,
+      "imageUrl": "/static/wodan.jpg"
+    },
+    {
+      "id": "voletarium",
+      "name": "Voletarium",
+      "description": "Europe's largest flying theater that simulates a flight over various European landmarks, offering a breathtaking aerial journey.",
+      "keyFacts": {
+        "type": "Flying Theater",
+        "capacity": "140 guests per session",
+        "duration": "5 minutes"
+      },
+      "category": "family",
+      "waitTime": null,
+      "predictedWaitTime": null,
+      "imageUrl": "/static/voletarium.jpg"
+    }
+  ]
+} 
