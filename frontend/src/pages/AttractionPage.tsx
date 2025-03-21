@@ -7,15 +7,18 @@ import {
   Paper,
   Grid,
   Chip,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   IconButton,
   Card,
   CardContent,
   Fade,
   Slide,
   Zoom,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Divider,
   Button,
   Stack,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Rating,
 } from '@mui/material';
 import {
@@ -28,11 +31,12 @@ import {
   CalendarToday,
   LocationOn,
   Person,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Star,
   Info,
   AccessTime,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   DirectionsRun,
-  Engineering,
 } from '@mui/icons-material';
 
 // Import attraction data
@@ -215,7 +219,7 @@ const AttractionPage: React.FC = () => {
           <Slide direction="left" in timeout={1000}>
             <Paper elevation={3} sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Engineering /> Technical Stats
+                Technical Stats
               </Typography>
               <Stack spacing={2}>
                 {attraction.keyFacts?.topSpeed && (
@@ -236,7 +240,6 @@ const AttractionPage: React.FC = () => {
                 )}
                 {attraction.keyFacts?.manufacturer && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Engineering />
                     <Typography>
                       Manufacturer: {attraction.keyFacts.manufacturer}
                     </Typography>

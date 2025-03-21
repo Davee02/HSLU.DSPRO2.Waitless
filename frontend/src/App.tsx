@@ -15,7 +15,14 @@ function App() {
       <Router>
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <NavigationMenu />
-          <Box component="main" sx={{ flexGrow: 1 }}>
+          <Box 
+            component="main" 
+            sx={{ 
+              flexGrow: 1,
+              ml: '240px', // Add margin-left equal to drawer width
+              width: 'calc(100% - 240px)', // Adjust width to account for drawer
+            }}
+          >
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/park-info" element={<ParkInformationPage />} />
