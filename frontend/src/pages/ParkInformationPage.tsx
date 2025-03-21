@@ -13,24 +13,28 @@ import {
   ListItemText,
   Chip,
   Stack,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Paper,
   CardActionArea,
-  useTheme,
-  Fade,
-  Slide,
-  Zoom,
-  IconButton,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  Accordion,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  AccordionSummary,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  AccordionDetails,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Tooltip,
-  Link,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Modal,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
+  IconButton,
+  Link,
+  Fade,
+  Slide,
+  Zoom,
 } from '@mui/material';
 import {
   Timeline,
@@ -46,6 +50,7 @@ import {
   LocationOn,
   Euro,
   Hotel,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ExpandMore,
   DirectionsCar,
   Train,
@@ -93,7 +98,6 @@ import parkData from '../data/europapark.json';
 import themedAreasData from '../data/themed_areas.json';
 
 const ParkInformationPage: React.FC = () => {
-  const theme = useTheme();
   const [selectedArea, setSelectedArea] = useState<any>(null);
   const navigate = useNavigate();
 

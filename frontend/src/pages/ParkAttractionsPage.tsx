@@ -16,7 +16,8 @@ import {
   Divider,
   CardActionArea,
 } from '@mui/material';
-import { Search, Place, Speed, Height, Timer, Group, Event } from '@mui/icons-material';
+import { Search, Place, Speed, Height, Timer, // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  Group, Event } from '@mui/icons-material';
 import { motion, Variants } from 'framer-motion';
 import { Attraction } from '../types';
 
