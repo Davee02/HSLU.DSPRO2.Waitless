@@ -13,7 +13,7 @@
         "capacity_per_hour": 1750
       },
       {
-        "name": "Blue Fire Megacoaster",
+        "name": "blue fire Megacoaster",
         "attraction_type": "Launched Coaster",
         "category": "thrill",
         "max_height": "38 meters",
@@ -25,7 +25,7 @@
         "capacity_per_hour": 1720
       },
       {
-        "name": "Wodan – Timburcoaster",
+        "name": "VirtualLine: WODAN - Timburcoaster",
         "attraction_type": "Wooden Coaster",
         "category": "thrill",
         "max_height": "40 meters",
@@ -49,7 +49,7 @@
         "capacity_per_hour": 1400
       },
       {
-        "name": "Alpine Express Enzian",
+        "name": "Alpine Express 'Enzian'",
         "attraction_type": "Powered Coaster",
         "category": "family",
         "max_height": "6 meters",
@@ -61,7 +61,7 @@
         "capacity_per_hour": 900
       },
       {
-        "name": "Arena of Football - Be Part of It",
+        "name": "Arena of Football - Be Part of It!",
         "attraction_type": "Interactive Attraction",
         "category": "interactive",
         "max_height": "N/A",
@@ -73,7 +73,7 @@
         "capacity_per_hour": 500
       },
       {
-        "name": "Arthur",
+        "name": "ARTHUR",
         "attraction_type": "Inverted Powered Coaster",
         "category": "family",
         "max_height": "15 meters",
@@ -109,7 +109,7 @@
         "capacity_per_hour": 1200
       },
       {
-        "name": "Baaa Express",
+        "name": "Ba-a-a Express",
         "attraction_type": "Monorail",
         "category": "children",
         "max_height": "4 meters",
@@ -121,7 +121,7 @@
         "capacity_per_hour": 600
       },
       {
-        "name": "Bellevue Ferris Wheel",
+        "name": "'Bellevue' Ferris Wheel",
         "attraction_type": "Ferris Wheel",
         "category": "family",
         "max_height": "55 meters",
@@ -169,7 +169,7 @@
         "capacity_per_hour": 1450
       },
       {
-        "name": "Eurosat CanCan Coaster",
+        "name": "Eurosat - CanCan Coaster",
         "attraction_type": "Indoor Coaster",
         "category": "thrill",
         "max_height": "45 meters",
@@ -205,7 +205,7 @@
         "capacity_per_hour": 1800
       },
       {
-        "name": "Jim Button - Journey Through Morrowland",
+        "name": "Jim Button – Journey through Morrowland",
         "attraction_type": "Dark Ride",
         "category": "family",
         "max_height": "6 meters",
@@ -217,7 +217,7 @@
         "capacity_per_hour": 1000
       },
       {
-        "name": "Josefina's Magical Imperial Journey",
+        "name": "Josefina’s Magical Imperial Journey",
         "attraction_type": "Dark Boat Ride",
         "category": "family",
         "max_height": "5 meters",
@@ -361,7 +361,7 @@
         "capacity_per_hour": 1400
       },
       {
-        "name": "Tnnevirvel",
+        "name": "Tønnevirvel",
         "attraction_type": "Spinning Raft Ride",
         "category": "family",
         "max_height": "5 meters",
@@ -373,7 +373,7 @@
         "capacity_per_hour": 900
       },
       {
-        "name": "Vienna Wave Swing - Glckspilz",
+        "name": "Vienna Wave Swing - 'Glückspilz'",
         "attraction_type": "Wave Swinger",
         "category": "family",
         "max_height": "15 meters",
@@ -409,7 +409,7 @@
         "capacity_per_hour": 400
       },
       {
-        "name": "Voltron Nevera - Powered by Rimac",
+        "name": "Voltron Nevera powered by Rimac",
         "attraction_type": "Launched Coaster",
         "category": "thrill",
         "max_height": "32 meters",
