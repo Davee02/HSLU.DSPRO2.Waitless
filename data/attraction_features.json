@@ -1,7 +1,7 @@
 {
     "attractions_features": [
       {
-        "name": "Silver Star",
+        "name": "silver star",
         "attraction_type": "Hyper Coaster",
         "category": "thrill",
         "max_height": "73 meters",
@@ -13,7 +13,7 @@
         "capacity_per_hour": 1750
       },
       {
-        "name": "blue fire Megacoaster",
+        "name": "blue fire megacoaster",
         "attraction_type": "Launched Coaster",
         "category": "thrill",
         "max_height": "38 meters",
@@ -37,7 +37,7 @@
         "capacity_per_hour": 1250
       },
       {
-        "name": "Voletarium",
+        "name": "voletarium",
         "attraction_type": "Flying Theater",
         "category": "family",
         "max_height": "16 meters",
@@ -49,7 +49,7 @@
         "capacity_per_hour": 1400
       },
       {
-        "name": "Alpine Express 'Enzian'",
+        "name": "alpine express enzian",
         "attraction_type": "Powered Coaster",
         "category": "family",
         "max_height": "6 meters",
@@ -61,7 +61,7 @@
         "capacity_per_hour": 900
       },
       {
-        "name": "Arena of Football - Be Part of It!",
+        "name": "arena of football be part of it",
         "attraction_type": "Interactive Attraction",
         "category": "interactive",
         "max_height": "N/A",
@@ -73,7 +73,7 @@
         "capacity_per_hour": 500
       },
       {
-        "name": "ARTHUR",
+        "name": "arthur",
         "attraction_type": "Inverted Powered Coaster",
         "category": "family",
         "max_height": "15 meters",
@@ -85,7 +85,7 @@
         "capacity_per_hour": 1200
       },
       {
-        "name": "Atlantica SuperSplash",
+        "name": "atlantica supersplash",
         "attraction_type": "Water Coaster",
         "category": "water",
         "max_height": "30 meters",
@@ -97,7 +97,7 @@
         "capacity_per_hour": 1150
       },
       {
-        "name": "Atlantis Adventure",
+        "name": "atlantis adventure",
         "attraction_type": "Dark Ride",
         "category": "family",
         "max_height": "5 meters",
@@ -109,7 +109,7 @@
         "capacity_per_hour": 1200
       },
       {
-        "name": "Ba-a-a Express",
+        "name": "baaa express",
         "attraction_type": "Monorail",
         "category": "children",
         "max_height": "4 meters",
@@ -121,7 +121,7 @@
         "capacity_per_hour": 600
       },
       {
-        "name": "'Bellevue' Ferris Wheel",
+        "name": "'bellevue ferris wheel",
         "attraction_type": "Ferris Wheel",
         "category": "family",
         "max_height": "55 meters",
@@ -133,7 +133,7 @@
         "capacity_per_hour": 850
       },
       {
-        "name": "Castello dei Medici",
+        "name": "castello dei medici",
         "attraction_type": "Dark Boat Ride",
         "category": "family",
         "max_height": "5 meters",
@@ -145,7 +145,7 @@
         "capacity_per_hour": 1000
       },
       {
-        "name": "Dancing Dingie",
+        "name": "dancing dingie",
         "attraction_type": "Spinning Ride",
         "category": "family",
         "max_height": "6 meters",
@@ -157,7 +157,7 @@
         "capacity_per_hour": 900
       },
       {
-        "name": "Euro-Mir",
+        "name": "euromir",
         "attraction_type": "Spinning Coaster",
         "category": "thrill",
         "max_height": "28 meters",
@@ -169,7 +169,7 @@
         "capacity_per_hour": 1450
       },
       {
-        "name": "Eurosat - CanCan Coaster",
+        "name": "eurosat cancan coaster",
         "attraction_type": "Indoor Coaster",
         "category": "thrill",
         "max_height": "45 meters",
@@ -181,7 +181,7 @@
         "capacity_per_hour": 1600
       },
       {
-        "name": "Euro-Tower",
+        "name": "eurotower",
         "attraction_type": "Observation Tower",
         "category": "family",
         "max_height": "75 meters",
@@ -193,7 +193,7 @@
         "capacity_per_hour": 700
       },
       {
-        "name": "Fjord-Rafting",
+        "name": "fjordrafting",
         "attraction_type": "River Rapids",
         "category": "water",
         "max_height": "8 meters",
@@ -205,7 +205,7 @@
         "capacity_per_hour": 1800
       },
       {
-        "name": "Jim Button – Journey through Morrowland",
+        "name": "jim button journey through morrowland",
         "attraction_type": "Dark Ride",
         "category": "family",
         "max_height": "6 meters",
@@ -217,7 +217,7 @@
         "capacity_per_hour": 1000
       },
       {
-        "name": "Josefina’s Magical Imperial Journey",
+        "name": "josefinas magical imperial journey",
         "attraction_type": "Dark Boat Ride",
         "category": "family",
         "max_height": "5 meters",
@@ -229,7 +229,7 @@
         "capacity_per_hour": 1200
       },
       {
-        "name": "Kolumbusjolle",
+        "name": "kolumbusjolle",
         "attraction_type": "Swinging Ship",
         "category": "thrill",
         "max_height": "20 meters",
@@ -241,7 +241,7 @@
         "capacity_per_hour": 1500
       },
       {
-        "name": "Madame Freudenreich Curiosités",
+        "name": "madame freudenreich curiosits",
         "attraction_type": "Dark Ride",
         "category": "family",
         "max_height": "6 meters",
@@ -253,7 +253,7 @@
         "capacity_per_hour": 700
       },
       {
-        "name": "Matterhorn-Blitz",
+        "name": "matterhornblitz",
         "attraction_type": "Wild Mouse Coaster",
         "category": "family",
         "max_height": "15 meters",
@@ -265,7 +265,7 @@
         "capacity_per_hour": 1000
       },
       {
-        "name": "Old Mac Donald's Tractor Fun",
+        "name": "old mac donalds tractor fun",
         "attraction_type": "Track Ride",
         "category": "children",
         "max_height": "3 meters",
@@ -277,7 +277,7 @@
         "capacity_per_hour": 600
       },
       {
-        "name": "Pegasus",
+        "name": "pegasus",
         "attraction_type": "Family Coaster",
         "category": "family",
         "max_height": "16 meters",
@@ -289,7 +289,7 @@
         "capacity_per_hour": 1100
       },
       {
-        "name": "Pirates in Batavia",
+        "name": "pirates in batavia",
         "attraction_type": "Dark Boat Ride",
         "category": "family",
         "max_height": "8 meters",
@@ -301,7 +301,7 @@
         "capacity_per_hour": 1800
       },
       {
-        "name": "Poppy Towers",
+        "name": "poppy towers",
         "attraction_type": "Children's Drop Tower",
         "category": "children",
         "max_height": "8 meters",
@@ -313,7 +313,7 @@
         "capacity_per_hour": 500
       },
       {
-        "name": "Poseidon",
+        "name": "poseidon",
         "attraction_type": "Water Coaster",
         "category": "water",
         "max_height": "23 meters",
@@ -325,7 +325,7 @@
         "capacity_per_hour": 1400
       },
       {
-        "name": "Snorri Touren",
+        "name": "snorri touren",
         "attraction_type": "Dark Ride",
         "category": "family",
         "max_height": "5 meters",
@@ -337,7 +337,7 @@
         "capacity_per_hour": 1000
       },
       {
-        "name": "Swiss Bob Run",
+        "name": "swiss bob run",
         "attraction_type": "Bobsled Coaster",
         "category": "family",
         "max_height": "20 meters",
@@ -349,7 +349,7 @@
         "capacity_per_hour": 1200
       },
       {
-        "name": "Tirol Log Flume",
+        "name": "tirol log flume",
         "attraction_type": "Log Flume",
         "category": "water",
         "max_height": "22 meters",
@@ -361,7 +361,7 @@
         "capacity_per_hour": 1400
       },
       {
-        "name": "Tønnevirvel",
+        "name": "tnnevirvel",
         "attraction_type": "Spinning Raft Ride",
         "category": "family",
         "max_height": "5 meters",
@@ -373,7 +373,7 @@
         "capacity_per_hour": 900
       },
       {
-        "name": "Vienna Wave Swing - 'Glückspilz'",
+        "name": "vienna wave swing glckspilz",
         "attraction_type": "Wave Swinger",
         "category": "family",
         "max_height": "15 meters",
@@ -385,7 +385,7 @@
         "capacity_per_hour": 1600
       },
       {
-        "name": "Vindjammer",
+        "name": "vindjammer",
         "attraction_type": "Swinging Ship",
         "category": "thrill",
         "max_height": "18 meters",
@@ -397,7 +397,7 @@
         "capacity_per_hour": 1200
       },
       {
-        "name": "Volo da Vinci",
+        "name": "volo da vinci",
         "attraction_type": "Suspended Pedal Ride",
         "category": "family",
         "max_height": "8 meters",
@@ -409,7 +409,7 @@
         "capacity_per_hour": 400
       },
       {
-        "name": "Voltron Nevera powered by Rimac",
+        "name": "voltron nevera powered by rimac",
         "attraction_type": "Launched Coaster",
         "category": "thrill",
         "max_height": "32 meters",
@@ -421,7 +421,7 @@
         "capacity_per_hour": 1500
       },
       {
-        "name": "Whale Adventures - Northern Lights",
+        "name": "whale adventures northern lights",
         "attraction_type": "Suspended Dark Ride",
         "category": "family",
         "max_height": "10 meters",
