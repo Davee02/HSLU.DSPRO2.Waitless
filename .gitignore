@@ -1,9 +1,9 @@
 data/raw/checkpoints
 data/processed
+
 frontend/node_modules
 frontend/dist
 frontend/build
 frontend/coverage
 frontend/public/
 frontend/src/assets/
-
