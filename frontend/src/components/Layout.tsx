@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { Home, Info, Timeline } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../img/logo.webp';
+import logo from '../img/logo.png';
 
 const drawerWidth = 240;
 

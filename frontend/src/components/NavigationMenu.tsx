@@ -11,7 +11,7 @@ import {
   ListItemButton,
 } from '@mui/material';
 import { Home, Info, Attractions } from '@mui/icons-material';
-import logo from '../img/logo.webp';
+import logo from '../img/logo.png';
 
 const drawerWidth = 240;
 
