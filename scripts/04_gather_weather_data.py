@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-OUTPUT_DIR = "open_meteo_weather_data"
+OUTPUT_DIR = "data/raw/weather"
 RUST_LAT = 48.2664  # Latitude for Rust, Germany
 RUST_LON = 7.7224   # Longitude for Rust, Germany
 START_YEAR = 2017
@@ -143,7 +143,7 @@ def process_data_by_year(lat, lon, year):
         print(f"  No data fetched for year {year}")
         return None
 
-def save_to_parquet(df, output_file='rust_weather_5min_rain_temp.parquet'):
+def save_to_parquet(df, output_file='rust_weather_5min_rain_temperature.parquet'):
     """
     Save the DataFrame to a Parquet file.
     """
