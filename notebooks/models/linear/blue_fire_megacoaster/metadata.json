@@ -1,0 +1,13 @@
+{
+    "ride_name": "blue fire megacoaster",
+    "data_path": "../data/processed/ep/merged_with_holidays.parquet",
+    "train_size": 21299,
+    "test_size": 4002,
+    "metrics": {
+        "mae": 11.702473958333334,
+        "rmse": 15.663934100285912,
+        "r2": 0.18906935853947648
+    },
+    "saved_at": "2025-05-07 23:31:16",
+    "model_type": "linear_regression"
+}
