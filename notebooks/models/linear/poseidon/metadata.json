@@ -1,0 +1,13 @@
+{
+    "ride_name": "poseidon",
+    "data_path": "../data/processed/ep/merged_with_holidays.parquet",
+    "train_size": 16213,
+    "test_size": 2893,
+    "metrics": {
+        "mae": 10.911151990155386,
+        "rmse": 14.043286949502777,
+        "r2": 0.38476490784382866
+    },
+    "saved_at": "2025-05-07 23:31:18",
+    "model_type": "linear_regression"
+}
