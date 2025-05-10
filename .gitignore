@@ -7,3 +7,5 @@ frontend/build
 frontend/coverage
 frontend/public/
 frontend/src/assets/
+
+notebooks/models/
