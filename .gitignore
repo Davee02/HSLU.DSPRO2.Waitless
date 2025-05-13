@@ -9,3 +9,7 @@ frontend/public/
 frontend/src/assets/
 
 notebooks/models/
+
+models
+
+*.joblib
