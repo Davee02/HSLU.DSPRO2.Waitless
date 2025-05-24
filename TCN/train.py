@@ -23,7 +23,7 @@ from sklearn.linear_model import LinearRegression
 import pickle
 from pytorch_tcn import TCN
 
-
+# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -34,7 +34,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
+# Reproducibility
 def set_seed(seed=42):
     """Set random seed for reproducibility"""
     np.random.seed(seed)
@@ -82,6 +82,7 @@ class TCNTrainer:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"Using device: {self.device}")
         
+        # Set seed
         set_seed(config.get('seed', 42))
         
     def preprocess_data(self, df, target_ride):
@@ -125,31 +126,38 @@ class TCNTrainer:
 
     def train_single_model(self):
         """Train a single model with given configuration"""
+        # Load data
         df = pd.read_parquet(self.config['data_path'])
         df = self.preprocess_data(df, self.config['target_ride'])
-
+        
+        # Load splits
         train_indices, val_indices, test_indices = self.load_data_splits(
             self.config['splits_output_dir'], 
             self.config['target_ride']
         )
         
+        # Create features
         df, feature_cols = self.create_features(df)
-
+        
+        # Split data
         train_df = df.iloc[train_indices].copy()
         val_df = df.iloc[val_indices].copy()
         test_df = df.iloc[test_indices].copy()
-
+        
+        # Prepare features and target
         X_train = train_df[feature_cols].values
         y_train = train_df['wait_time'].values
         X_val = val_df[feature_cols].values
         y_val = val_df['wait_time'].values
         X_test = test_df[feature_cols].values
         y_test = test_df['wait_time'].values
-
+        
+        # Train linear model
         logger.info("Training linear model...")
         linear_model = LinearRegression()
         linear_model.fit(X_train, y_train)
         
+        # Get predictions and residuals
         y_train_pred_linear = linear_model.predict(X_train)
         y_val_pred_linear = linear_model.predict(X_val)
         y_test_pred_linear = linear_model.predict(X_test)
@@ -158,16 +166,19 @@ class TCNTrainer:
         val_residuals = y_val - y_val_pred_linear
         test_residuals = y_test - y_test_pred_linear
         
+        # Create datasets
         seq_length = self.config['seq_length']
         train_dataset = TimeSeriesDataset(X_train, train_residuals, seq_length)
         val_dataset = TimeSeriesDataset(X_val, val_residuals, seq_length)
         test_dataset = TimeSeriesDataset(X_test, test_residuals, seq_length)
         
+        # Create data loaders
         batch_size = self.config['batch_size']
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
         
+        # Initialize TCN model
         logger.info("Initializing TCN model...")
         input_size = X_train.shape[1]
         tcn_model = TCNModel(
@@ -178,9 +189,11 @@ class TCNTrainer:
             dropout=self.config['dropout']
         ).to(self.device)
         
+        # Training setup
         criterion = nn.MSELoss()
         optimizer = optim.Adam(tcn_model.parameters(), lr=self.config['learning_rate'])
         
+        # Scheduler
         from torch.optim.lr_scheduler import CosineAnnealingLR
         scheduler = CosineAnnealingLR(
             optimizer,
@@ -188,6 +201,7 @@ class TCNTrainer:
             eta_min=self.config.get('eta_min', 1e-6)
         )
         
+        # Training loop
         logger.info("Starting TCN training...")
         best_val_loss = float('inf')
         counter = 0
@@ -195,6 +209,7 @@ class TCNTrainer:
         patience = self.config.get('patience', 10)
         
         for epoch in range(self.config['epochs']):
+            # Training phase
             tcn_model.train()
             train_loss = 0.0
             
@@ -212,6 +227,7 @@ class TCNTrainer:
             scheduler.step()
             current_lr = scheduler.get_last_lr()[0]
             
+            # Validation phase
             tcn_model.eval()
             val_loss = 0.0
             
@@ -223,7 +239,8 @@ class TCNTrainer:
                     val_loss += loss.item()
                     
             val_loss /= len(val_loader)
-
+            
+            # Logging
             metrics = {
                 "train_loss": train_loss,
                 "val_loss": val_loss,
@@ -236,6 +253,7 @@ class TCNTrainer:
             
             logger.info(f'Epoch {epoch+1}/{self.config["epochs"]} - Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, LR: {current_lr:.6f}')
             
+            # Early stopping
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 best_model = tcn_model.state_dict().copy()
@@ -245,20 +263,24 @@ class TCNTrainer:
                 if counter >= patience:
                     logger.info(f"Early stopping at epoch {epoch+1}")
                     break
-
+        
+        # Load best model
         if best_model is not None:
             tcn_model.load_state_dict(best_model)
-
+        
+        # Evaluation
         logger.info("Evaluating model...")
         tcn_model.to(torch.device("cpu"))
         tcn_model.eval()
-
+        
+        # Get TCN predictions
         all_tcn_preds = []
         with torch.no_grad():
             for inputs, _ in test_loader:
                 outputs = tcn_model(inputs)
                 all_tcn_preds.extend(outputs.numpy().flatten())
         
+        # Calculate metrics
         y_test_seq_linear = y_test_pred_linear[seq_length:][:len(all_tcn_preds)]
         y_test_seq_actual = y_test[seq_length:][:len(all_tcn_preds)]
         
@@ -267,14 +289,15 @@ class TCNTrainer:
         test_eval_df['tcn_pred'] = all_tcn_preds
         test_eval_df['combined_pred'] = y_test_seq_linear + np.array(all_tcn_preds)
         
-
+        # Filter out closed rides
         if 'closed' in test_eval_df.columns:
             logger.info(f"Excluding {test_eval_df['closed'].sum()} data points where ride is closed")
             open_ride_df = test_eval_df[test_eval_df['closed'] == 0]
         else:
             logger.warning("'closed' column not found. Evaluating on all test data.")
             open_ride_df = test_eval_df
-
+        
+        # Calculate final metrics
         y_test_open_actual = open_ride_df['wait_time'].values
         y_test_open_linear = open_ride_df['linear_pred'].values
         y_test_open_combined = open_ride_df['combined_pred'].values
@@ -296,7 +319,8 @@ class TCNTrainer:
             wandb.log(final_metrics)
         
         logger.info(f"Final metrics: {final_metrics}")
-
+        
+        # Save models
         self._save_models(linear_model, tcn_model)
         
         return final_metrics
@@ -306,15 +330,18 @@ class TCNTrainer:
         os.makedirs("models", exist_ok=True)
         target_ride = self.config['target_ride'].replace(' ', '_')
         
+        # Save linear model
         linear_model_filename = f"{target_ride}_linear_model.pkl"
         with open(f"models/{linear_model_filename}", "wb") as f:
             pickle.dump(linear_model, f)
-
+        
+        # Save TCN model
         tcn_model_filename = f"{target_ride}_tcn_model.pt"
         torch.save(tcn_model.state_dict(), f"models/{tcn_model_filename}")
         
         logger.info(f"Models saved: {linear_model_filename}, {tcn_model_filename}")
-
+        
+        # Log to wandb if available
         if wandb.run:
             linear_artifact = wandb.Artifact(f"linear_model_{wandb.run.id}", type="model")
             linear_artifact.add_file(f"models/{linear_model_filename}")
@@ -346,7 +373,8 @@ def main():
                        help='Weights & Biases entity name')
     
     args = parser.parse_args()
-
+    
+    # Load configuration
     if args.config:
         config = load_config(args.config)
         logger.info(f"Loaded configuration from {args.config}")
@@ -357,13 +385,17 @@ def main():
         raise ValueError("Either --config or --ride must be specified")
     
     if args.mode == 'single':
-
+        # Single model training
         if config.get('use_wandb', True):
+            run_name = f"{config['target_ride']}_single"
+            if config.get('run_name'):
+                run_name = f"{config['target_ride']}_{config['run_name']}"
+            
             wandb.init(
                 project=args.wandb_project,
                 entity=args.wandb_entity,
                 config=config,
-                name=f"single_{config['target_ride']}_{config.get('run_name', '')}"
+                name=run_name
             )
         
         trainer = TCNTrainer(config)
@@ -373,9 +405,9 @@ def main():
             wandb.finish()
             
     elif args.mode == 'sweep':
-
+        # Hyperparameter sweep
         logger.info("Starting hyperparameter sweep...")
-
+        # This will be handled by the sweep configuration
         trainer = TCNTrainer(config)
         trainer.train_single_model()
 
@@ -387,21 +419,25 @@ def create_config_from_ride(ride_name, rides_config_path="configs/rides_config.y
     if ride_name not in rides_config['rides']:
         raise ValueError(f"Ride '{ride_name}' not found in {rides_config_path}. Available rides: {list(rides_config['rides'].keys())}")
     
+    # Start with default parameters
     config = rides_config['default_params'].copy()
     
+    # Add global settings
     config.update(rides_config['global_settings'])
     
+    # Add ride-specific settings
     ride_info = rides_config['rides'][ride_name]
     config['data_path'] = ride_info['data_path']
     config['target_ride'] = ride_name
-
+    
+    # Add some default training hyperparameters if not specified
     default_hyperparams = {
         'seq_length': 96,
         'batch_size': 256,
         'num_channels': 128,
         'kernel_size': 3,
         'dropout': 0.2,
-        'learning_rate': 0.0001,
+        'learning_rate': 0.001,
         'scheduler_type': 'CosineAnnealingLR',
         't_max': 50,
         'eta_min': 1e-6,
