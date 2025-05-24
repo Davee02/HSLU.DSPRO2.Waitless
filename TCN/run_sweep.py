@@ -48,13 +48,18 @@ def train_with_wandb():
     run = wandb.init()
     config = dict(wandb.config)
     
+    # Set run name to include ride name for easy identification
+    ride_name = config.get('target_ride', 'unknown')
+    if wandb.run:
+        wandb.run.name = f"{ride_name}_{wandb.run.id}"
+    
     trainer = TCNTrainer(config)
     metrics = trainer.train_single_model()
     
     wandb.finish()
     return metrics
 
-def setup_sweep(base_sweep_config_path, ride_name, project_name, entity, rides_config_path="configs/rides_config.yaml"):
+def setup_sweep(base_sweep_config_path, ride_name, project_name, entity, rides_config_path="configs/rides_config.yaml", custom_sweep_name=None):
     """Setup and start hyperparameter sweep for a specific ride"""
     
     # Load configurations
@@ -69,8 +74,15 @@ def setup_sweep(base_sweep_config_path, ride_name, project_name, entity, rides_c
     # Add ride name to sweep name for clarity
     ride_display_name = rides_config['rides'][ride_name].get('display_name', ride_name)
     
+    # Set sweep name with ride identifier
+    if custom_sweep_name:
+        sweep_config['name'] = f"{ride_name}_{custom_sweep_name}"
+    else:
+        sweep_config['name'] = f"{ride_name}_sweep"
+    
     print(f"Setting up sweep for: {ride_display_name} ({ride_name})")
     print(f"Data path: {rides_config['rides'][ride_name]['data_path']}")
+    print(f"Sweep name: {sweep_config['name']}")
     
     # Create sweep
     sweep_id = wandb.sweep(sweep_config, project=project_name, entity=entity)
@@ -88,6 +100,7 @@ def main():
                        help='Weights & Biases project name')
     parser.add_argument('--wandb-entity', default='waitless-hslu-dspro2-fs25',
                        help='Weights & Biases entity name')
+    parser.add_argument('--sweep-name', help='Custom sweep name (will be prefixed with ride name)')
     parser.add_argument('--dry-run', action='store_true',
                        help='Show sweep config without running')
     
@@ -100,7 +113,8 @@ def main():
             args.ride, 
             args.wandb_project, 
             args.wandb_entity,
-            args.rides_config
+            args.rides_config,
+            args.sweep_name
         )
         
         if args.dry_run:
@@ -119,3 +133,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
