@@ -1,6 +1,8 @@
 data/raw/checkpoints
 data/processed
 
+models/
+
 frontend/node_modules
 frontend/dist
 frontend/build
