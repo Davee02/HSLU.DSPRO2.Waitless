@@ -22,6 +22,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.linear_model import LinearRegression
 import pickle
 from pytorch_tcn import TCN
+from sklearn.ensemble import GradientBoostingRegressor
 
 # Set up logging
 logging.basicConfig(
@@ -81,8 +82,7 @@ class TCNTrainer:
         self.config = config
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"Using device: {self.device}")
-        
-        # Set seed
+
         set_seed(config.get('seed', 42))
         
     def preprocess_data(self, df, target_ride):
@@ -126,6 +126,15 @@ class TCNTrainer:
 
     def train_single_model(self):
         """Train a single model with given configuration"""
+        # Aggressive GPU cleanup at start
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+        
+        # Force garbage collection
+        import gc
+        gc.collect()
+        
         # Load data
         df = pd.read_parquet(self.config['data_path'])
         df = self.preprocess_data(df, self.config['target_ride'])
@@ -154,14 +163,70 @@ class TCNTrainer:
         
         # Train linear model
         logger.info("Training linear model...")
-        linear_model = LinearRegression()
+        linear_model = GradientBoostingRegressor(
+                n_estimators=100,
+                learning_rate=0.1,
+                max_depth=6,
+                min_samples_split=10,
+                min_samples_leaf=5,
+                random_state=42
+        )
+        
         linear_model.fit(X_train, y_train)
         
         # Get predictions and residuals
         y_train_pred_linear = linear_model.predict(X_train)
         y_val_pred_linear = linear_model.predict(X_val)
         y_test_pred_linear = linear_model.predict(X_test)
+
+
+        # Evaluate baseline model performance
+        logger.info("Evaluating baseline model...")
         
+        # Create test evaluation dataframe for baseline
+        baseline_test_df = test_df.copy()
+        baseline_test_df['baseline_pred'] = y_test_pred_linear
+        
+        # Filter out closed rides if column exists
+        if 'closed' in baseline_test_df.columns:
+            logger.info(f"Baseline evaluation: Excluding {baseline_test_df['closed'].sum()} data points where ride is closed")
+            baseline_open_df = baseline_test_df[baseline_test_df['closed'] == 0]
+        else:
+            logger.warning("'closed' column not found. Evaluating baseline on all test data.")
+            baseline_open_df = baseline_test_df
+        
+        # Calculate baseline metrics
+        y_baseline_actual = baseline_open_df['wait_time'].values
+        y_baseline_pred = baseline_open_df['baseline_pred'].values
+        
+        baseline_mae = mean_absolute_error(y_baseline_actual, y_baseline_pred)
+        baseline_rmse = np.sqrt(mean_squared_error(y_baseline_actual, y_baseline_pred))
+        baseline_r2 = r2_score(y_baseline_actual, y_baseline_pred)
+        
+        # Calculate baseline sMAPE
+        non_zero_mask = y_baseline_actual > 0.1
+        if np.sum(non_zero_mask) > 0:
+            y_baseline_actual_nonzero = y_baseline_actual[non_zero_mask]
+            y_baseline_pred_nonzero = y_baseline_pred[non_zero_mask]
+            
+            numerator = np.abs(y_baseline_actual_nonzero - y_baseline_pred_nonzero)
+            denominator = np.abs(y_baseline_actual_nonzero) + np.abs(y_baseline_pred_nonzero)
+            baseline_smape = np.mean(numerator / denominator) * 100
+        else:
+            baseline_smape = 0.0
+        
+        baseline_metrics = {
+            "baseline_mae": baseline_mae,
+            "baseline_rmse": baseline_rmse,
+            "baseline_r2": baseline_r2,
+            "baseline_smape": baseline_smape
+        }
+        
+        if wandb.run:
+            wandb.log(baseline_metrics)
+        
+        logger.info(f"Baseline model metrics: MAE={baseline_mae:.4f}, RMSE={baseline_rmse:.4f}, R²={baseline_r2:.4f}, sMAPE={baseline_smape:.2f}%")
+               
         train_residuals = y_train - y_train_pred_linear
         val_residuals = y_val - y_val_pred_linear
         test_residuals = y_test - y_test_pred_linear
@@ -172,11 +237,31 @@ class TCNTrainer:
         val_dataset = TimeSeriesDataset(X_val, val_residuals, seq_length)
         test_dataset = TimeSeriesDataset(X_test, test_residuals, seq_length)
         
-        # Create data loaders
+        # Create data loaders with performance optimizations
         batch_size = self.config['batch_size']
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        train_loader = DataLoader(
+            train_dataset, 
+            batch_size=batch_size, 
+            shuffle=True,
+            num_workers=2,  # Parallel data loading
+            pin_memory=True if torch.cuda.is_available() else False,  # Faster GPU transfer
+            persistent_workers=True  # Keep workers alive between epochs
+        )
+        val_loader = DataLoader(
+            val_dataset, 
+            batch_size=batch_size, 
+            shuffle=False,
+            num_workers=2,
+            pin_memory=True if torch.cuda.is_available() else False,
+            persistent_workers=True
+        )
+        test_loader = DataLoader(
+            test_dataset, 
+            batch_size=batch_size, 
+            shuffle=False,
+            num_workers=2,
+            pin_memory=True if torch.cuda.is_available() else False
+        )
         
         # Initialize TCN model
         logger.info("Initializing TCN model...")
@@ -187,11 +272,25 @@ class TCNTrainer:
             num_channels=self.config['num_channels'],
             kernel_size=self.config['kernel_size'],
             dropout=self.config['dropout']
-        ).to(self.device)
+        )
+        
+        # Move model to device AFTER creation
+        tcn_model = tcn_model.to(self.device)
+        
+        # Performance optimization: compile model if using PyTorch 2.0+
+        if hasattr(torch, 'compile') and torch.cuda.is_available():
+            try:
+                tcn_model = torch.compile(tcn_model, mode='default')
+                logger.info("Model compiled with torch.compile for better performance")
+            except Exception as e:
+                logger.info(f"torch.compile not available or failed: {e}")
         
         # Training setup
         criterion = nn.MSELoss()
         optimizer = optim.Adam(tcn_model.parameters(), lr=self.config['learning_rate'])
+        
+        # Use AMP for faster training on modern GPUs
+        scaler = torch.amp.GradScaler() if torch.cuda.is_available() else None
         
         # Scheduler
         from torch.optim.lr_scheduler import CosineAnnealingLR
@@ -214,44 +313,139 @@ class TCNTrainer:
             train_loss = 0.0
             
             for inputs, targets in train_loader:
-                inputs, targets = inputs.to(self.device), targets.to(self.device)
+                inputs, targets = inputs.to(self.device, non_blocking=True), targets.to(self.device, non_blocking=True)
                 
                 optimizer.zero_grad()
-                outputs = tcn_model(inputs)
-                loss = criterion(outputs, targets)
-                loss.backward()
-                optimizer.step()
+                
+                # Use mixed precision if available
+                if scaler is not None:
+                    with torch.amp.autocast('cuda'):
+                        outputs = tcn_model(inputs)
+                        loss = criterion(outputs, targets)
+                    scaler.scale(loss).backward()
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    outputs = tcn_model(inputs)
+                    loss = criterion(outputs, targets)
+                    loss.backward()
+                    optimizer.step()
+                    
                 train_loss += loss.item()
                 
             train_loss /= len(train_loader)
-            scheduler.step()
-            current_lr = scheduler.get_last_lr()[0]
             
             # Validation phase
             tcn_model.eval()
             val_loss = 0.0
+            val_predictions = []
+            val_targets = []
+            val_indices = []  # Track which samples we're using
             
             with torch.no_grad():
-                for inputs, targets in val_loader:
-                    inputs, targets = inputs.to(self.device), targets.to(self.device)
-                    outputs = tcn_model(inputs)
-                    loss = criterion(outputs, targets)
+                for batch_idx, (inputs, targets) in enumerate(val_loader):
+                    inputs, targets = inputs.to(self.device, non_blocking=True), targets.to(self.device, non_blocking=True)
+                    
+                    # Use mixed precision for validation too
+                    if scaler is not None:
+                        with torch.amp.autocast('cuda'):
+                            outputs = tcn_model(inputs)
+                            loss = criterion(outputs, targets)
+                    else:
+                        outputs = tcn_model(inputs)
+                        loss = criterion(outputs, targets)
+                        
                     val_loss += loss.item()
                     
+                    # Collect predictions, targets, and indices for filtering
+                    val_predictions.extend(outputs.cpu().numpy().flatten())
+                    val_targets.extend(targets.cpu().numpy().flatten())
+                    # Calculate the actual indices in the validation set
+                    batch_start = batch_idx * batch_size
+                    batch_end = min(batch_start + len(targets), len(val_dataset))
+                    val_indices.extend(range(batch_start, batch_end))
+                    
             val_loss /= len(val_loader)
+            
+            # Filter out closed ride times for metric calculation (same as final evaluation)
+            val_predictions = np.array(val_predictions)
+            val_targets = np.array(val_targets)
+            val_indices = np.array(val_indices)
+            
+            # Get the corresponding validation data (accounting for sequence length)
+            val_eval_indices = val_indices + seq_length  # Adjust for sequence offset
+            val_eval_df = val_df.iloc[val_eval_indices].reset_index(drop=True)
+            
+            # Filter out closed rides if 'closed' column exists
+            if 'closed' in val_eval_df.columns:
+                open_mask = val_eval_df['closed'] == 0
+                val_predictions_open = val_predictions[open_mask]
+                val_targets_open = val_targets[open_mask]
+            else:
+                val_predictions_open = val_predictions
+                val_targets_open = val_targets
+            
+            # Calculate metrics only on open ride times
+            if len(val_predictions_open) > 0:
+                # MAE and RMSE are calculated on residuals (correct)
+                val_mae = mean_absolute_error(val_targets_open, val_predictions_open)
+                val_rmse = np.sqrt(mean_squared_error(val_targets_open, val_predictions_open))
+                
+                # For sMAPE, we need actual wait times vs combined predictions
+                # The validation predictions are residuals, so we need to add them to linear predictions
+                
+                # Get the subset of linear predictions that correspond to our validation samples
+                val_linear_all = y_val_pred_linear[seq_length:seq_length + len(val_predictions)]
+                val_actual_all = y_val[seq_length:seq_length + len(val_predictions)]
+                
+                # Apply the same open mask to get only open ride times
+                if 'closed' in val_eval_df.columns:
+                    val_linear_open = val_linear_all[open_mask]
+                    val_actual_open = val_actual_all[open_mask]
+                else:
+                    val_linear_open = val_linear_all
+                    val_actual_open = val_actual_all
+                
+                # Combined predictions = linear baseline + TCN residual predictions
+                val_combined_open = val_linear_open + val_predictions_open
+                
+                # Calculate sMAPE on actual wait times vs combined predictions
+                # Filter out zero wait times to avoid sMAPE = 200% for those cases
+                non_zero_mask = val_actual_open > 0.1  # Only consider wait times > 0.1 minutes
+                
+                if np.sum(non_zero_mask) > 0:
+                    val_actual_nonzero = val_actual_open[non_zero_mask]
+                    val_combined_nonzero = val_combined_open[non_zero_mask]
+                    
+                    # sMAPE = (|actual - predicted|) / (|actual| + |predicted|) * 100
+                    numerator = np.abs(val_actual_nonzero - val_combined_nonzero)
+                    denominator = np.abs(val_actual_nonzero) + np.abs(val_combined_nonzero)
+                    val_smape = np.mean(numerator / denominator) * 100
+
+                else:
+                    val_smape = 0.0  # All wait times are zero
+            else:
+                # Fallback if no open samples (shouldn't happen normally)
+                val_mae = val_rmse = val_smape = float('inf')
+            
+            # Step scheduler and get current learning rate
+            scheduler.step()
+            current_lr = scheduler.get_last_lr()[0]
             
             # Logging
             metrics = {
                 "train_loss": train_loss,
                 "val_loss": val_loss,
-                "epoch": epoch,
+                "val_mae": val_mae,
+                "val_rmse": val_rmse,
+                "val_smape": val_smape,
                 "learning_rate": current_lr
             }
             
             if wandb.run:
                 wandb.log(metrics)
             
-            logger.info(f'Epoch {epoch+1}/{self.config["epochs"]} - Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, LR: {current_lr:.6f}')
+            logger.info(f'Epoch {epoch+1}/{self.config["epochs"]} - Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, Val MAE: {val_mae:.4f}, Val sMAPE: {val_smape:.2f}%, LR: {current_lr:.6f}')
             
             # Early stopping
             if val_loss < best_val_loss:
@@ -268,9 +462,16 @@ class TCNTrainer:
         if best_model is not None:
             tcn_model.load_state_dict(best_model)
         
+        # Move model to CPU for evaluation to free GPU memory
+        tcn_model = tcn_model.cpu()
+        
+        # Clear GPU cache after moving model to CPU
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+        
         # Evaluation
         logger.info("Evaluating model...")
-        tcn_model.to(torch.device("cpu"))
         tcn_model.eval()
         
         # Get TCN predictions
@@ -301,19 +502,31 @@ class TCNTrainer:
         y_test_open_actual = open_ride_df['wait_time'].values
         y_test_open_linear = open_ride_df['linear_pred'].values
         y_test_open_combined = open_ride_df['combined_pred'].values
-        
-        linear_mae = mean_absolute_error(y_test_open_actual, y_test_open_linear)
+
         combined_mae = mean_absolute_error(y_test_open_actual, y_test_open_combined)
         combined_rmse = np.sqrt(mean_squared_error(y_test_open_actual, y_test_open_combined))
         combined_r2 = r2_score(y_test_open_actual, y_test_open_combined)
-        
+        non_zero_mask = y_test_open_actual > 0.1  # Only consider wait times > 0.1 minutes
+
+        if np.sum(non_zero_mask) > 0:
+            y_test_actual_nonzero = y_test_open_actual[non_zero_mask]
+            y_test_combined_nonzero = y_test_open_combined[non_zero_mask]
+            
+            # sMAPE = (|actual - predicted|) / (|actual| + |predicted|) * 100
+            numerator = np.abs(y_test_actual_nonzero - y_test_combined_nonzero)
+            denominator = np.abs(y_test_actual_nonzero) + np.abs(y_test_combined_nonzero)
+            combined_smape = np.mean(numerator / denominator) * 100
+        else:
+            combined_smape = 0.0  # All wait times are zero
+
         final_metrics = {
-            "linear_mae": linear_mae,
             "combined_mae": combined_mae,
             "combined_rmse": combined_rmse,
             "combined_r2": combined_r2,
+            "combined_smape": combined_smape,  # Add this line
             "best_val_loss": best_val_loss,
-        }
+        }        
+
         
         if wandb.run:
             wandb.log(final_metrics)
@@ -322,6 +535,29 @@ class TCNTrainer:
         
         # Save models
         self._save_models(linear_model, tcn_model)
+        
+        # AGGRESSIVE cleanup - delete everything and clear all references
+        del best_model
+        del tcn_model, linear_model, optimizer, scheduler, criterion
+        del train_dataset, val_dataset, test_dataset
+        del train_loader, val_loader, test_loader
+        del X_train, X_val, X_test, y_train, y_val, y_test
+        del y_train_pred_linear, y_val_pred_linear, y_test_pred_linear
+        del train_residuals, val_residuals, test_residuals
+        del train_df, val_df, test_df, df
+        del test_eval_df, open_ride_df
+        del all_tcn_preds
+        
+        # Force multiple garbage collections
+        import gc
+        for _ in range(3):
+            gc.collect()
+        
+        # Clear GPU cache multiple times
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            torch.cuda.empty_cache()
         
         return final_metrics
     

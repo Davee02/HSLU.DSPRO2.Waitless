@@ -8,6 +8,7 @@ import yaml
 import wandb
 import copy
 from train import TCNTrainer, load_config
+import torch
 
 def load_rides_config(rides_config_path="configs/rides_config.yaml"):
     """Load ride-specific configuration"""
@@ -53,11 +54,15 @@ def train_with_wandb():
     if wandb.run:
         wandb.run.name = f"{ride_name}_{wandb.run.id}"
     
-    trainer = TCNTrainer(config)
-    metrics = trainer.train_single_model()
-    
-    wandb.finish()
-    return metrics
+    try:
+        trainer = TCNTrainer(config)
+        metrics = trainer.train_single_model()
+        return metrics
+    finally:
+        # Always clean up, even if training fails
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        wandb.finish()
 
 def setup_sweep(base_sweep_config_path, ride_name, project_name, entity, rides_config_path="configs/rides_config.yaml", custom_sweep_name=None):
     """Setup and start hyperparameter sweep for a specific ride"""
@@ -133,4 +138,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
