@@ -1,27 +1,21 @@
-
-.PHONY: help setup install login clean train sweep train-all sweep-all
-
+# TCN Training Makefile
+.PHONY: help setup install login clean train sweep train-all sweep-all add-ride list-rides
 
 help:
 	@echo "TCN Training Commands:"
-	@echo "  make setup          - Setup environment and install dependencies"
-	@echo "  make install        - Install Python dependencies only"
-	@echo "  make login          - Login to Weights & Biases"
-	@echo "  make train RIDE=X   - Train single model for ride X"
-	@echo "  make sweep RIDE=X   - Run hyperparameter sweep for ride X"
-	@echo "  make train-all      - Train models for all rides"
+	@echo "  make setup          - Initial setup"
+	@echo "  make login          - Login to W&B"
+	@echo "  make train RIDE=X   - Train single model"
+	@echo "  make sweep RIDE=X   - Run hyperparameter sweep"
+	@echo "  make train-all      - Train all rides"
 	@echo "  make sweep-all      - Run sweeps for all rides"
-	@echo "  make clean          - Clean up generated files"
-	@echo ""
-	@echo "Examples:"
-	@echo "  make train RIDE=poseidon"
-	@echo "  make sweep RIDE=poseidon COUNT=50"
-
+	@echo "  make add-ride RIDE=X DATAPATH=Y - Add new ride"
+	@echo "  make list-rides     - Show configured rides"
+	@echo "  make clean          - Clean up files"
 
 setup:
-	@echo "Setting up TCN training environment..."
-	chmod +x run_experiments.sh
-	./run_experiments.sh setup
+	@echo "🚀 Setting up TCN training environment..."
+	python setup.py
 
 install:
 	pip install -r requirements.txt
@@ -33,47 +27,45 @@ train:
 ifndef RIDE
 	$(error RIDE is not set. Use: make train RIDE=poseidon)
 endif
+	@echo "🚂 Training model for ride: $(RIDE)"
 	python train.py --ride $(RIDE)
-
 
 sweep:
 ifndef RIDE
 	$(error RIDE is not set. Use: make sweep RIDE=poseidon)
 endif
+	@echo "🔍 Running hyperparameter sweep for ride: $(RIDE)"
 	python run_sweep.py --ride $(RIDE) --count $(or $(COUNT),50)
 
 train-all:
-	./run_experiments.sh train-all
+	@echo "🚂 Training models for all configured rides..."
+	@python -c "import yaml; rides = yaml.safe_load(open('configs/rides_config.yaml'))['rides']; [__import__('subprocess').run(['python', 'train.py', '--ride', ride]) for ride in rides.keys()]"
 
 sweep-all:
-	./run_experiments.sh sweep-all $(or $(COUNT),30)
-
-clean:
-	rm -rf models/*.pt models/*.pkl
-	rm -rf logs/*.log
-	rm -rf wandb/
-	find . -name "*.pyc" -delete
-	find . -name "__pycache__" -delete
-
-clean-configs:
-	@read -p "Are you sure you want to delete all config files? [y/N] " confirm && [ "$confirm" = "y" ]
-	rm -rf configs/*.yaml
-	@echo "Config files deleted. Run 'make setup' to recreate defaults."
+	@echo "🔍 Running sweeps for all configured rides..."
+	@python -c "import yaml; rides = yaml.safe_load(open('configs/rides_config.yaml'))['rides']; [__import__('subprocess').run(['python', 'run_sweep.py', '--ride', ride, '--count', '$(or $(COUNT),30)']) for ride in rides.keys()]"
 
 add-ride:
 ifndef RIDE
-	$(error RIDE is not set. Use: make add-ride RIDE=newride PATH=/path/to/data.parquet)
+	$(error RIDE is not set. Use: make add-ride RIDE=newride DATAPATH=/path/to/data.parquet)
 endif
-ifndef PATH
-	$(error PATH is not set. Use: make add-ride RIDE=newride PATH=/path/to/data.parquet)
+ifndef DATAPATH
+	$(error DATAPATH is not set. Use: make add-ride RIDE=newride DATAPATH=/path/to/data.parquet)
 endif
-	@echo "Adding new ride: $(RIDE)"
-	@echo "  $(RIDE):" >> configs/rides_config.yaml
-	@echo "    data_path: \"$(PATH)\"" >> configs/rides_config.yaml
-	@echo "    display_name: \"$(RIDE)\"" >> configs/rides_config.yaml
-	@echo "    description: \"Auto-generated entry for $(RIDE)\"" >> configs/rides_config.yaml
-	@echo "Added $(RIDE) to configs/rides_config.yaml"
+	@echo "➕ Adding new ride: $(RIDE)"
+	@mkdir -p configs
+	@python -c "import yaml, os; \
+		config = yaml.safe_load(open('configs/rides_config.yaml')) if os.path.exists('configs/rides_config.yaml') else {}; \
+		config.setdefault('rides', {})['$(RIDE)'] = {'data_path': '$(DATAPATH)', 'display_name': '$(RIDE)', 'description': 'Auto-generated entry for $(RIDE)'}; \
+		yaml.dump(config, open('configs/rides_config.yaml', 'w'), default_flow_style=False, indent=2)"
+	@echo "✅ Added $(RIDE) to configs/rides_config.yaml"
 
 list-rides:
-	@echo "Available rides:"
-	@grep -A 3 "^  [a-zA-Z]" configs/rides_config.yaml | grep -E "^  [a-zA-Z]|display_name" | sed 's/^  //' || echo "No rides configured. Run 'make setup' first."
+	@echo "📋 Available rides:"
+	@python -c "import yaml; rides = yaml.safe_load(open('configs/rides_config.yaml', 'r')).get('rides', {}); [print(f'  - {name}: {info.get(\"display_name\", name)}') for name, info in rides.items()] if rides else print('  No rides configured.')" 2>/dev/null || echo "  No rides configured. Run 'make setup' first."
+
+clean:
+	@echo "🧹 Cleaning up..."
+	rm -rf models/*.pt models/*.pkl logs/*.log wandb/
+	find . -name "*.pyc" -delete
+	find . -name "__pycache__" -delete
