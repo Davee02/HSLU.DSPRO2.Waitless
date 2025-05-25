@@ -70,17 +70,17 @@ def create_default_sweep_config():
         },
         'parameters': {
             'splits_output_dir': {'value': "../data/processed/splits"},
-            'epochs': {'value': 100},
-            'patience': {'value': 10},
+            'epochs': {'value': 150},
+            'patience': {'value': 15},
             'seed': {'value': 42},
             'use_wandb': {'value': True},
             
-            'seq_length': {'values': [24, 48, 96, 192, 384]},
+            'seq_length': {'values': [24, 48, 96, 192, 384, 768]},
             'batch_size': {'values': [128, 256, 512, 1024]},
-            'num_channels': {'values': [32, 64, 128, 256]},
-            'kernel_size': {'values': [2, 3, 5, 8]},
+            'num_channels': {'values': [32, 64, 128, 256, 512]},
+            'kernel_size': {'values': [2, 4, 8, 16]},
             'dropout': {'values': [0.1, 0.2, 0.3]},
-            'learning_rate': {'values': [1e-4, 10**-4.5, 1e-5, 10**-5.5, 1e-6]},
+            'learning_rate': {'values': [1e-4, 3.16e-5, 1e-5, 3.16e-6, 1e-6]}, # can use notation like 10**-4.5 because yaml formats this weird.
             
             'scheduler_type': {'value': "CosineAnnealingLR"},
             't_max': {'values': [10, 25, 50, 100]},
