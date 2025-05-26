@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Autoregressive TCN Training Script for Wait Time Prediction
+Autoregressive TCN Training Script with Probabilistic Scheduled Sampling
 Hybrid approach: GradientBoosting baseline + Autoregressive TCN for residuals
+Implements scheduled sampling that gradually transitions from noisy simulations to model predictions
 """
 
 import argparse
@@ -32,7 +33,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('autoregressive_training.log'),
+        logging.FileHandler('scheduled_sampling_training.log'),
         logging.StreamHandler(sys.stdout)
     ]
 )
@@ -46,16 +47,16 @@ def set_seed(seed=42):
         torch.cuda.manual_seed_all(seed)
     logger.info(f"Random seed set to {seed}")
 
+
 class AutoregressiveResidualsDataset(Dataset):
     """
-    Dataset for autoregressive residual prediction.
-    Uses previous residuals/wait_times as features while avoiding data leakage.
+    Original dataset for autoregressive residual prediction (used for validation/test).
     """
     def __init__(self, X_static, residuals, wait_times, seq_length, timestamps, 
                  opening_hour=9, closing_hour=21):
-        self.X_static = X_static  # Static features (non-temporal)
-        self.residuals = residuals  # Target residuals to predict
-        self.wait_times = wait_times  # Actual wait times (for autoregressive features)
+        self.X_static = X_static  
+        self.residuals = residuals  
+        self.wait_times = wait_times  
         self.seq_length = seq_length
         
         if isinstance(timestamps, pd.Series):
@@ -66,12 +67,160 @@ class AutoregressiveResidualsDataset(Dataset):
         self.opening_hour = opening_hour
         self.closing_hour = closing_hour
         
-        # for same-day logic
+        self.dates = self.timestamps.dt.date
+        self.valid_indices = self._create_valid_indices()
+        
+        logger.info(f"Original autoregressive dataset: {len(self.valid_indices)} valid sequences")
+    
+    def _create_valid_indices(self):
+        """Create indices where we can form valid sequences"""
+        valid_indices = []
+        
+        for i in range(self.seq_length, len(self.X_static)):
+            current_timestamp = self.timestamps.iloc[i]
+            current_hour = current_timestamp.hour
+            
+            if self.opening_hour <= current_hour <= self.closing_hour:
+                valid_indices.append(i)
+        
+        return valid_indices
+    
+    def _get_autoregressive_sequence(self, target_idx):
+        """Create sequence with simple noise injection for same-day predictions"""
+        target_timestamp = self.timestamps.iloc[target_idx]
+        target_date = self.dates.iloc[target_idx]
+        
+        sequence_start = target_idx - self.seq_length
+        sequence_indices = list(range(sequence_start, target_idx))
+        
+        static_features = self.X_static[target_idx]
+        autoregressive_features = []
+        
+        for seq_idx in sequence_indices:
+            seq_timestamp = self.timestamps.iloc[seq_idx]
+            seq_date = self.dates.iloc[seq_idx]
+            
+            actual_wait_time = self.wait_times[seq_idx]
+            actual_residual = self.residuals[seq_idx]
+            
+            if (seq_date == target_date and 
+                seq_timestamp.hour >= self.opening_hour):
+                
+                wait_noise_std = max(0.1, actual_wait_time * 0.15)
+                residual_noise_std = max(0.05, abs(actual_residual) * 0.2)
+                
+                simulated_wait_time = actual_wait_time + np.random.normal(0, wait_noise_std)
+                simulated_residual = actual_residual + np.random.normal(0, residual_noise_std)
+                simulated_wait_time = max(0, simulated_wait_time)
+                
+                autoregressive_features.extend([simulated_wait_time, simulated_residual])
+            else:
+                autoregressive_features.extend([actual_wait_time, actual_residual])
+        
+        combined_features = np.concatenate([
+            static_features,
+            autoregressive_features
+        ])
+        
+        target_residual = self.residuals[target_idx]
+        
+        return combined_features.astype(np.float32), np.array([target_residual], dtype=np.float32)
+    
+    def __len__(self):
+        return len(self.valid_indices)
+    
+    def __getitem__(self, idx):
+        target_idx = self.valid_indices[idx]
+        X, y = self._get_autoregressive_sequence(target_idx)
+        return torch.FloatTensor(X), torch.FloatTensor(y)
+
+
+class ScheduledSamplingAutoregressiveDataset(Dataset):
+    """
+    Dataset for autoregressive residual prediction with probabilistic scheduled sampling.
+    Gradually transitions from noisy simulations to model predictions during training.
+    """
+    def __init__(self, X_static, residuals, wait_times, seq_length, timestamps, 
+                 opening_hour=9, closing_hour=21, model=None, gb_model=None, 
+                 static_feature_cols=None, current_epoch=0, total_epochs=100,
+                 sampling_strategy="linear", noise_factor=0.15, use_model_predictions=False):
+        """
+        Args:
+            model: The TCN model for generating predictions (None during initial training)
+            gb_model: The GradientBoosting baseline model
+            static_feature_cols: List of static feature column names
+            current_epoch: Current training epoch
+            total_epochs: Total number of training epochs
+            sampling_strategy: 'linear', 'exponential', or 'inverse_sigmoid'
+            noise_factor: Standard deviation factor for noise
+            use_model_predictions: Whether to use model predictions (disabled in multiprocessing)
+        """
+        self.X_static = X_static
+        self.residuals = residuals
+        self.wait_times = wait_times
+        self.seq_length = seq_length
+        self.model = model
+        self.gb_model = gb_model
+        self.static_feature_cols = static_feature_cols
+        self.current_epoch = current_epoch
+        self.total_epochs = total_epochs
+        self.sampling_strategy = sampling_strategy
+        self.noise_factor = noise_factor
+        self.use_model_predictions = use_model_predictions
+        
+        if isinstance(timestamps, pd.Series):
+            self.timestamps = pd.to_datetime(timestamps.reset_index(drop=True))
+        else:
+            self.timestamps = pd.to_datetime(timestamps)
+        
+        self.opening_hour = opening_hour
+        self.closing_hour = closing_hour
+        
+        # For same-day logic
         self.dates = self.timestamps.dt.date
         
         self.valid_indices = self._create_valid_indices()
         
-        logger.info(f"Autoregressive residuals dataset: {len(self.valid_indices)} valid sequences")
+        # Calculate scheduled sampling probability
+        self.teacher_forcing_prob = self._calculate_teacher_forcing_prob()
+        
+        logger.info(f"Scheduled Sampling Dataset: {len(self.valid_indices)} valid sequences")
+        logger.info(f"Current epoch: {current_epoch}, Teacher forcing prob: {self.teacher_forcing_prob:.3f}")
+        logger.info(f"TRUE Scheduled Sampling: Using actual model predictions")
+    
+    def update_epoch(self, epoch):
+        """Update current epoch and recalculate teacher forcing probability"""
+        self.current_epoch = epoch
+        self.teacher_forcing_prob = self._calculate_teacher_forcing_prob()
+        logger.info(f"Updated epoch to {epoch}, Teacher forcing prob: {self.teacher_forcing_prob:.3f}")
+    
+    def set_models(self, tcn_model, gb_model, enable_predictions=True):
+        """Set the models for TRUE scheduled sampling with actual predictions"""
+        self.model = tcn_model
+        self.gb_model = gb_model
+        logger.info(f"Models updated for epoch {self.current_epoch}. TRUE scheduled sampling active.")
+    
+    def _calculate_teacher_forcing_prob(self):
+        """Calculate teacher forcing probability based on current epoch and strategy"""
+        if self.total_epochs <= 1:
+            return 1.0
+        
+        progress = self.current_epoch / (self.total_epochs - 1)
+        progress = np.clip(progress, 0.0, 1.0)
+        
+        if self.sampling_strategy == "linear":
+            # Linear decay from 1.0 to 0.1
+            return 1.0 - 0.9 * progress
+        elif self.sampling_strategy == "exponential":
+            # Exponential decay
+            return np.exp(-3 * progress)
+        elif self.sampling_strategy == "inverse_sigmoid":
+            # Inverse sigmoid for smoother transition
+            k = 10  # steepness parameter
+            return 1.0 / (1.0 + np.exp(k * (progress - 0.5)))
+        else:
+            # Default to linear
+            return 1.0 - 0.9 * progress
     
     def _create_valid_indices(self):
         """Create indices where we can form valid sequences"""
@@ -87,10 +236,92 @@ class AutoregressiveResidualsDataset(Dataset):
         
         return valid_indices
     
+    def _get_model_prediction(self, static_features, sequence_features, target_idx):
+        """
+        Get actual model prediction for a specific point using current sequence.
+        Returns both residual and combined wait time prediction.
+        """
+        if self.model is None or self.gb_model is None:
+            # Fallback to noisy simulation if models not available
+            actual_wait_time = self.wait_times[target_idx]
+            actual_residual = self.residuals[target_idx]
+            
+            wait_noise_std = max(0.1, actual_wait_time * self.noise_factor)
+            residual_noise_std = max(0.05, abs(actual_residual) * 0.2)
+            
+            simulated_wait_time = actual_wait_time + np.random.normal(0, wait_noise_std)
+            simulated_residual = actual_residual + np.random.normal(0, residual_noise_std)
+            
+            return max(0, simulated_wait_time), simulated_residual
+        
+        try:
+            # Check if we have enough sequence data for prediction
+            expected_sequence_size = self.seq_length * 2  # 2 features per timestep
+            if len(sequence_features) < expected_sequence_size:
+                # Pad sequence with zeros if too short
+                padding_needed = expected_sequence_size - len(sequence_features)
+                sequence_features = np.concatenate([
+                    np.zeros(padding_needed), 
+                    sequence_features
+                ])
+            elif len(sequence_features) > expected_sequence_size:
+                # Truncate if too long (take the last seq_length * 2 values)
+                sequence_features = sequence_features[-expected_sequence_size:]
+            
+            # Store original device state
+            model_device = next(self.model.parameters()).device
+            model_was_training = self.model.training
+            
+            # Move model to CPU for inference (to avoid CUDA context issues)
+            self.model.cpu()
+            self.model.eval()
+            
+            # Prepare input for the model
+            combined_features = np.concatenate([static_features, sequence_features])
+            model_input = torch.FloatTensor(combined_features).unsqueeze(0)
+            
+            # Get residual prediction from TCN model
+            with torch.no_grad():
+                residual_pred = self.model(model_input).numpy().flatten()[0]
+            
+            # Restore model state (move back to original device)
+            self.model.to(model_device)
+            if model_was_training:
+                self.model.train()
+            
+            # Get baseline prediction from GB model
+            gb_pred = self.gb_model.predict(static_features.reshape(1, -1))[0]
+            
+            # Combined prediction
+            combined_pred = gb_pred + residual_pred
+            
+            # Add noise to simulate prediction uncertainty
+            wait_noise_std = max(0.1, abs(combined_pred) * self.noise_factor)
+            residual_noise_std = max(0.05, abs(residual_pred) * self.noise_factor)
+            
+            noisy_wait_pred = combined_pred + np.random.normal(0, wait_noise_std)
+            noisy_residual_pred = residual_pred + np.random.normal(0, residual_noise_std)
+            
+            return max(0, noisy_wait_pred), noisy_residual_pred
+            
+        except Exception as e:
+            logger.warning(f"Model prediction failed: {e}. Falling back to noisy simulation.")
+            # Fallback to noisy simulation
+            actual_wait_time = self.wait_times[target_idx]
+            actual_residual = self.residuals[target_idx]
+            
+            wait_noise_std = max(0.1, actual_wait_time * self.noise_factor)
+            residual_noise_std = max(0.05, abs(actual_residual) * 0.2)
+            
+            simulated_wait_time = actual_wait_time + np.random.normal(0, wait_noise_std)
+            simulated_residual = actual_residual + np.random.normal(0, residual_noise_std)
+            
+            return max(0, simulated_wait_time), simulated_residual
+    
     def _get_autoregressive_sequence(self, target_idx):
         """
-        Create sequence with autoregressive logic for residuals prediction.
-        Uses previous wait_times and residuals as features, handling same-day predictions.
+        Create sequence with TRUE probabilistic scheduled sampling.
+        Uses teacher forcing vs actual model predictions based on current epoch.
         """
         target_timestamp = self.timestamps.iloc[target_idx]
         target_date = self.dates.iloc[target_idx]
@@ -99,7 +330,6 @@ class AutoregressiveResidualsDataset(Dataset):
         sequence_indices = list(range(sequence_start, target_idx))
         
         static_features = self.X_static[target_idx]
-        
         autoregressive_features = []
         
         for seq_idx in sequence_indices:
@@ -109,27 +339,31 @@ class AutoregressiveResidualsDataset(Dataset):
             actual_wait_time = self.wait_times[seq_idx]
             actual_residual = self.residuals[seq_idx]
             
-            # Same-day prediction logic: use simulated values after opening time
+            # Same-day prediction logic with TRUE scheduled sampling
             if (seq_date == target_date and 
                 seq_timestamp.hour >= self.opening_hour):
                 
-                # For same-day predictions, simulate prediction uncertainty
-                # Add noise to both wait_time and residual
-                wait_noise_std = max(0.1, actual_wait_time * 0.15)
-                residual_noise_std = max(0.05, abs(actual_residual) * 0.2)
+                # Probabilistic scheduled sampling decision
+                use_teacher_forcing = np.random.random() < self.teacher_forcing_prob
                 
-                simulated_wait_time = actual_wait_time + np.random.normal(0, wait_noise_std)
-                simulated_residual = actual_residual + np.random.normal(0, residual_noise_std)
-
-                simulated_wait_time = max(0, simulated_wait_time)
-                
-                autoregressive_features.extend([simulated_wait_time, simulated_residual])
+                if use_teacher_forcing:
+                    # TRUE Teacher Forcing: Use actual ground truth values
+                    autoregressive_features.extend([actual_wait_time, actual_residual])
+                else:
+                    # TRUE Scheduled Sampling: Use actual model predictions
+                    # Build current sequence up to this point for model input
+                    current_sequence = np.array(autoregressive_features)
+                    
+                    pred_wait_time, pred_residual = self._get_model_prediction(
+                        static_features, current_sequence, seq_idx
+                    )
+                    
+                    autoregressive_features.extend([pred_wait_time, pred_residual])
             else:
-                # Use actual historical values
+                # Use actual historical values (not same day)
                 autoregressive_features.extend([actual_wait_time, actual_residual])
         
         # Combine static and autoregressive features
-        # Static features + sequence of [wait_time, residual] pairs
         combined_features = np.concatenate([
             static_features,
             autoregressive_features
@@ -147,6 +381,7 @@ class AutoregressiveResidualsDataset(Dataset):
         target_idx = self.valid_indices[idx]
         X, y = self._get_autoregressive_sequence(target_idx)
         return torch.FloatTensor(X), torch.FloatTensor(y)
+
 
 class AutoregressiveTCNModel(nn.Module):
     """
@@ -226,17 +461,25 @@ class AutoregressiveTCNModel(nn.Module):
         
         return out
 
-class AutoregressiveTCNTrainer:
+
+class ScheduledSamplingTCNTrainer:
+    """
+    Modified trainer that incorporates scheduled sampling into the training process.
+    """
     def __init__(self, config):
         self.config = config
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"Using device: {self.device}")
         
+        # Scheduled sampling parameters
+        self.sampling_strategy = config.get('sampling_strategy', 'linear')
+        self.noise_factor = config.get('noise_factor', 0.15)
+        
         set_seed(config.get('seed', 42))
     
     def preprocess_data(self, df, target_ride):
         """Preprocess the data for autoregressive training"""
-        logger.info(f"Preprocessing data for autoregressive residual model: {target_ride}")
+        logger.info(f"Preprocessing data for scheduled sampling residual model: {target_ride}")
         
         # Remove time_bucket if present
         if 'time_bucket' in df.columns:
@@ -287,8 +530,8 @@ class AutoregressiveTCNTrainer:
         return train_idx, val_idx, test_idx
     
     def train_model(self):
-        """Train the autoregressive TCN model with GradientBoosting baseline"""
-        logger.info("Starting autoregressive TCN training with GradientBoosting baseline...")
+        """Train the autoregressive TCN model with scheduled sampling"""
+        logger.info("Starting scheduled sampling autoregressive TCN training...")
         
         # GPU cleanup
         if torch.cuda.is_available():
@@ -334,12 +577,11 @@ class AutoregressiveTCNTrainer:
         
         gb_model.fit(X_train_static, y_train)
         
-        # Get baseline predictions
+        # Get baseline predictions and residuals
         y_train_pred_gb = gb_model.predict(X_train_static)
         y_val_pred_gb = gb_model.predict(X_val_static)
         y_test_pred_gb = gb_model.predict(X_test_static)
         
-        # Calculate residuals
         train_residuals = y_train - y_train_pred_gb
         val_residuals = y_val - y_val_pred_gb
         test_residuals = y_test - y_test_pred_gb
@@ -388,44 +630,10 @@ class AutoregressiveTCNTrainer:
         
         logger.info(f"Baseline metrics: MAE={baseline_mae:.4f}, RMSE={baseline_rmse:.4f}, R²={baseline_r2:.4f}, sMAPE={baseline_smape:.2f}%")
         
-        # Create autoregressive datasets for residuals
+        # Initialize model first (needed for scheduled sampling)
         seq_length = self.config['seq_length']
-        opening_hour = self.config.get('opening_hour', 9)
-        closing_hour = self.config.get('closing_hour', 21)
-        
-        train_dataset = AutoregressiveResidualsDataset(
-            X_train_static, train_residuals, y_train, seq_length, 
-            train_df['timestamp'], opening_hour, closing_hour
-        )
-        val_dataset = AutoregressiveResidualsDataset(
-            X_val_static, val_residuals, y_val, seq_length,
-            val_df['timestamp'], opening_hour, closing_hour
-        )
-        test_dataset = AutoregressiveResidualsDataset(
-            X_test_static, test_residuals, y_test, seq_length,
-            test_df['timestamp'], opening_hour, closing_hour
-        )
-        
-        # Create data loaders
-        batch_size = self.config['batch_size']
-        train_loader = DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True,
-            num_workers=2, pin_memory=True if torch.cuda.is_available() else False,
-            persistent_workers=True
-        )
-        val_loader = DataLoader(
-            val_dataset, batch_size=batch_size, shuffle=False,
-            num_workers=2, pin_memory=True if torch.cuda.is_available() else False,
-            persistent_workers=True
-        )
-        test_loader = DataLoader(
-            test_dataset, batch_size=batch_size, shuffle=False,
-            num_workers=2, pin_memory=True if torch.cuda.is_available() else False
-        )
-        
-        # Initialize autoregressive TCN model
-        logger.info("Initializing autoregressive TCN for residuals...")
         static_features_size = len(static_feature_cols)
+        
         model = AutoregressiveTCNModel(
             static_features_size=static_features_size,
             seq_length=seq_length,
@@ -438,15 +646,37 @@ class AutoregressiveTCNTrainer:
         
         model = model.to(self.device)
         
-        # Model compilation
-        if hasattr(torch, 'compile') and torch.cuda.is_available():
-            try:
-                model = torch.compile(model, mode='default')
-                logger.info("Model compiled with torch.compile")
-            except Exception as e:
-                logger.info(f"torch.compile not available: {e}")
+        # Model compilation - DISABLE for scheduled sampling due to dynamic shapes
+        # The scheduled sampling creates variable input sizes which conflict with torch.compile
+        logger.info("Skipping torch.compile for scheduled sampling (dynamic input shapes)")
+        
+        # Create scheduled sampling datasets
+        opening_hour = self.config.get('opening_hour', 9)
+        closing_hour = self.config.get('closing_hour', 21)
+        total_epochs = self.config['epochs']
+        
+        train_dataset = ScheduledSamplingAutoregressiveDataset(
+            X_train_static, train_residuals, y_train, seq_length, 
+            train_df['timestamp'], opening_hour, closing_hour,
+            model=None, gb_model=gb_model, static_feature_cols=static_feature_cols,
+            current_epoch=0, total_epochs=total_epochs,
+            sampling_strategy=self.sampling_strategy, noise_factor=self.noise_factor,
+            use_model_predictions=True  # TRUE scheduled sampling with actual model predictions
+        )
+        
+        # Validation dataset doesn't use scheduled sampling (always teacher forcing)
+        val_dataset = AutoregressiveResidualsDataset(
+            X_val_static, val_residuals, y_val, seq_length,
+            val_df['timestamp'], opening_hour, closing_hour
+        )
+        
+        test_dataset = AutoregressiveResidualsDataset(
+            X_test_static, test_residuals, y_test, seq_length,
+            test_df['timestamp'], opening_hour, closing_hour
+        )
         
         # Training setup
+        batch_size = self.config['batch_size']
         criterion = nn.MSELoss()
         optimizer = optim.AdamW(
             model.parameters(), 
@@ -460,21 +690,33 @@ class AutoregressiveTCNTrainer:
             optimizer,
             max_lr=self.config['learning_rate'],
             epochs=self.config['epochs'],
-            steps_per_epoch=len(train_loader),
+            steps_per_epoch=len(train_dataset) // batch_size + 1,
             pct_start=0.1,
             anneal_strategy='cos'
         )
         
-        # Mixed precision training
-        scaler = torch.amp.GradScaler() if torch.cuda.is_available() else None
+        # Mixed precision training - DISABLE for scheduled sampling due to type conflicts
+        # The CPU inference during scheduled sampling causes dtype mismatches
+        scaler = None
+        logger.info("Mixed precision disabled for scheduled sampling compatibility")
         
-        # Training loop
+        # Training loop with scheduled sampling
         best_val_loss = float('inf')
         patience_counter = 0
         patience = self.config.get('patience', 15)
         best_model_state = None
         
         for epoch in range(self.config['epochs']):
+            # Update scheduled sampling for this epoch
+            train_dataset.update_epoch(epoch)
+            train_dataset.set_models(model, gb_model)  # Models are set but noise-based sampling is used
+            
+            # Create data loader for this epoch (use num_workers=0 to avoid CUDA multiprocessing issues)
+            train_loader = DataLoader(
+                train_dataset, batch_size=batch_size, shuffle=True,
+                num_workers=0, pin_memory=False  # Disable multiprocessing for CUDA compatibility
+            )
+            
             # Training phase
             model.train()
             train_loss = 0.0
@@ -486,18 +728,11 @@ class AutoregressiveTCNTrainer:
                 
                 optimizer.zero_grad()
                 
-                if scaler is not None:
-                    with torch.amp.autocast('cuda'):
-                        outputs = model(inputs)
-                        loss = criterion(outputs, targets)
-                    scaler.scale(loss).backward()
-                    scaler.step(optimizer)
-                    scaler.update()
-                else:
-                    outputs = model(inputs)
-                    loss = criterion(outputs, targets)
-                    loss.backward()
-                    optimizer.step()
+                # Disable mixed precision for scheduled sampling
+                outputs = model(inputs)
+                loss = criterion(outputs, targets)
+                loss.backward()
+                optimizer.step()
                 
                 scheduler.step()
                 
@@ -506,7 +741,12 @@ class AutoregressiveTCNTrainer:
             
             train_loss /= train_samples
             
-            # Validation phase
+            # Validation phase (use num_workers=0 to avoid CUDA multiprocessing issues)
+            val_loader = DataLoader(
+                val_dataset, batch_size=batch_size, shuffle=False,
+                num_workers=0, pin_memory=False  # Disable multiprocessing for CUDA compatibility
+            )
+            
             model.eval()
             val_loss = 0.0
             val_samples = 0
@@ -519,13 +759,9 @@ class AutoregressiveTCNTrainer:
                     inputs = inputs.to(self.device, non_blocking=True)
                     targets = targets.to(self.device, non_blocking=True)
                     
-                    if scaler is not None:
-                        with torch.amp.autocast('cuda'):
-                            outputs = model(inputs)
-                            loss = criterion(outputs, targets)
-                    else:
-                        outputs = model(inputs)
-                        loss = criterion(outputs, targets)
+                    # Disable mixed precision for scheduled sampling
+                    outputs = model(inputs)
+                    loss = criterion(outputs, targets)
                     
                     val_loss += loss.item() * inputs.size(0)
                     val_samples += inputs.size(0)
@@ -586,6 +822,8 @@ class AutoregressiveTCNTrainer:
             
             # Logging
             current_lr = scheduler.get_last_lr()[0]
+            teacher_forcing_prob = train_dataset.teacher_forcing_prob
+            
             metrics = {
                 "train_loss": train_loss,
                 "val_loss": val_loss,
@@ -593,7 +831,9 @@ class AutoregressiveTCNTrainer:
                 "val_rmse": val_rmse,
                 "val_r2": val_r2,
                 "val_smape": val_smape,
-                "learning_rate": current_lr
+                "learning_rate": current_lr,
+                "teacher_forcing_prob": teacher_forcing_prob,
+                "epoch": epoch
             }
             
             if wandb.run:
@@ -603,7 +843,7 @@ class AutoregressiveTCNTrainer:
                 f'Epoch {epoch+1}/{self.config["epochs"]} - '
                 f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
                 f'Val MAE: {val_mae:.4f}, Val sMAPE: {val_smape:.2f}%, '
-                f'LR: {current_lr:.6f}'
+                f'TF prob: {teacher_forcing_prob:.3f}, LR: {current_lr:.6f}'
             )
             
             # Early stopping based on combined prediction performance
@@ -623,6 +863,11 @@ class AutoregressiveTCNTrainer:
         
         # Final evaluation
         logger.info("Performing final evaluation...")
+        test_loader = DataLoader(
+            test_dataset, batch_size=batch_size, shuffle=False,
+            num_workers=2, pin_memory=True if torch.cuda.is_available() else False
+        )
+        
         model.eval()
         test_residual_preds = []
         test_indices_list = []
@@ -631,11 +876,8 @@ class AutoregressiveTCNTrainer:
             for batch_idx, (inputs, targets) in enumerate(test_loader):
                 inputs = inputs.to(self.device, non_blocking=True)
                 
-                if scaler is not None:
-                    with torch.amp.autocast('cuda'):
-                        outputs = model(inputs)
-                else:
-                    outputs = model(inputs)
+                # Disable mixed precision for scheduled sampling
+                outputs = model(inputs)
                 
                 test_residual_preds.extend(outputs.cpu().numpy().flatten())
                 
@@ -716,16 +958,16 @@ class AutoregressiveTCNTrainer:
     
     def _save_models(self, gb_model, tcn_model):
         """Save both GradientBoosting and TCN models"""
-        os.makedirs("models/autoregressive", exist_ok=True)
+        os.makedirs("models/scheduled_sampling", exist_ok=True)
         target_ride = self.config['target_ride'].replace(' ', '_')
         
         # Save GradientBoosting model
-        gb_path = f"models/autoregressive/{target_ride}_gb_baseline.pkl"
+        gb_path = f"models/scheduled_sampling/{target_ride}_gb_baseline.pkl"
         with open(gb_path, "wb") as f:
             pickle.dump(gb_model, f)
         
         # Save TCN model with config
-        tcn_path = f"models/autoregressive/{target_ride}_autoregressive_tcn.pt"
+        tcn_path = f"models/scheduled_sampling/{target_ride}_scheduled_sampling_tcn.pt"
         torch.save({
             'model_state_dict': tcn_model.state_dict(),
             'config': self.config
@@ -735,13 +977,14 @@ class AutoregressiveTCNTrainer:
         
         # Log to wandb
         if wandb.run:
-            gb_artifact = wandb.Artifact(f"gb_baseline_{wandb.run.id}", type="model")
+            gb_artifact = wandb.Artifact(f"gb_baseline_ss_{wandb.run.id}", type="model")
             gb_artifact.add_file(gb_path)
             wandb.log_artifact(gb_artifact)
             
-            tcn_artifact = wandb.Artifact(f"autoregressive_tcn_{wandb.run.id}", type="model")
+            tcn_artifact = wandb.Artifact(f"scheduled_sampling_tcn_{wandb.run.id}", type="model")
             tcn_artifact.add_file(tcn_path)
             wandb.log_artifact(tcn_artifact)
+
 
 def load_config(config_path):
     """Load configuration from YAML or JSON file"""
@@ -750,6 +993,7 @@ def load_config(config_path):
             return yaml.safe_load(f)
         else:
             return json.load(f)
+
 
 def create_config_from_ride(ride_name, rides_config_path="configs/rides_config.yaml"):
     """Create a training config from ride name and rides config"""
@@ -770,7 +1014,7 @@ def create_config_from_ride(ride_name, rides_config_path="configs/rides_config.y
     config['data_path'] = ride_info['data_path']
     config['target_ride'] = ride_name
     
-    # Autoregressive-specific defaults
+    # Autoregressive-specific defaults with scheduled sampling
     autoregressive_defaults = {
         'seq_length': 96,        # 24 hours with 15-min intervals
         'batch_size': 128,
@@ -788,7 +1032,10 @@ def create_config_from_ride(ride_name, rides_config_path="configs/rides_config.y
         'gb_max_depth': 6,
         'gb_min_samples_split': 10,
         'gb_min_samples_leaf': 5,
-        'run_name': 'autoregressive'
+        # Scheduled sampling parameters
+        'sampling_strategy': 'linear',  # 'linear', 'exponential', 'inverse_sigmoid'
+        'noise_factor': 0.15,           # Standard deviation factor for prediction noise
+        'run_name': 'scheduled_sampling_autoregressive'
     }
     
     for key, value in autoregressive_defaults.items():
@@ -797,16 +1044,21 @@ def create_config_from_ride(ride_name, rides_config_path="configs/rides_config.y
     
     return config
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Train autoregressive TCN with GradientBoosting baseline")
+    parser = argparse.ArgumentParser(description="Train autoregressive TCN with scheduled sampling")
     parser.add_argument('--config', help='Path to configuration file')
     parser.add_argument('--ride', help='Ride name (alternative to --config)')
     parser.add_argument('--rides-config', default='configs/rides_config.yaml',
                        help='Path to rides configuration file')
-    parser.add_argument('--wandb-project', default='waitless-autoregressive-tcn-hslu-dspro2-fs25',
+    parser.add_argument('--wandb-project', default='waitless-scheduled-sampling-tcn-hslu-dspro2-fs25',
                        help='Weights & Biases project name')
     parser.add_argument('--wandb-entity', default='waitless-hslu-dspro2-fs25',
                        help='Weights & Biases entity name')
+    parser.add_argument('--sampling-strategy', choices=['linear', 'exponential', 'inverse_sigmoid'],
+                       help='Scheduled sampling strategy')
+    parser.add_argument('--noise-factor', type=float, 
+                       help='Noise factor for prediction uncertainty')
     
     args = parser.parse_args()
     
@@ -816,13 +1068,19 @@ def main():
         logger.info(f"Loaded configuration from {args.config}")
     elif args.ride:
         config = create_config_from_ride(args.ride, args.rides_config)
-        logger.info(f"Created autoregressive configuration for ride: {args.ride}")
+        logger.info(f"Created scheduled sampling configuration for ride: {args.ride}")
     else:
         raise ValueError("Either --config or --ride must be specified")
     
+    # Override config with command line arguments if provided
+    if args.sampling_strategy:
+        config['sampling_strategy'] = args.sampling_strategy
+    if args.noise_factor:
+        config['noise_factor'] = args.noise_factor
+    
     # Initialize wandb
     if config.get('use_wandb', True):
-        run_name = f"{config['target_ride']}_autoregressive_gb_tcn"
+        run_name = f"{config['target_ride']}_scheduled_sampling_tcn"
         if config.get('run_name'):
             run_name = f"{config['target_ride']}_{config['run_name']}"
         
@@ -831,17 +1089,18 @@ def main():
             entity=args.wandb_entity,
             config=config,
             name=run_name,
-            tags=['autoregressive', 'tcn', 'gradientboosting', config['target_ride']]
+            tags=['scheduled_sampling', 'autoregressive', 'tcn', 'gradientboosting', config['target_ride']]
         )
     
     # Train model
-    trainer = AutoregressiveTCNTrainer(config)
+    trainer = ScheduledSamplingTCNTrainer(config)
     metrics = trainer.train_model()
     
     if wandb.run:
         wandb.finish()
     
-    logger.info("Autoregressive TCN training with GradientBoosting baseline completed!")
+    logger.info("Scheduled sampling autoregressive TCN training completed!")
+
 
 if __name__ == "__main__":
     main()
