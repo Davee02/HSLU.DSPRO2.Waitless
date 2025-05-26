@@ -71,20 +71,21 @@ def create_default_sweep_config():
         'parameters': {
             'splits_output_dir': {'value': "../data/processed/splits"},
             'epochs': {'value': 150},
-            'patience': {'value': 15},
+            'patience': {'value': 25},
             'seed': {'value': 42},
             'use_wandb': {'value': True},
             
-            'seq_length': {'values': [24, 48, 96, 192, 384, 768]},
+            'seq_length': {'values': [192, 384, 768]},
             'batch_size': {'values': [128, 256, 512, 1024]},
-            'num_channels': {'values': [32, 64, 128, 256, 512]},
+            'num_channels': {'values': [32, 64, 128, 256]},
             'kernel_size': {'values': [2, 4, 8, 16]},
             'dropout': {'values': [0.1, 0.2, 0.3]},
-            'learning_rate': {'values': [1e-4, 3.16e-5, 1e-5, 3.16e-6, 1e-6]}, # can use notation like 10**-4.5 because yaml formats this weird.
+            'learning_rate': {'values': [0.01, 0.003, 0.001, 0.0003]}, 
             
-            'scheduler_type': {'value': "CosineAnnealingLR"},
-            't_max': {'values': [10, 25, 50, 100]},
-            'eta_min': {'values': [0, 1e-7, 1e-6]}
+            'scheduler_type': {'value': "CosineAnnealingWarmRestarts"},
+            't_0': {'values': [10, 15, 20]},  
+            't_mult': {'values': [1, 2]},   
+            'eta_min': {'values': [1e-6, 1e-5]} 
         }
     }
     
