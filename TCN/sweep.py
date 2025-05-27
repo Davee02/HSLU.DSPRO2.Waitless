@@ -13,6 +13,7 @@ import wandb
 import yaml
 from pathlib import Path
 from typing import Dict, Optional
+import uuid
 
 from configs.sweep_configs import get_sweep_config, list_sweep_configs, create_custom_sweep_config
 from training.trainer import CachedScheduledSamplingTCNTrainer
@@ -39,9 +40,9 @@ def parse_arguments():
                        help='Number of sweep runs to execute')
     
     # Project settings
-    parser.add_argument('--project', default='waitless-tcn-sweeps',
+    parser.add_argument('--project', default='waitless-tcn-hslu-dspro2-fs25',
                        help='WandB project name')
-    parser.add_argument('--entity', help='WandB entity name')
+    parser.add_argument('--entity', default='waitless-hslu-dspro2-fs25', help='WandB entity name')
     parser.add_argument('--sweep-name', help='Custom name for the sweep')
     
     # Data paths
@@ -198,7 +199,8 @@ def main():
     
     # Set sweep name
     if args.sweep_name:
-        sweep_config['name'] = args.sweep_name
+        unique_id = uuid.uuid4().hex[:6]  # Short random suffix
+        sweep_config['name'] = f"{args.ride}_{args.sweep_name}_{unique_id}"
     
     # Save config if requested
     if args.save_config:
