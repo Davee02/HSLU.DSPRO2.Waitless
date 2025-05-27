@@ -108,7 +108,7 @@ def evaluate_autoregressive(model, gb_model, dataset, batch_size: int,
     """
     logger.info("Evaluating with autoregressive prediction (model uses own predictions)...")
     
-    from ..datasets.cached_dataset import CachedScheduledSamplingDataset
+    from TCN.datasets.cached_dataset import CachedScheduledSamplingDataset
     
     model.eval()
     autoregressive_preds = []
