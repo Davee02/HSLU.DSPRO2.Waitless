@@ -150,7 +150,7 @@ def evaluate_autoregressive(model, gb_model, dataset, batch_size: int,
                     # Model prediction
                     inputs = inputs.unsqueeze(0).to(device)
                     if scaler is not None:
-                        with torch.cuda.amp.autocast():
+                        with torch.amp.autocast(device_type="cuda"):
                             residual_pred = model(inputs).cpu().numpy().flatten()[0]
                     else:
                         residual_pred = model(inputs).cpu().numpy().flatten()[0]
