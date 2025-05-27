@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torch.optim.lr_scheduler import OneCycleLR
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 import wandb
 import numpy as np
 from typing import Dict, Tuple, Optional
@@ -207,14 +207,12 @@ class CachedScheduledSamplingTCNTrainer:
         )
         
         # Scheduler
-        scheduler = OneCycleLR(
+        scheduler = CosineAnnealingWarmRestarts(
             optimizer,
-            max_lr=self.config['learning_rate'],
-            epochs=self.config['epochs'],
-            steps_per_epoch=len(train_dataset) // batch_size + 1,
-            pct_start=0.1,
-            anneal_strategy='cos'
-        )
+            T_0=15,
+            T_mult= 1,
+            eta_min=self.config['learning_rate'] * 0.2
+            )
         
         # Mixed precision training
         scaler = None
