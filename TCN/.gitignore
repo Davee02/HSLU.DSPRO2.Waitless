@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Models and outputs
+models/*.pt
+models/*.pkl
+logs/*.log
+
+# Weights & Biases
+wandb/
+
+# Data files (uncomment if you don't want to track data)
+# data/
+# *.parquet
+# *.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
