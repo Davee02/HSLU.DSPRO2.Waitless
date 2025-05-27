@@ -21,13 +21,13 @@ SWEEP_CONFIGS = {
             'set_float32_matmul_precision': {'value': True},
             
             # TCN architecture parameters
-            'seq_length': {'values': [48, 96]}, # 324 would be 27 hours but takes extremely long
+            'seq_length': {'values': [324]}, # 324 would be 27 hours
             'batch_size': {'values': [1024]},
-            'num_channels': {'values': [128, 256, 512]},
+            'num_channels': {'values': [128, 256]},
             'kernel_size': {'values': [3, 5, 7]},
             'num_layers': {'values': [6, 8, 10]},
             'dropout': {'values': [0.1, 0.2, 0.3, 0.4]},
-            'learning_rate': {'values': [0.001, 0.0001, 0.0005, 0.00001]},
+            'learning_rate': {'values': [0.001, 0.0001, 0.00001]},
             'weight_decay': {'values': [1e-5, 1e-4, 1e-3]},
             
             # Cached scheduled sampling parameters
