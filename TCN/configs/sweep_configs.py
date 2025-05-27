@@ -12,8 +12,8 @@ SWEEP_CONFIGS = {
         'parameters': {
             # Fixed parameters
             'splits_output_dir': {'value': "data/processed/splits"},
-            'epochs': {'value': 50},
-            'patience': {'value': 25},
+            'epochs': {'value': 60},
+            'patience': {'value': 20},
             'seed': {'value': 42},
             'use_wandb': {'value': True},
             'use_torch_compile': {'value': True},
