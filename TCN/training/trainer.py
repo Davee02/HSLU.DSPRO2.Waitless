@@ -194,9 +194,9 @@ class CachedScheduledSamplingTCNTrainer:
         return train_dataset, val_dataset, test_dataset
     
     def _train_tcn(self, model: AutoregressiveTCNModel, gb_model: GradientBoostingBaseline,
-                   train_dataset: CachedScheduledSamplingDataset,
-                   val_dataset: AutoregressiveResidualsDataset,
-                   data: Dict) -> Dict:
+                train_dataset: CachedScheduledSamplingDataset,
+                val_dataset: AutoregressiveResidualsDataset,
+                data: Dict) -> Dict:
         """Train the TCN model"""
         batch_size = self.config['batch_size']
         criterion = nn.MSELoss()
@@ -210,9 +210,9 @@ class CachedScheduledSamplingTCNTrainer:
         scheduler = CosineAnnealingWarmRestarts(
             optimizer,
             T_0=15,
-            T_mult= 1,
+            T_mult=1,
             eta_min=self.config['learning_rate'] * 0.2
-            )
+        )
         
         # Mixed precision training
         scaler = None
@@ -227,41 +227,35 @@ class CachedScheduledSamplingTCNTrainer:
         best_model_state = None
         
         for epoch in range(self.config['epochs']):
-            # Update epoch for scheduled sampling
             train_dataset.update_epoch(epoch)
-            
-            # Update prediction cache if needed
+
             if self.prediction_cache.should_update_cache(epoch):
-                # Pass static_feature_cols from data
                 train_dataset.static_feature_cols = data['static_feature_cols']
                 self.prediction_cache.update_cache(
                     model, gb_model.model, train_dataset, self.device
                 )
-            
-            # Create data loader for this epoch
+
             train_loader = DataLoader(
                 train_dataset, batch_size=batch_size, shuffle=True,
                 num_workers=4, pin_memory=True if torch.cuda.is_available() else False
             )
-            
-            # Train one epoch
+
             train_loss = self._train_epoch(
-                model, train_loader, criterion, optimizer, scheduler, scaler
+                model, train_loader, criterion, optimizer, scaler
             )
-            
-            # Validate
+
+            scheduler.step()  # ✅ Correct: step once per epoch
+
             val_loss, val_metrics = self._validate(
                 model, gb_model, val_dataset, batch_size, criterion, scaler, data
             )
-            
-            # Log metrics
+
             self._log_epoch_metrics(
                 epoch, train_loss, val_loss, val_metrics, 
                 train_dataset.teacher_forcing_prob, scheduler.get_last_lr()[0]
             )
-            
-            # Early stopping
-            if train_dataset.teacher_forcing_prob < 0.10:  # Only after 75% scheduled sampling
+
+            if train_dataset.teacher_forcing_prob < 0.10:
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
                     best_model_state = model.state_dict().copy()
@@ -272,21 +266,22 @@ class CachedScheduledSamplingTCNTrainer:
                     if patience_counter >= patience:
                         logger.info(f"Early stopping at epoch {epoch+1}")
                         break
-        
+
         return best_model_state
+
     
-    def _train_epoch(self, model, train_loader, criterion, optimizer, scheduler, scaler):
+    def _train_epoch(self, model, train_loader, criterion, optimizer, scaler):
         """Train for one epoch"""
         model.train()
         train_loss = 0.0
         train_samples = 0
         
-        for batch_idx, (inputs, targets) in enumerate(train_loader):
+        for inputs, targets in train_loader:
             inputs = inputs.to(self.device, non_blocking=True)
             targets = targets.to(self.device, non_blocking=True)
-            
+
             optimizer.zero_grad()
-            
+
             if scaler is not None:
                 with torch.amp.autocast(device_type="cuda"):
                     outputs = model(inputs)
@@ -299,13 +294,12 @@ class CachedScheduledSamplingTCNTrainer:
                 loss = criterion(outputs, targets)
                 loss.backward()
                 optimizer.step()
-            
-            scheduler.step()
-            
+
             train_loss += loss.item() * inputs.size(0)
             train_samples += inputs.size(0)
-        
+
         return train_loss / train_samples
+
     
     def _validate(self, model, gb_model, val_dataset, batch_size, criterion, scaler, data):
         """Validate the model"""
