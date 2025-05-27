@@ -54,82 +54,6 @@ def create_default_rides_config():
     
     print(f"✓ Created default rides config: {config_path}")
 
-def create_default_sweep_config():
-    """Create default sweep configuration file"""
-    config_path = "configs/sweep_config_base.yaml"
-    
-    if os.path.exists(config_path):
-        print(f"⚠ {config_path} already exists, skipping...")
-        return
-    
-    sweep_config = {
-        'method': 'bayes',
-        'metric': {
-            'name': 'combined_mae',
-            'goal': 'minimize'
-        },
-        'parameters': {
-            'splits_output_dir': {'value': "../data/processed/splits"},
-            'epochs': {'value': 150},
-            'patience': {'value': 25},
-            'seed': {'value': 42},
-            'use_wandb': {'value': True},
-            
-            'seq_length': {'values': [192, 384, 768]},
-            'batch_size': {'values': [128, 256, 512, 1024]},
-            'num_channels': {'values': [32, 64, 128, 256]},
-            'kernel_size': {'values': [2, 4, 8, 16]},
-            'dropout': {'values': [0.1, 0.2, 0.3]},
-            'learning_rate': {'values': [0.01, 0.003, 0.001, 0.0003]}, 
-            
-            'scheduler_type': {'value': "CosineAnnealingWarmRestarts"},
-            't_0': {'values': [10, 15, 20]},  
-            't_mult': {'values': [1, 2]},   
-            'eta_min': {'values': [1e-6, 1e-5]} 
-        }
-    }
-    
-    with open(config_path, 'w') as f:
-        yaml.dump(sweep_config, f, default_flow_style=False, indent=2)
-    
-    print(f"✓ Created default sweep config: {config_path}")
-
-def create_example_single_config():
-    """Create an example single training config"""
-    config_path = "configs/config_poseidon_example.yaml"
-    
-    if os.path.exists(config_path):
-        print(f"⚠ {config_path} already exists, skipping...")
-        return
-    
-    single_config = {
-        'data_path': "../data/processed/ep/rides/poseidon.parquet",
-        'splits_output_dir': "../data/processed/splits",
-        'target_ride': "poseidon",
-
-        'seq_length': 96,
-        'batch_size': 256,
-        'num_channels': 128,
-        'kernel_size': 3,
-        'dropout': 0.2,
-        
-        'learning_rate': 0.0001,
-        'epochs': 100,
-        'patience': 10,
-        'seed': 42,
-
-        'scheduler_type': "CosineAnnealingLR",
-        't_max': 50,
-        'eta_min': 1e-6,
-        
-        'use_wandb': True,
-        'run_name': "example_single_config"
-    }
-    
-    with open(config_path, 'w') as f:
-        yaml.dump(single_config, f, default_flow_style=False, indent=2)
-    
-    print(f"✓ Created example single config: {config_path}")
 
 def create_gitignore():
     """Create .gitignore for the project"""
@@ -225,8 +149,6 @@ def main():
     
     create_directory_structure()
     create_default_rides_config()
-    create_default_sweep_config()
-    create_example_single_config()
     create_gitignore()
     
     print_next_steps()
