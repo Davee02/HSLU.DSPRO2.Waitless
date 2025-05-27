@@ -159,11 +159,27 @@ def train_with_sweep_config():
             logger.info(f"  {key}: {value}")
     
     try:
-        # Create trainer and run training
+        
+        print()
         trainer = CachedScheduledSamplingTCNTrainer(base_config)
         metrics = trainer.train_model()
         
-        # Log final metrics
+        model_path = base_config.get('best_model_path', f'TCN/models/{base_config.target_ride}_cached_scheduled_sampling_tcn.pt')
+
+        # Log the best model to WandB
+        if os.path.exists(model_path):
+            artifact = wandb.Artifact(
+                name=f"best_model_{run.id}",
+                type="model",
+                description="Best performing model during sweep run",
+                metadata=metrics  
+            )
+            artifact.add_file(model_path)
+            run.log_artifact(artifact)
+            logger.info(f"Best model logged to WandB as artifact: {artifact.name}")
+        else:
+            logger.warning(f"Model file not found at: {model_path}, skipping artifact upload.")
+
         logger.info(f"Training completed. Final metrics: {metrics}")
         
     except Exception as e:
