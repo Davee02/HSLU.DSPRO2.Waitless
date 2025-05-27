@@ -261,7 +261,7 @@ class CachedScheduledSamplingTCNTrainer:
             )
             
             # Early stopping
-            if train_dataset.teacher_forcing_prob < 0.25:  # Only after 75% scheduled sampling
+            if train_dataset.teacher_forcing_prob < 0.10:  # Only after 75% scheduled sampling
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
                     best_model_state = model.state_dict().copy()

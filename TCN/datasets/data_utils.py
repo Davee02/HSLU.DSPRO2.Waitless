@@ -113,9 +113,9 @@ def calculate_scheduled_sampling_probability(current_epoch: int, total_epochs: i
         return 1.0
     
     if sampling_strategy == "linear":
-        # Linear decay: 3% per epoch from 1.0 to minimum 0.05
-        decay_rate = 0.03  # 3% per epoch
-        min_prob = 0.05    # Minimum teacher forcing probability
+        # Linear decay: 2% per epoch from 1.0 to minimum 0.02
+        decay_rate = 0.02  # 2% per epoch
+        min_prob = 0.02    # Minimum teacher forcing probability
         prob = 1.0 - (decay_rate * current_epoch)
         return max(min_prob, prob)
     elif sampling_strategy == "exponential":
