@@ -221,7 +221,7 @@ class CachedScheduledSamplingTCNTrainer:
             logger.info("Mixed precision training enabled")
         
         # Training loop
-        best_val_loss = float('inf')
+        best_train_loss = float('inf')
         patience_counter = 0
         patience = self.config.get('patience', 40)
         best_model_state = None
