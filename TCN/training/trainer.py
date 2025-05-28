@@ -257,7 +257,7 @@ class CachedScheduledSamplingTCNTrainer:
 
             if train_dataset.teacher_forcing_prob < 0.03:
                 if train_loss < best_train_loss:
-                    best_train_loss = val_loss
+                    best_train_loss = train_loss
                     best_model_state = model.state_dict().copy()
                     patience_counter = 0
                     logger.info(f"New best model saved at epoch {epoch+1}")
