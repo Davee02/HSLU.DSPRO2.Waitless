@@ -1,6 +1,6 @@
 default_params:
-  epochs: 100
-  patience: 10
+  epochs: 200
+  patience: 100
   seed: 42
   use_wandb: true
 global_settings:

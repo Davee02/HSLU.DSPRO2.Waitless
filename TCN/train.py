@@ -82,7 +82,8 @@ def override_config_with_args(config, args):
         config['learning_rate'] = args.learning_rate
     if args.seq_length is not None:
         config['seq_length'] = args.seq_length
-    
+        
+        
     # Model options
     if args.num_channels is not None:
         config['num_channels'] = args.num_channels

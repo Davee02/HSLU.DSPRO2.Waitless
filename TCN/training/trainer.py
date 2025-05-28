@@ -209,11 +209,11 @@ class CachedScheduledSamplingTCNTrainer:
         # Scheduler
         scheduler = CosineAnnealingWarmRestarts(
             optimizer,
-            T_0=15,
-            T_mult=1,
-            eta_min=self.config['learning_rate'] * 0.2
-        )
-        
+            T_0=17,
+            T_mult=2,
+            eta_min=self.config['learning_rate'] * 0.3
+        ) 
+
         # Mixed precision training
         scaler = None
         if self.config.get('use_mixed_precision', True) and torch.cuda.is_available():
@@ -223,7 +223,7 @@ class CachedScheduledSamplingTCNTrainer:
         # Training loop
         best_val_loss = float('inf')
         patience_counter = 0
-        patience = self.config.get('patience', 15)
+        patience = self.config.get('patience', 40)
         best_model_state = None
         
         for epoch in range(self.config['epochs']):
@@ -244,7 +244,7 @@ class CachedScheduledSamplingTCNTrainer:
                 model, train_loader, criterion, optimizer, scaler
             )
 
-            scheduler.step()  # ✅ Correct: step once per epoch
+            scheduler.step()  
 
             val_loss, val_metrics = self._validate(
                 model, gb_model, val_dataset, batch_size, criterion, scaler, data
@@ -255,9 +255,9 @@ class CachedScheduledSamplingTCNTrainer:
                 train_dataset.teacher_forcing_prob, scheduler.get_last_lr()[0]
             )
 
-            if train_dataset.teacher_forcing_prob < 0.10:
-                if val_loss < best_val_loss:
-                    best_val_loss = val_loss
+            if train_dataset.teacher_forcing_prob < 0.03:
+                if train_loss < best_train_loss:
+                    best_train_loss = val_loss
                     best_model_state = model.state_dict().copy()
                     patience_counter = 0
                     logger.info(f"New best model saved at epoch {epoch+1}")
