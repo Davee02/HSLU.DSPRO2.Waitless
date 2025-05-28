@@ -89,6 +89,11 @@ def prepare_data_for_training(config: dict) -> dict:
     X_test_static = test_df[static_feature_cols].values
     y_test = test_df['wait_time'].values
     
+    # Print one value for each column in X_train_static
+    for col_name, value in zip(static_feature_cols, X_train_static[0]):
+        print(f"{col_name}: {value}")
+
+    
     return {
         'train_df': train_df,
         'val_df': val_df,

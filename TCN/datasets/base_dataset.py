@@ -12,7 +12,7 @@ class AutoregressiveResidualsDataset(Dataset):
     Original dataset for autoregressive residual prediction (used for validation/test).
     """
     def __init__(self, X_static, residuals, wait_times, seq_length, timestamps, 
-                 opening_hour=9, closing_hour=21):
+                 opening_hour=11, closing_hour=17):
         self.X_static = X_static  
         self.residuals = residuals  
         self.wait_times = wait_times  

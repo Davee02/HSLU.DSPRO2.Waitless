@@ -33,16 +33,16 @@ def create_config_from_ride(ride_name: str, rides_config_path: str = "TCN/config
     
     # Autoregressive-specific defaults with cached scheduled sampling
     autoregressive_defaults = {
-        'seq_length': 96,        # 96 * 5min
+        'seq_length': 48,  # 48 with 30min intervalls is 24h
         'batch_size': 1024,
         'num_channels': 256,
-        'kernel_size': 3,
+        'kernel_size': 7,
         'num_layers': 8,
         'dropout': 0.3,
-        'learning_rate': 0.0005,
+        'learning_rate': 0.00001,
         'weight_decay': 1e-5,
-        'opening_hour': 9,
-        'closing_hour': 21,
+        'opening_hour': 11,
+        'closing_hour': 17,
         # GradientBoosting parameters
         'gb_n_estimators': 100,
         'gb_learning_rate': 0.1,
@@ -50,7 +50,7 @@ def create_config_from_ride(ride_name: str, rides_config_path: str = "TCN/config
         'gb_min_samples_split': 10,
         'gb_min_samples_leaf': 5,
         # Cached scheduled sampling parameters
-        'sampling_strategy': 'linear',  # 'linear', 'exponential', 'inverse_sigmoid'
+        'sampling_strategy': 'linear',  # 'linear',
         'noise_factor': 0.15,           # Standard deviation factor for prediction noise
         'cache_update_frequency': 5,     # Update cache every N epochs
         'max_cache_size': 100000,       # Maximum cached predictions

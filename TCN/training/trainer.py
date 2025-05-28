@@ -165,8 +165,8 @@ class CachedScheduledSamplingTCNTrainer:
                         val_residuals: np.ndarray, test_residuals: np.ndarray) -> Tuple:
         """Create train, validation, and test datasets"""
         seq_length = self.config['seq_length']
-        opening_hour = self.config.get('opening_hour', 9)
-        closing_hour = self.config.get('closing_hour', 21)
+        opening_hour = self.config.get('opening_hour', 11)
+        closing_hour = self.config.get('closing_hour', 17)
         total_epochs = self.config['epochs']
         
         train_dataset = CachedScheduledSamplingDataset(

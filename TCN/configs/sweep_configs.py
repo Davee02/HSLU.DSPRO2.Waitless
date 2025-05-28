@@ -21,7 +21,7 @@ SWEEP_CONFIGS = {
             'set_float32_matmul_precision': {'value': True},
             
             # TCN architecture parameters
-            'seq_length': {'values': [324]}, # 324 would be 27 hours
+            'seq_length': {'values': [48]}, # 48 with 30min intervalls is 24h
             'batch_size': {'values': [1024]},
             'num_channels': {'values': [128, 256]},
             'kernel_size': {'values': [3, 5, 7]},
