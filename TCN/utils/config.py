@@ -56,7 +56,8 @@ def create_config_from_ride(ride_name: str, rides_config_path: str = "TCN/config
         'max_cache_size': 100000,       # Maximum cached predictions
         'use_torch_compile': True,      # Enable torch.compile
         'use_mixed_precision': True,    # Enable mixed precision
-        'run_name': 'cached_scheduled_sampling_autoregressive'
+        'run_name': 'cached_scheduled_sampling_autoregressive',
+        'patience': 100
     }
     
     for key, value in autoregressive_defaults.items():
