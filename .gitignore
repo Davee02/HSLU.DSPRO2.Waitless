@@ -15,4 +15,5 @@ notebooks/models/
 models
 
 *.joblib
+figures/
 data/processed
