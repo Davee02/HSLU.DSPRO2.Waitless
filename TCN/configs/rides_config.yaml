@@ -4,16 +4,16 @@ default_params:
   seed: 42
   use_wandb: true
 global_settings:
-  base_data_dir: data/processed/ep/rides
+  base_data_dir: data/processed/ep/rides_nonoperating_bucket
   model_output_dir: models
-  splits_output_dir: data/processed/splits
+  splits_output_dir: data/processed/bucket_splits
 rides:
   poseidon:
-    data_path: data/processed/ep/rides/poseidon.parquet
+    data_path: data/processed/ep/rides_nonoperating_bucket/poseidon.parquet
     description: Water ride with high capacity
     display_name: Poseidon
 
   blue_fire_megacoaster:
-    data_path: data/processed/ep/rides/blue_fire_megacoaster.parquet
+    data_path: data/processed/ep/rides_nonoperating_bucket/blue_fire_megacoaster.parquet
     description: Fast 
     display_name: blue_fire_megacoaster
