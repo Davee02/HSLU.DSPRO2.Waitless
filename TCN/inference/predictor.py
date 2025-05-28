@@ -12,6 +12,18 @@ from TCN.datasets.data_utils import preprocess_data, create_features
 
 logger = logging.getLogger(__name__)
 
+# Define expected training features at module level for consistency
+EXPECTED_TRAINING_FEATURES = [
+    'closed', 'is_german_holiday', 'is_swiss_holiday', 'is_french_holiday', 
+    'day_of_week', 'temperature', 'rain', 'weekday', 'is_weekend', 
+    'month_sin', 'month_cos', 'hour_sin', 'hour_cos', 'weekday_sin', 
+    'weekday_cos', 'minute_sin', 'minute_cos', 'temperature_unscaled', 'rain_unscaled',
+    'part_of_day_afternoon', 'part_of_day_evening', 'part_of_day_morning', 'part_of_day_night', 
+    'season_fall', 'season_spring', 'season_summer', 'season_winter', 
+    'year_2017', 'year_2018', 'year_2019', 'year_2020', 'year_2021', 
+    'year_2022', 'year_2023', 'year_2024'
+]
+
 
 class WaitTimePredictor:
     """
@@ -68,7 +80,7 @@ class WaitTimePredictor:
         logger.info(f"  Config keys: {list(config.keys())}")
         logger.info(f"  Original config: {config}")
         
-        # The key issue: we need to calculate the correct tcn_input_size
+        # Calculate the correct tcn_input_size
         # From your tcn_model.py, the TCN input size is: static_features_size + 2 (for wait_time + residual per timestep)
         
         # First, get the static_features_size
@@ -184,103 +196,83 @@ class WaitTimePredictor:
         return gb_model, tcn_model, config
     
     def preprocess_input(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Preprocess input data to match training data format exactly"""
+        """
+        Preprocess input data to match training data format exactly.
+        
+        This method ensures that the input features exactly match what the model 
+        was trained on, including feature ordering and data types.
+        """
         
         # Step 1: Apply same preprocessing as training (from data_utils.py)
         df = preprocess_data(df, self.ride_name)
         
         # Step 2: Create features exactly like training (from data_utils.py)
-        # Static features are everything except wait_time and timestamp
         static_feature_cols = [col for col in df.columns 
-                            if col not in ['wait_time', 'timestamp']]
+                              if col not in ['wait_time', 'timestamp']]
         
         logger.info(f"Initial features after preprocessing: {len(static_feature_cols)}")
         
-        # Step 3: Get expected training features from config if available
-        expected_training_features = [
-            'closed', 'is_german_holiday', 'is_swiss_holiday', 'is_french_holiday', 
-            'day_of_week', 'temperature', 'rain', 'weekday', 'is_weekend', 
-            'month_sin', 'month_cos', 'hour_sin', 'hour_cos', 'weekday_sin', 
-            'weekday_cos', 'minute_sin', 'minute_cos', 'part_of_day_afternoon', 
-            'part_of_day_evening', 'part_of_day_morning', 'part_of_day_night', 
-            'season_fall', 'season_spring', 'season_summer', 'season_winter', 
-            'year_2017', 'year_2018', 'year_2019', 'year_2020', 'year_2021', 
-            'year_2022', 'year_2023', 'year_2024'
-        ]
+        # Step 3: Get expected training features from config or use default
+        expected_features = (self.config.get('static_feature_cols') or EXPECTED_TRAINING_FEATURES)
         
-        # Try to use saved feature columns from config first
         if 'static_feature_cols' in self.config and self.config['static_feature_cols']:
-            expected_training_features = self.config['static_feature_cols']
-            logger.info(f"Using saved feature columns from model config: {len(expected_training_features)} features")
+            logger.info(f"Using saved feature columns from model config: {len(expected_features)} features")
         else:
-            logger.info(f"Using hardcoded expected features: {len(expected_training_features)} features")
+            logger.info(f"Using default expected features: {len(expected_features)} features")
         
         # Step 4: Filter to only include expected training features in exact order
         final_feature_cols = []
         missing_features = []
         
-        for feature in expected_training_features:
-            if feature in static_feature_cols:
-                # Verify the feature is numeric
-                if feature in df.columns:
-                    if pd.api.types.is_numeric_dtype(df[feature]):
-                        final_feature_cols.append(feature)
-                    else:
-                        logger.error(f"Feature '{feature}' exists but is not numeric (dtype: {df[feature].dtype})")
-                        logger.error(f"Sample values: {df[feature].dropna().head(3).tolist()}")
-                        
-                        # Try to convert to numeric if it's a simple case
-                        if feature == 'day_of_week' and df[feature].dtype == 'object':
-                            logger.warning(f"Attempting to fix day_of_week encoding...")
-                            # If it's day names, convert back to numbers
-                            day_mapping = {
-                                'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3,
-                                'Friday': 4, 'Saturday': 5, 'Sunday': 6
-                            }
-                            if all(val in day_mapping for val in df[feature].dropna().unique()):
-                                df[feature] = df[feature].map(day_mapping)
-                                final_feature_cols.append(feature)
-                                logger.info(f"Successfully converted day_of_week to numeric")
-                            else:
-                                missing_features.append(feature)
+        for feature in expected_features:
+            if feature in static_feature_cols and feature in df.columns:
+                if pd.api.types.is_numeric_dtype(df[feature]):
+                    final_feature_cols.append(feature)
+                else:
+                    logger.error(f"Feature '{feature}' exists but is not numeric (dtype: {df[feature].dtype})")
+                    logger.error(f"Sample values: {df[feature].dropna().head(3).tolist()}")
+                    
+                    # Try to fix day_of_week encoding
+                    if feature == 'day_of_week' and df[feature].dtype == 'object':
+                        logger.warning(f"Attempting to fix day_of_week encoding...")
+                        day_mapping = {
+                            'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3,
+                            'Friday': 4, 'Saturday': 5, 'Sunday': 6
+                        }
+                        if all(val in day_mapping for val in df[feature].dropna().unique()):
+                            df[feature] = df[feature].map(day_mapping)
+                            final_feature_cols.append(feature)
+                            logger.info(f"Successfully converted day_of_week to numeric")
                         else:
                             missing_features.append(feature)
-                else:
-                    missing_features.append(feature)
+                    else:
+                        missing_features.append(feature)
             else:
                 missing_features.append(feature)
         
         # Report findings
-        extra_features = [f for f in static_feature_cols if f not in expected_training_features]
+        extra_features = [f for f in static_feature_cols if f not in expected_features]
         
         logger.info(f"Feature matching results:")
-        logger.info(f"  Expected features: {len(expected_training_features)}")
+        logger.info(f"  Expected features: {len(expected_features)}")
         logger.info(f"  Found and valid: {len(final_feature_cols)}")
         logger.info(f"  Missing features: {missing_features}")
         logger.info(f"  Extra features (ignored): {extra_features}")
         
-        # Verify we have the exact number expected
-        expected_features = self.config['static_features_size']
+        # Verify feature count matches model expectations
+        expected_count = self.config['static_features_size']
         
-        if len(final_feature_cols) == expected_features:
+        if len(final_feature_cols) == expected_count:
             logger.info(f"✅ Feature count matches exactly: {len(final_feature_cols)}")
             self.static_feature_cols = final_feature_cols
-        elif len(final_feature_cols) < expected_features:
-            logger.error(f"❌ Not enough features: {len(final_feature_cols)} < {expected_features}")
+        elif len(final_feature_cols) < expected_count:
+            logger.error(f"❌ Not enough features: {len(final_feature_cols)} < {expected_count}")
             logger.error(f"Missing features: {missing_features}")
-            logger.error(f"This will cause model input size mismatch!")
-            
-            # Show detailed debugging info
-            logger.error("Available columns in dataframe:")
-            for col in df.columns:
-                logger.error(f"  {col}: {df[col].dtype}")
-            
-            raise ValueError(f"Feature count mismatch: need {expected_features} features, got {len(final_feature_cols)}")
+            raise ValueError(f"Feature count mismatch: need {expected_count} features, got {len(final_feature_cols)}")
         else:
-            logger.warning(f"⚠️ Too many features: {len(final_feature_cols)} > {expected_features}")
-            logger.warning(f"This should not happen with the fixed preprocessing!")
+            logger.warning(f"⚠️ Too many features: {len(final_feature_cols)} > {expected_count}")
             # Take exactly the expected number in the correct order
-            self.static_feature_cols = final_feature_cols[:expected_features]
+            self.static_feature_cols = final_feature_cols[:expected_count]
         
         logger.info(f"Final selected features ({len(self.static_feature_cols)}):")
         for i, feature in enumerate(self.static_feature_cols):
@@ -294,7 +286,7 @@ class WaitTimePredictor:
         Predict wait time for a single sample.
         
         Args:
-            static_features: Array of static features
+            static_features: Array of static features for the current timestep
             historical_sequence: List of (wait_time, residual) tuples for past timesteps
             
         Returns:
@@ -309,18 +301,18 @@ class WaitTimePredictor:
             # Take the most recent timesteps
             historical_sequence = historical_sequence[-self.seq_length:]
         
-        # Flatten the historical sequence
+        # Flatten the historical sequence (autoregressive features)
         autoregressive_features = []
         for wait_time, residual in historical_sequence:
             autoregressive_features.extend([wait_time, residual])
         
-        # Combine features
+        # Combine features: [static_features, autoregressive_features]
         combined_features = np.concatenate([
             static_features,
             np.array(autoregressive_features, dtype=np.float32)
         ])
         
-        # Get baseline prediction
+        # Get baseline prediction from Gradient Boosting model
         gb_pred = self.gb_model.predict(static_features.reshape(1, -1))[0]
         
         # Get TCN residual prediction
@@ -328,11 +320,11 @@ class WaitTimePredictor:
             tcn_input = torch.FloatTensor(combined_features).unsqueeze(0).to(self.device)
             residual_pred = self.tcn_model(tcn_input).cpu().numpy().flatten()[0]
         
-        # Combined prediction
+        # Combined prediction: baseline + residual
         combined_pred = gb_pred + residual_pred
         
         return {
-            'wait_time_prediction': max(0, combined_pred),
+            'wait_time_prediction': max(0, combined_pred),  # Ensure non-negative
             'baseline_prediction': gb_pred,
             'residual_prediction': residual_pred
         }
@@ -341,6 +333,7 @@ class WaitTimePredictor:
         """
         Predict wait times with FIXED same-day autoregressive logic.
         
+        This is the core prediction method that handles temporal dependencies correctly.
         Key improvement: Only uses predictions within the same operational day,
         preventing error accumulation across days.
         
@@ -359,10 +352,10 @@ class WaitTimePredictor:
         # Ensure timestamps are datetime
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         
-        # Get static features
+        # Get static features matrix
         X_static = df[self.static_feature_cols].values
         
-        # Get baseline predictions
+        # Get baseline predictions for all samples
         gb_predictions = self.gb_model.predict(X_static)
         
         # Initialize results
@@ -414,8 +407,7 @@ class WaitTimePredictor:
                         # Same day: use prediction only if it's during operational hours
                         # and we've started making predictions for this day
                         if (current_date in daily_prediction_starts and 
-                            hist_idx >= daily_prediction_starts[current_date] and
-                            hist_hour >= self.config.get('opening_hour', 9)):
+                            hist_idx >= daily_prediction_starts[current_date]):
                             use_prediction = True
                             same_day_predictions_used += 1
                         # Otherwise, use ground truth even for same day if before operational hours
@@ -599,7 +591,6 @@ def main():
         
         # Get initial state from middle of dataset
         start_idx = len(df) // 2
-        # Note: Fixed reference to static features
         X_static = df[predictor.static_feature_cols].values
         initial_static = X_static[start_idx]
         
