@@ -289,7 +289,7 @@ class CachedScheduledSamplingTCNTrainer:
                 # Log to file
                 log_filename = f"autoregressive_val_log_{self.config.get('experiment_name', 'experiment')}.txt"
                 with open(log_filename, 'a') as f:
-                    f.write(f"Epoch {epoch+1}: AR_Score={ar_score:.4f}, "
+                    f.write(f"Epoch {epoch+1}"
                             f"MAE={autoregressive_metrics.get('test_mae', 0):.4f}, "
                             f"sMAPE={autoregressive_metrics.get('test_smape', 0):.2f}%, "
                             f"RMSE={autoregressive_metrics.get('test_rmse', 0):.4f}, "
@@ -298,7 +298,6 @@ class CachedScheduledSamplingTCNTrainer:
                 # Log to wandb if available
                 if wandb.run:
                     wandb.log({
-                        "autoregressive_score": ar_score,
                         **{f"val_ar_{k.replace('test_', '')}": v for k, v in autoregressive_metrics.items()}
                     })
                 
