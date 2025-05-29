@@ -12,7 +12,7 @@ SWEEP_CONFIGS = {
         'parameters': {
             # Fixed parameters
             'splits_output_dir': {'value': "data/processed/bucket_splits"},
-            'epochs': {'value': 4},
+            'epochs': {'value': 100},
             'patience': {'value': 25},
             'seed': {'value': 42},
             'use_wandb': {'value': True},
