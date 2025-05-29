@@ -255,17 +255,17 @@ class CachedScheduledSamplingTCNTrainer:
                 train_dataset.teacher_forcing_prob, scheduler.get_last_lr()[0]
             )
 
-
-            if val_loss < best_val_loss and epoch >= 60:
-                best_val_loss = val_loss
-                best_model_state = model.state_dict().copy()
-                patience_counter = 0
-                logger.info(f"New best model saved at epoch {epoch+1}")
-            else:
-                patience_counter += 1
-                if patience_counter >= patience:
-                    logger.info(f"Early stopping at epoch {epoch+1}")
-                    break
+            if  epoch >= 60:
+                if val_loss < best_val_loss:
+                    best_val_loss = val_loss
+                    best_model_state = model.state_dict().copy()
+                    patience_counter = 0
+                    logger.info(f"New best model saved at epoch {epoch+1}")
+                else:
+                    patience_counter += 1
+                    if patience_counter >= patience:
+                        logger.info(f"Early stopping at epoch {epoch+1}")
+                        break
 
         return best_model_state
 
