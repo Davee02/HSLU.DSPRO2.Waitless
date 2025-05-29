@@ -164,7 +164,7 @@ def train_with_sweep_config():
         trainer = CachedScheduledSamplingTCNTrainer(base_config)
         metrics = trainer.train_model()
         
-        model_path = base_config.get('best_model_path', f'TCN/models/{base_config.target_ride}_cached_scheduled_sampling_tcn.pt')
+        model_path = base_config.get('best_model_path', f'TCN/models/{sweep_config.target_ride}_cached_scheduled_sampling_tcn.pt')
 
         # Log the best model to WandB
         if os.path.exists(model_path):

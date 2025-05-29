@@ -11,9 +11,9 @@ SWEEP_CONFIGS = {
         },
         'parameters': {
             # Fixed parameters
-            'splits_output_dir': {'value': "data/processed/splits"},
-            'epochs': {'value': 60},
-            'patience': {'value': 20},
+            'splits_output_dir': {'value': "data/processed/bucket_splits"},
+            'epochs': {'value': 100},
+            'patience': {'value': 25},
             'seed': {'value': 42},
             'use_wandb': {'value': True},
             'use_torch_compile': {'value': True},
@@ -24,7 +24,7 @@ SWEEP_CONFIGS = {
             'seq_length': {'values': [48]}, # 48 with 30min intervalls is 24h
             'batch_size': {'values': [1024]},
             'num_channels': {'values': [128, 256]},
-            'kernel_size': {'values': [3, 5, 7]},
+            'kernel_size': {'values': [5, 7]},
             'num_layers': {'values': [6, 8, 10]},
             'dropout': {'values': [0.1, 0.2, 0.3, 0.4]},
             'learning_rate': {'values': [0.001, 0.0001, 0.00001]},
