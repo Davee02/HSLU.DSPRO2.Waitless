@@ -12,7 +12,7 @@ SWEEP_CONFIGS = {
         'parameters': {
             # Fixed parameters
             'splits_output_dir': {'value': "data/processed/bucket_splits"},
-            'epochs': {'value': 100},
+            'epochs': {'value': 4},
             'patience': {'value': 25},
             'seed': {'value': 42},
             'use_wandb': {'value': True},
@@ -23,7 +23,7 @@ SWEEP_CONFIGS = {
             # TCN architecture parameters
             'seq_length': {'values': [48]}, # 48 with 30min intervalls is 24h
             'batch_size': {'values': [1024]},
-            'num_channels': {'values': [128, 256]},
+            'num_channels': {'values': [128, 256, 512]},
             'kernel_size': {'values': [5, 7]},
             'num_layers': {'values': [6, 8, 10]},
             'dropout': {'values': [0.1, 0.2, 0.3, 0.4]},
