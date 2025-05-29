@@ -121,7 +121,7 @@ class CachedScheduledSamplingTCNTrainer:
         
         # Final evaluation
         final_metrics = self._final_evaluation(
-            tcn_model, gb_model, test_dataset, data
+            tcn_model, gb_model, val_dataset, test_dataset, data
         )
         
         # Save models
@@ -233,7 +233,7 @@ class CachedScheduledSamplingTCNTrainer:
         # Scheduler
         scheduler = CosineAnnealingWarmRestarts(
             optimizer,
-            T_0=25,
+            T_0=50,
             T_mult=1,
             eta_min=self.config['learning_rate'] * 0.2
         ) 
@@ -279,6 +279,30 @@ class CachedScheduledSamplingTCNTrainer:
                 train_dataset.teacher_forcing_prob, scheduler.get_last_lr()[0]
             )
 
+            if epoch % 5 == 0:
+                autoregressive_metrics = evaluate_autoregressive(
+                    model, gb_model.model, val_dataset, batch_size, scaler, 
+                    data['val_df'], data['val_indices'], self.device, self.prediction_cache
+                )
+                
+
+                # Log to file
+                log_filename = f"autoregressive_val_log_{self.config.get('experiment_name', 'experiment')}.txt"
+                with open(log_filename, 'a') as f:
+                    f.write(f"Epoch {epoch+1}: AR_Score={ar_score:.4f}, "
+                            f"MAE={autoregressive_metrics.get('test_mae', 0):.4f}, "
+                            f"sMAPE={autoregressive_metrics.get('test_smape', 0):.2f}%, "
+                            f"RMSE={autoregressive_metrics.get('test_rmse', 0):.4f}, "
+                            f"R2={autoregressive_metrics.get('test_r2', 0):.4f}\n")
+                
+                # Log to wandb if available
+                if wandb.run:
+                    wandb.log({
+                        "autoregressive_score": ar_score,
+                        **{f"val_ar_{k.replace('test_', '')}": v for k, v in autoregressive_metrics.items()}
+                    })
+                
+                logger.info(f"Epoch {epoch+1} - Autoregressive Score MAE: {autoregressive_metrics.get('test_mae', 0):.4f}")
             if  epoch >= 60:
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
@@ -428,7 +452,7 @@ class CachedScheduledSamplingTCNTrainer:
             f'TF prob: {teacher_forcing_prob:.3f}, LR: {learning_rate:.6f}'
         )
     
-    def _final_evaluation(self, model, gb_model, test_dataset, data):
+    def _final_evaluation(self, model, gb_model, val_dataset, test_dataset, data):
         """Perform final dual evaluation"""
         logger.info("Performing dual evaluation (autoregressive + teacher forcing)...")
         
@@ -436,6 +460,11 @@ class CachedScheduledSamplingTCNTrainer:
         scaler = torch.amp.GradScaler() if self.config.get('use_mixed_precision', True) and torch.cuda.is_available() else None
         
         # Autoregressive evaluation
+        val_autoregressive_metrics = evaluate_autoregressive(
+            model, gb_model.model, val_dataset, batch_size, scaler, 
+            data['val_df'], data['val_indices'], self.device, self.prediction_cache
+        )
+        
         test_autoregressive_metrics = evaluate_autoregressive(
             model, gb_model.model, test_dataset, batch_size, scaler, 
             data['test_df'], data['test_indices'], self.device, self.prediction_cache

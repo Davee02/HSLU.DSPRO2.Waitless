@@ -130,8 +130,7 @@ def evaluate_autoregressive(model, gb_model, dataset, batch_size: int,
         noise_factor=0.15,
         prediction_cache=prediction_cache
     )
-    
-    # Process samples in smaller batches to avoid memory issues
+
     autoregressive_batch_size = min(32, batch_size)
     
     with torch.no_grad():
