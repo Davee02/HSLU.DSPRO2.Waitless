@@ -39,7 +39,7 @@ def create_config_from_ride(ride_name: str, rides_config_path: str = "TCN/config
         'kernel_size': 7,
         'num_layers': 8,
         'dropout': 0.3,
-        'learning_rate': 0.00001,
+        'learning_rate': 0.001,
         'weight_decay': 1e-5,
         'opening_hour': 11,
         'closing_hour': 17,
