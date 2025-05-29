@@ -15,5 +15,11 @@ notebooks/models/
 models
 
 *.joblib
+
+notebooks/models/
+
+models
+
+*.joblib
 figures/
 data/processed
