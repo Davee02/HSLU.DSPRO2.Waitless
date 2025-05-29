@@ -31,11 +31,31 @@ class CachedScheduledSamplingTCNTrainer:
         logger.info(f"Using device: {self.device}")
         if torch.cuda.is_available():
             torch.set_float32_matmul_precision('high')
+        
         # Cached scheduled sampling parameters
         self.sampling_strategy = config.get('sampling_strategy', 'linear')
         self.noise_factor = config.get('noise_factor', 0.15)
         self.cache_update_frequency = config.get('cache_update_frequency', 5)
         self.max_cache_size = config.get('max_cache_size', 100000)
+        
+        # FIXED: Correct way to disable CUDA graphs in PyTorch inductor
+        try:
+            import torch._inductor.config as inductor_config
+            # These are the correct attributes for disabling CUDA graphs
+            if hasattr(inductor_config, 'triton'):
+                inductor_config.triton.cudagraphs = False
+            if hasattr(inductor_config, 'fx_graph_cache'):
+                inductor_config.fx_graph_cache = False
+            if hasattr(inductor_config, 'cuda_graph_pooling'):
+                inductor_config.cuda_graph_pooling = False
+            
+            # Alternative approach - set environment variable
+            import os
+            os.environ['TORCH_COMPILE_DISABLE_CUDAGRAPHS'] = '1'
+            
+            logger.info("CUDA graphs disabled for inductor")
+        except Exception as e:
+            logger.warning(f"Could not configure inductor settings: {e}")
         
         # Initialize prediction cache
         self.prediction_cache = CachedScheduledSampling(
@@ -154,11 +174,15 @@ class CachedScheduledSamplingTCNTrainer:
         model = AutoregressiveTCNModel.from_config(self.config)
         model = model.to(self.device)
         
+        # FIXED: More conservative torch.compile configuration
         if self.config.get('use_torch_compile', True) and hasattr(torch, 'compile'):
-            logger.info("Enabling torch.compile for cached scheduled sampling")
-            model = torch.compile(model, mode='reduce-overhead')
-
-            
+            logger.info("Enabling torch.compile with CUDA graph workarounds")
+            try:
+                # Use a more conservative compile mode to avoid CUDA graph issues
+                model = torch.compile(model, mode='default', dynamic=True)
+            except Exception as e:
+                logger.warning(f"torch.compile failed, continuing without compilation: {e}")
+        
         return model
     
     def _create_datasets(self, data: Dict, train_residuals: np.ndarray,
