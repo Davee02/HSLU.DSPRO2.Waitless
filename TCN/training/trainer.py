@@ -142,27 +142,61 @@ class CachedScheduledSamplingTCNTrainer:
         return gb_model
     
     def _evaluate_baseline(self, gb_model: GradientBoostingBaseline, data: Dict) -> Dict[str, float]:
-            """Evaluate baseline model performance"""
-            logger.info("Evaluating GradientBoosting baseline...")
+        """Evaluate baseline model performance on training, validation, and test datasets"""
+        logger.info("Evaluating GradientBoosting baseline on train, validation, and test sets...")
+        
+        all_metrics = {}
+        
 
-            closed_mask = None
-            if 'closed' in data['test_df'].columns:
-                closed_mask = data['test_df']['closed'].values > 0
-            
-            baseline_metrics = gb_model.evaluate(
-                data['X_test_static'], 
-                data['y_test'],
-                exclude_closed=True,
-                closed_mask=closed_mask
-            )
-            
+        train_closed_mask = None
+        if 'closed' in data['train_df'].columns:
+            train_closed_mask = data['train_df']['closed'].values > 0
+        
+        train_baseline_metrics = gb_model.evaluate(
+            data['X_train_static'], 
+            data['y_train'],
+            exclude_closed=True,
+            closed_mask=train_closed_mask
+        )
 
-            baseline_metrics = {f"baseline_{k}": v for k, v in baseline_metrics.items()}
-
-            if wandb.run:
-                wandb.log(baseline_metrics)
-            
-            return baseline_metrics
+        train_metrics = {f"baseline_train_{k}": v for k, v in train_baseline_metrics.items()}
+        all_metrics.update(train_metrics)
+        
+        val_closed_mask = None
+        if 'closed' in data['val_df'].columns:
+            val_closed_mask = data['val_df']['closed'].values > 0
+        
+        val_baseline_metrics = gb_model.evaluate(
+            data['X_val_static'], 
+            data['y_val'],
+            exclude_closed=True,
+            closed_mask=val_closed_mask
+        )
+        
+        val_metrics = {f"baseline_val_{k}": v for k, v in val_baseline_metrics.items()}
+        all_metrics.update(val_metrics)
+        
+        test_closed_mask = None
+        if 'closed' in data['test_df'].columns:
+            test_closed_mask = data['test_df']['closed'].values > 0
+        
+        test_baseline_metrics = gb_model.evaluate(
+            data['X_test_static'], 
+            data['y_test'],
+            exclude_closed=True,
+            closed_mask=test_closed_mask
+        )
+        
+        test_metrics = {f"baseline_test_{k}": v for k, v in test_baseline_metrics.items()}
+        all_metrics.update(test_metrics)
+        
+        if wandb.run:
+            wandb.log(all_metrics)
+        
+        logger.info(f"Validation baseline metrics: {val_metrics}")
+        logger.info(f"Test baseline metrics: {test_metrics}")
+        
+        return all_metrics
     
     def _create_tcn_model(self, data: Dict) -> AutoregressiveTCNModel:
         """Create and configure TCN model"""
