@@ -23,22 +23,22 @@ SWEEP_CONFIGS = {
             # TCN architecture parameters
             'seq_length': {'values': [48]}, # 48 with 30min intervalls is 24h
             'batch_size': {'values': [1024]},
-            'num_channels': {'values': [128, 256, 512]},
-            'kernel_size': {'values': [5, 7]},
-            'num_layers': {'values': [6, 8, 10]},
-            'dropout': {'values': [0.1, 0.2, 0.3, 0.4]},
-            'learning_rate': {'values': [0.001, 0.0001, 0.00001]},
-            'weight_decay': {'values': [1e-5, 1e-4, 1e-3]},
+            'num_channels': {'values': [256, 512]},
+            'kernel_size': {'values': [7]},
+            'num_layers': {'values': [8]},
+            'dropout': {'values': [0.2]},
+            'learning_rate': {'values': [0.0001]},
+            'weight_decay': {'values': [1e-5]},
             
             # Cached scheduled sampling parameters
             'sampling_strategy': {'values': ['linear']},
-            'noise_factor': {'values': [0.15, 0.2]},
+            'noise_factor': {'values': [0.15]},
             'cache_update_frequency': {'values': [5]},
             
             # GradientBoosting parameters
-            'gb_n_estimators': {'values': [100, 150, 200]},
-            'gb_max_depth': {'values': [4, 6, 8]},
-            'gb_learning_rate': {'values': [0.05, 0.1, 0.15]},
+            'gb_n_estimators': {'values': [100]},
+            'gb_max_depth': {'values': [4]},
+            'gb_learning_rate': {'values': [0.05]},
         }
     },
     

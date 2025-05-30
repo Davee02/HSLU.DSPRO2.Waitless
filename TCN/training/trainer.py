@@ -142,28 +142,27 @@ class CachedScheduledSamplingTCNTrainer:
         return gb_model
     
     def _evaluate_baseline(self, gb_model: GradientBoostingBaseline, data: Dict) -> Dict[str, float]:
-        """Evaluate baseline model performance"""
-        logger.info("Evaluating GradientBoosting baseline...")
-        
-        # Get closed mask if available
-        closed_mask = None
-        if 'closed' in data['test_df'].columns:
-            closed_mask = data['test_df']['closed'].values > 0
-        
-        baseline_metrics = gb_model.evaluate(
-            data['X_test_static'], 
-            data['y_test'],
-            exclude_closed=True,
-            closed_mask=closed_mask
-        )
-        
-        # Add prefix for wandb logging
-        baseline_metrics = {f"baseline_{k}": v for k, v in baseline_metrics.items()}
-        
-        if wandb.run:
-            wandb.log(baseline_metrics)
-        
-        return baseline_metrics
+            """Evaluate baseline model performance"""
+            logger.info("Evaluating GradientBoosting baseline...")
+
+            closed_mask = None
+            if 'closed' in data['test_df'].columns:
+                closed_mask = data['test_df']['closed'].values > 0
+            
+            baseline_metrics = gb_model.evaluate(
+                data['X_test_static'], 
+                data['y_test'],
+                exclude_closed=True,
+                closed_mask=closed_mask
+            )
+            
+
+            baseline_metrics = {f"baseline_{k}": v for k, v in baseline_metrics.items()}
+
+            if wandb.run:
+                wandb.log(baseline_metrics)
+            
+            return baseline_metrics
     
     def _create_tcn_model(self, data: Dict) -> AutoregressiveTCNModel:
         """Create and configure TCN model"""
@@ -245,7 +244,7 @@ class CachedScheduledSamplingTCNTrainer:
             logger.info("Mixed precision training enabled")
         
         # Training loop
-        best_val_loss = float('inf')
+        best_val_ar_mae = float('inf')
         patience_counter = 0
         patience = self.config.get('patience', 40)
         best_model_state = None
@@ -274,37 +273,43 @@ class CachedScheduledSamplingTCNTrainer:
                 model, gb_model, val_dataset, batch_size, criterion, scaler, data
             )
 
-            self._log_epoch_metrics(
-                epoch, train_loss, val_loss, val_metrics, 
-                train_dataset.teacher_forcing_prob, scheduler.get_last_lr()[0]
+            autoregressive_metrics = evaluate_autoregressive(
+                model, gb_model.model, val_dataset, batch_size, scaler, 
+                data['val_df'], data['val_indices'], self.device, self.prediction_cache
             )
 
-            if epoch % 5 == 0:
-                autoregressive_metrics = evaluate_autoregressive(
-                    model, gb_model.model, val_dataset, batch_size, scaler, 
-                    data['val_df'], data['val_indices'], self.device, self.prediction_cache
-                )
-                
+            cache_size = len(self.prediction_cache.prediction_cache)
+            
+            # FIXED: Consolidated metrics logging with consistent step
+            epoch_metrics = {
+                "epoch": epoch,
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                **val_metrics,
+                "learning_rate": scheduler.get_last_lr()[0],
+                "teacher_forcing_prob": train_dataset.teacher_forcing_prob,
+                "cache_size": cache_size,
+                **{f"val_ar_{k.replace('test_', '')}": v for k, v in autoregressive_metrics.items()}
+            }
+            
+            # FIXED: Use consistent step numbering (epoch + 1 to avoid step 0 conflict)
+            if wandb.run:
+                logger.info("Transfering metrics to wandb")
+                wandb.log(epoch_metrics, step=epoch + 1)  
+            
+            # Logging
+            logger.info(
+                f'Epoch {epoch+1}/{self.config["epochs"]} - '
+                f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
+                f'Val MAE: {val_metrics["val_mae"]:.4f}, Val sMAPE: {val_metrics["val_smape"]:.2f}%, '
+                f'Autoregressive MAE: {autoregressive_metrics.get("test_mae", 0):.4f}, '
+                f'TF prob: {train_dataset.teacher_forcing_prob:.3f}, LR: {scheduler.get_last_lr()[0]:.6f}'
+            )
 
-                # Log to file
-                log_filename = f"autoregressive_val_log_{self.config.get('experiment_name', 'experiment')}.txt"
-                with open(log_filename, 'a') as f:
-                    f.write(f"Epoch {epoch+1}"
-                            f"MAE={autoregressive_metrics.get('test_mae', 0):.4f}, "
-                            f"sMAPE={autoregressive_metrics.get('test_smape', 0):.2f}%, "
-                            f"RMSE={autoregressive_metrics.get('test_rmse', 0):.4f}, "
-                            f"R2={autoregressive_metrics.get('test_r2', 0):.4f}\n")
-                
-                # Log to wandb if available
-                if wandb.run:
-                    wandb.log({
-                        **{f"val_ar_{k.replace('test_', '')}": v for k, v in autoregressive_metrics.items()}
-                    })
-                
-                logger.info(f"Epoch {epoch+1} - Autoregressive Score MAE: {autoregressive_metrics.get('test_mae', 0):.4f}")
-            if  epoch >= 60:
-                if val_loss < best_val_loss:
-                    best_val_loss = val_loss
+            # Early stopping logic
+            if epoch >= 10:
+                if autoregressive_metrics.get('test_mae', 0) < best_val_ar_mae:
+                    best_val_ar_mae = autoregressive_metrics.get('test_mae', 0)
                     best_model_state = model.state_dict().copy()
                     patience_counter = 0
                     logger.info(f"New best model saved at epoch {epoch+1}")
@@ -486,9 +491,10 @@ class CachedScheduledSamplingTCNTrainer:
             **test_teacher_forcing_metrics,
             **{f"gap_{k}": v for k, v in performance_gap.items()}
         }
-        
+
+        final_step = self.config['epochs'] + 10
         if wandb.run:
-            wandb.log(final_metrics)
+            wandb.log(final_metrics, step=final_step)
         
         logger.info(f"Final dual evaluation metrics: {final_metrics}")
         
