@@ -20,33 +20,29 @@ def create_config_from_ride(ride_name: str, rides_config_path: str = "TCN/config
     if ride_name not in rides_config['rides']:
         raise ValueError(f"Ride '{ride_name}' not found in {rides_config_path}")
     
-    # Start with default parameters
     config = rides_config['default_params'].copy()
     
-    # Add global settings
     config.update(rides_config['global_settings'])
-    
-    # Add ride-specific settings
+
     ride_info = rides_config['rides'][ride_name]
     config['data_path'] = ride_info['data_path']
     config['target_ride'] = ride_name
-    
-    # Autoregressive-specific defaults with cached scheduled sampling
+
     autoregressive_defaults = {
         'seq_length': 48,  # 48 with 30min intervalls is 24h
         'batch_size': 1024,
-        'num_channels': 256,
+        'num_channels': 512,
         'kernel_size': 7,
         'num_layers': 8,
-        'dropout': 0.3,
-        'learning_rate': 0.001,
+        'dropout': 0.2,
+        'learning_rate': 0.0001,
         'weight_decay': 1e-5,
         'opening_hour': 11,
         'closing_hour': 17,
         # GradientBoosting parameters
         'gb_n_estimators': 100,
-        'gb_learning_rate': 0.1,
-        'gb_max_depth': 6,
+        'gb_learning_rate': 0.05,
+        'gb_max_depth': 4,
         'gb_min_samples_split': 10,
         'gb_min_samples_leaf': 5,
         # Cached scheduled sampling parameters
