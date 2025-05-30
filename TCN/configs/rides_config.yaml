@@ -1,6 +1,6 @@
 default_params:
   epochs: 100
-  patience: 25
+  patience: 80
   seed: 42
   use_wandb: true
 global_settings:
@@ -17,3 +17,38 @@ rides:
     data_path: data/processed/ep/rides_nonoperating_bucket/blue_fire_megacoaster.parquet
     description: Fast 
     display_name: blue_fire_megacoaster
+
+  silver_star:
+    data_path: data/processed/ep/rides_nonoperating_bucket/silver_star.parquet
+    description: Fast
+    display_name: silver_star
+
+  arthur:
+    data_path: data/processed/ep/rides_nonoperating_bucket/arthur.parquet
+    description: Fast 
+    display_name: arthur
+
+  euromir:
+    data_path: data/processed/ep/rides_nonoperating_bucket/euromir.parquet
+    description: fast
+    display_name: euromir
+
+  alpine_express_enzian:
+    data_path: data/processed/ep/rides_nonoperating_bucket/alpine_express_enzian.parquet
+    description: Fast 
+    display_name: alpine_express_enzian
+
+  eurosat_cancan_coaster:
+    data_path: data/processed/ep/rides_nonoperating_bucket/eurosat_cancan_coaster.parquet
+    description: Fast 
+    display_name: eurosat_cancan_coaster
+
+  swiss_bob_run:
+    data_path: data/processed/ep/rides_nonoperating_bucket/swiss_bob_run.parquet
+    description: Fast 
+    display_name: swiss_bob_run
+
+  voletarium:
+    data_path: data/processed/ep/rides_nonoperating_bucket/voletarium.parquet
+    description: Fast 
+    display_name: voletarium
