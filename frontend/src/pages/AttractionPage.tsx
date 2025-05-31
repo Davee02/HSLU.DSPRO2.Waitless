@@ -282,7 +282,7 @@ const AttractionPage: React.FC = () => {
               {!queueLoading && !queueError && (
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
                   <Refresh sx={{ fontSize: 12 }} />
-                  Updates every 2 minutes
+                  Updates every 5 minutes
                 </Typography>
               )}
             </Paper>
