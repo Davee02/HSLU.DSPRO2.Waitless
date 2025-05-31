@@ -20,6 +20,8 @@ import {
   Stack,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Rating,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -37,16 +39,24 @@ import {
   AccessTime,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   DirectionsRun,
+  CheckCircle,
+  Cancel,
+  Refresh,
 } from '@mui/icons-material';
 
 // Import attraction data
 import attractionsData from '../data/attractions.json';
+// Import the new queue times hook
+import { useQueueTimes } from '../hooks/useQueueTimes';
 
 const AttractionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [attraction, setAttraction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Use the queue times hook
+  const { queueTimes, loading: queueLoading, error: queueError, getWaitTimeForRide } = useQueueTimes();
 
   useEffect(() => {
     // Find the attraction by ID
@@ -89,6 +99,58 @@ const AttractionPage: React.FC = () => {
     }
   };
 
+  // Get real-time wait time data for this attraction
+  const rideWaitTime = getWaitTimeForRide(attraction.id);
+
+  const formatWaitTime = () => {
+    if (queueLoading) {
+      return <CircularProgress size={20} />;
+    }
+    
+    if (queueError) {
+      return 'Error';
+    }
+    
+    if (!rideWaitTime) {
+      return 'N/A';
+    }
+    
+    if (!rideWaitTime.isOpen) {
+      return 'Closed';
+    }
+    
+    return rideWaitTime.waitTime === 0 ? 'No Wait' : `${rideWaitTime.waitTime} min`;
+  };
+
+  const getWaitTimeColor = () => {
+    if (!rideWaitTime || !rideWaitTime.isOpen) {
+      return '#9e9e9e';
+    }
+    
+    const waitTime = rideWaitTime.waitTime;
+    if (waitTime === 0) return '#4caf50';
+    if (waitTime <= 15) return '#8bc34a';
+    if (waitTime <= 30) return '#ff9800';
+    if (waitTime <= 60) return '#ff5722';
+    return '#f44336';
+  };
+
+  const formatLastUpdated = () => {
+    if (!rideWaitTime?.lastUpdated) return null;
+    
+    const updatedTime = new Date(rideWaitTime.lastUpdated);
+    const now = new Date();
+    const diffMinutes = Math.floor((now.getTime() - updatedTime.getTime()) / (1000 * 60));
+    
+    if (diffMinutes < 1) return 'Just updated';
+    if (diffMinutes === 1) return '1 minute ago';
+    if (diffMinutes < 60) return `${diffMinutes} minutes ago`;
+    
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours === 1) return '1 hour ago';
+    return `${diffHours} hours ago`;
+  };
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header Section */}
@@ -122,9 +184,32 @@ const AttractionPage: React.FC = () => {
               variant="outlined"
               icon={<LocationOn />}
             />
+            {rideWaitTime && (
+              <Chip
+                label={rideWaitTime.isOpen ? 'OPEN' : 'CLOSED'}
+                sx={{
+                  bgcolor: rideWaitTime.isOpen ? '#4caf50' : '#f44336',
+                  color: 'white',
+                  fontWeight: 'bold',
+                }}
+                icon={rideWaitTime.isOpen ? 
+                  <CheckCircle sx={{ color: 'white' }} /> : 
+                  <Cancel sx={{ color: 'white' }} />
+                }
+              />
+            )}
           </Stack>
         </Slide>
       </Box>
+
+      {/* Queue Times Error Alert */}
+      {queueError && (
+        <Alert severity="warning" sx={{ mb: 4 }}>
+          <Typography variant="body2">
+            Unable to load real-time wait times. Showing static information only.
+          </Typography>
+        </Alert>
+      )}
 
       {/* Main Content Grid */}
       <Grid container spacing={4}>
@@ -176,13 +261,28 @@ const AttractionPage: React.FC = () => {
             <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <AccessTime /> Current Wait Time
+                {queueLoading && <CircularProgress size={16} />}
               </Typography>
-              <Typography variant="h3" sx={{ color: 'primary.main' }}>
-                {attraction.waitTime || 'N/A'}
+              <Typography 
+                variant="h3" 
+                sx={{ 
+                  color: getWaitTimeColor(),
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
+                {formatWaitTime()}
               </Typography>
-              {attraction.predictedWaitTime && (
-                <Typography variant="body2" color="text.secondary">
-                  Predicted: {attraction.predictedWaitTime} minutes
+              {rideWaitTime && rideWaitTime.isOpen && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {formatLastUpdated()}
+                </Typography>
+              )}
+              {!queueLoading && !queueError && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
+                  <Refresh sx={{ fontSize: 12 }} />
+                  Updates every 2 minutes
                 </Typography>
               )}
             </Paper>
@@ -262,4 +362,4 @@ const AttractionPage: React.FC = () => {
   );
 };
 
-export default AttractionPage; 
+export default AttractionPage;
