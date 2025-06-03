@@ -32,16 +32,13 @@ class CachedScheduledSamplingTCNTrainer:
         if torch.cuda.is_available():
             torch.set_float32_matmul_precision('high')
         
-        # Cached scheduled sampling parameters
         self.sampling_strategy = config.get('sampling_strategy', 'linear')
         self.noise_factor = config.get('noise_factor', 0.15)
         self.cache_update_frequency = config.get('cache_update_frequency', 5)
         self.max_cache_size = config.get('max_cache_size', 100000)
         
-        # FIXED: Correct way to disable CUDA graphs in PyTorch inductor
         try:
             import torch._inductor.config as inductor_config
-            # These are the correct attributes for disabling CUDA graphs
             if hasattr(inductor_config, 'triton'):
                 inductor_config.triton.cudagraphs = False
             if hasattr(inductor_config, 'fx_graph_cache'):
@@ -49,7 +46,6 @@ class CachedScheduledSamplingTCNTrainer:
             if hasattr(inductor_config, 'cuda_graph_pooling'):
                 inductor_config.cuda_graph_pooling = False
             
-            # Alternative approach - set environment variable
             import os
             os.environ['TORCH_COMPILE_DISABLE_CUDAGRAPHS'] = '1'
             
@@ -57,13 +53,11 @@ class CachedScheduledSamplingTCNTrainer:
         except Exception as e:
             logger.warning(f"Could not configure inductor settings: {e}")
         
-        # Initialize prediction cache
         self.prediction_cache = CachedScheduledSampling(
             cache_update_frequency=self.cache_update_frequency,
             max_cache_size=self.max_cache_size
         )
         
-        # Set random seed
         self._set_seed(config.get('seed', 42))
     
     def _set_seed(self, seed: int = 42):

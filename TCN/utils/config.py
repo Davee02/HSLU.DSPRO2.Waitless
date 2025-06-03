@@ -36,7 +36,7 @@ def create_config_from_ride(ride_name: str, rides_config_path: str = "TCN/config
         'num_layers': 8,
         'dropout': 0.2,
         'learning_rate': 0.0001,
-        'weight_decay': 1e-5,
+        'weight_decay': 1e-4,
         'opening_hour': 11,
         'closing_hour': 17,
         # GradientBoosting parameters
