@@ -1,0 +1,54 @@
+default_params:
+  epochs: 100
+  patience: 80
+  seed: 42
+  use_wandb: true
+global_settings:
+  base_data_dir: data/processed/ep/rides_nonoperating_bucket
+  model_output_dir: models
+  splits_output_dir: data/processed/bucket_splits
+rides:
+  poseidon:
+    data_path: data/processed/ep/rides_nonoperating_bucket/poseidon.parquet
+    description: Water ride with high capacity
+    display_name: Poseidon
+
+  blue_fire_megacoaster:
+    data_path: data/processed/ep/rides_nonoperating_bucket/blue_fire_megacoaster.parquet
+    description: Fast 
+    display_name: blue_fire_megacoaster
+
+  silver_star:
+    data_path: data/processed/ep/rides_nonoperating_bucket/silver_star.parquet
+    description: Fast
+    display_name: silver_star
+
+  arthur:
+    data_path: data/processed/ep/rides_nonoperating_bucket/arthur.parquet
+    description: Fast 
+    display_name: arthur
+
+  euromir:
+    data_path: data/processed/ep/rides_nonoperating_bucket/euromir.parquet
+    description: fast
+    display_name: euromir
+
+  alpine_express_enzian:
+    data_path: data/processed/ep/rides_nonoperating_bucket/alpine_express_enzian.parquet
+    description: Fast 
+    display_name: alpine_express_enzian
+
+  eurosat__cancan_coaster:
+    data_path: data/processed/ep/rides_nonoperating_bucket/eurosat__cancan_coaster.parquet
+    description: Fast 
+    display_name: eurosat__cancan_coaster
+
+  swiss_bob_run:
+    data_path: data/processed/ep/rides_nonoperating_bucket/swiss_bob_run.parquet
+    description: Fast 
+    display_name: swiss_bob_run
+
+  voletarium:
+    data_path: data/processed/ep/rides_nonoperating_bucket/voletarium.parquet
+    description: Fast 
+    display_name: voletarium
