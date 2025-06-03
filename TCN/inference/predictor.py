@@ -7,8 +7,8 @@ import torch
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 
-from TCN.models.tcn_model import AutoregressiveTCNModel
-from TCN.datasets.data_utils import preprocess_data, create_features
+from ..models.tcn_model import AutoregressiveTCNModel
+from ..datasets.data_utils import preprocess_data, create_features
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +43,9 @@ class WaitTimePredictor:
         self.ride_name = ride_name
         self.model_dir = Path(model_dir)
         self.device = self._setup_device(device)
-        
-        # Load models
+
         self.gb_model, self.tcn_model, self.config = self._load_models()
-        
-        # Extract model configuration
+
         self.static_features_size = self.config['static_features_size']
         self.seq_length = self.config['seq_length']
         self.static_feature_cols = None  # Will be set during preprocessing
@@ -64,73 +62,24 @@ class WaitTimePredictor:
         """Load trained models and configuration"""
         ride_name_normalized = self.ride_name.replace(' ', '_')
         
-        # Load GradientBoosting model
         gb_path = self.model_dir / f"{ride_name_normalized}_gb_baseline.pkl"
         with open(gb_path, "rb") as f:
             gb_model = pickle.load(f)
         
-        # Load TCN model and config
         tcn_path = self.model_dir / f"{ride_name_normalized}_cached_scheduled_sampling_tcn.pt"
         checkpoint = torch.load(tcn_path, map_location=self.device)
         
         config = checkpoint['config']
-        
-        # Debug: Print what we're loading
+
         logger.info(f"Loading model configuration:")
         logger.info(f"  Config keys: {list(config.keys())}")
         logger.info(f"  Original config: {config}")
         
-        # Calculate the correct tcn_input_size
-        # From your tcn_model.py, the TCN input size is: static_features_size + 2 (for wait_time + residual per timestep)
-        
-        # First, get the static_features_size
+
         if 'static_features_size' in config:
             static_features_size = config['static_features_size']
             logger.info(f"  Using saved static_features_size: {static_features_size}")
-        else:
-            # Try to infer from saved static_feature_cols
-            if 'static_feature_cols' in config and config['static_feature_cols']:
-                static_features_size = len(config['static_feature_cols'])
-                config['static_features_size'] = static_features_size
-                logger.info(f"  Calculated static_features_size from static_feature_cols: {static_features_size}")
-            else:
-                # Infer from the actual model weights
-                state_dict = checkpoint['model_state_dict']
-                
-                # Handle torch.compile prefixes first
-                if any(key.startswith('_orig_mod.') for key in state_dict.keys()):
-                    temp_state_dict = {}
-                    for key, value in state_dict.items():
-                        if key.startswith('_orig_mod.'):
-                            new_key = key[10:]
-                            temp_state_dict[new_key] = value
-                        else:
-                            temp_state_dict[key] = value
-                    state_dict = temp_state_dict
-                
-                # Look for the input layer to infer the total input size
-                tcn_input_size = None
-                for key, tensor in state_dict.items():
-                    if 'tcn.network.0.conv1' in key and 'weight' in key and 'original1' in key:
-                        # This is the first conv layer weight: [out_channels, in_channels, kernel_size]
-                        tcn_input_size = tensor.shape[1]  # in_channels
-                        logger.info(f"  Found TCN input size from {key}: {tcn_input_size}")
-                        break
-                    elif 'tcn.network.0.downsample.weight' in key:
-                        # Downsample layer: [out_channels, in_channels, 1]
-                        tcn_input_size = tensor.shape[1]
-                        logger.info(f"  Found TCN input size from {key}: {tcn_input_size}")
-                        break
-                
-                if tcn_input_size is None:
-                    raise ValueError("Could not determine TCN input size from model weights")
-                
-                # Calculate static_features_size
-                # From your model: tcn_input_size = static_features_size + 2
-                static_features_size = tcn_input_size - 2
-                config['static_features_size'] = static_features_size
-                logger.info(f"  Calculated static_features_size: {static_features_size} (tcn_input_size={tcn_input_size} - 2)")
-        
+   
         # Ensure all required config parameters are present
         required_params = ['seq_length', 'num_channels', 'kernel_size', 'num_layers']
         for param in required_params:
@@ -152,17 +101,14 @@ class WaitTimePredictor:
         logger.info(f"  dropout: {config['dropout']}")
         logger.info(f"  output_size: {config['output_size']}")
         
-        # Create TCN model with correct configuration
         tcn_model = AutoregressiveTCNModel.from_config(config)
         logger.info(f"Created TCN model with tcn_input_size: {tcn_model.tcn_input_size}")
         
-        # Handle torch.compile model states
         state_dict = checkpoint['model_state_dict']
         
         # Check if the state dict has torch.compile prefixes
         if any(key.startswith('_orig_mod.') for key in state_dict.keys()):
             logger.info("Detected torch.compile model, removing _orig_mod. prefixes")
-            # Remove the _orig_mod. prefix from all keys
             new_state_dict = {}
             for key, value in state_dict.items():
                 if key.startswith('_orig_mod.'):
@@ -172,15 +118,13 @@ class WaitTimePredictor:
                     new_state_dict[key] = value
             state_dict = new_state_dict
         
-        # Load the cleaned state dict
         try:
             tcn_model.load_state_dict(state_dict)
             logger.info("Successfully loaded model state dict")
         except RuntimeError as e:
             logger.error(f"Failed to load state dict: {e}")
             logger.error("Model configuration may not match saved weights")
-            
-            # Debug: show shape mismatches
+
             model_state = tcn_model.state_dict()
             for key in state_dict.keys():
                 if key in model_state:
@@ -292,7 +236,7 @@ class WaitTimePredictor:
         Returns:
             Dictionary with predictions and components
         """
-        # Ensure we have the right sequence length
+
         if len(historical_sequence) < self.seq_length:
             # Pad with zeros at the beginning
             padding_needed = self.seq_length - len(historical_sequence)
@@ -345,50 +289,43 @@ class WaitTimePredictor:
         Returns:
             DataFrame with predictions added
         """
-        # Preprocess if needed
+
         if self.static_feature_cols is None:
             df = self.preprocess_input(df)
-        
-        # Ensure timestamps are datetime
+
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         
-        # Get static features matrix
         X_static = df[self.static_feature_cols].values
         
-        # Get baseline predictions for all samples
         gb_predictions = self.gb_model.predict(X_static)
         
-        # Initialize results
+ 
         predictions = []
         residuals = []
         
-        # For autoregressive prediction, track predictions by date AND index
         if use_autoregressive:
-            prediction_history = {}  # Track predictions for each timestamp
-            daily_prediction_starts = {}  # Track when we start predicting each day
-            logger.info(f"🔧 Starting FIXED autoregressive prediction (same-day logic)")
+            prediction_history = {} 
+            daily_prediction_starts = {} 
+            logger.info(f"🔧 Starting autoregressive prediction (same-day logic)")
             logger.info(f"   Sequence length: {self.seq_length} timesteps")
-            logger.info(f"   Opening hour: {self.config.get('opening_hour', 9)}")
+            logger.info(f"   Opening hour: {self.config.get('opening_hour', 11)}")
         
         for idx in range(len(df)):
             if idx < self.seq_length:
-                # Not enough history, use baseline only
                 predictions.append(gb_predictions[idx])
                 residuals.append(0.0)
                 continue
+
             
             current_timestamp = df.iloc[idx]['timestamp']
             current_date = current_timestamp.date()
             current_hour = current_timestamp.hour
             
-            # Track when we start making predictions for each day (at opening time)
+
             if use_autoregressive and current_date not in daily_prediction_starts:
-                if current_hour >= self.config.get('opening_hour', 9):  # Opening hour (default 9 AM)
+                if current_hour >= self.config.get('opening_hour', 11):  
                     daily_prediction_starts[current_date] = idx
-                    if len(daily_prediction_starts) <= 5:  # Log first few days
-                        logger.info(f"   📅 Starting predictions for {current_date} at index {idx}")
             
-            # Build historical sequence with SAME-DAY logic
             historical_sequence = []
             same_day_predictions_used = 0
             cross_day_ground_truth_used = 0
@@ -398,11 +335,10 @@ class WaitTimePredictor:
                 hist_date = hist_timestamp.date()
                 hist_hour = hist_timestamp.hour
                 
-                # Determine whether to use predictions or ground truth
                 use_prediction = False
                 
                 if use_autoregressive and hist_idx in prediction_history:
-                    # We have a prediction for this timestep
+
                     if hist_date == current_date:
                         # Same day: use prediction only if it's during operational hours
                         # and we've started making predictions for this day

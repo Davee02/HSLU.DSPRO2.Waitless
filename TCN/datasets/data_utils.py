@@ -63,25 +63,20 @@ def load_data_splits(splits_output_dir: str, target_ride: str) -> Tuple[np.ndarr
 
 def prepare_data_for_training(config: dict) -> dict:
     """Prepare all data needed for training"""
-    # Load and preprocess data
     df = pd.read_parquet(config['data_path'])
     df = preprocess_data(df, config['target_ride'])
     
-    # Load splits
     train_indices, val_indices, test_indices = load_data_splits(
         config['splits_output_dir'], 
         config['target_ride']
     )
     
-    # Create features
     df, static_feature_cols = create_features(df)
     
-    # Split data
     train_df = df.iloc[train_indices].copy()
     val_df = df.iloc[val_indices].copy()
     test_df = df.iloc[test_indices].copy()
     
-    # Prepare features and targets
     X_train_static = train_df[static_feature_cols].values
     y_train = train_df['wait_time'].values
     X_val_static = val_df[static_feature_cols].values

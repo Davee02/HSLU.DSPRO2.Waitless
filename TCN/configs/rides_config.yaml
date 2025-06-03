@@ -38,10 +38,10 @@ rides:
     description: Fast 
     display_name: alpine_express_enzian
 
-  eurosat_cancan_coaster:
-    data_path: data/processed/ep/rides_nonoperating_bucket/eurosat_cancan_coaster.parquet
+  eurosat__cancan_coaster:
+    data_path: data/processed/ep/rides_nonoperating_bucket/eurosat__cancan_coaster.parquet
     description: Fast 
-    display_name: eurosat_cancan_coaster
+    display_name: eurosat__cancan_coaster
 
   swiss_bob_run:
     data_path: data/processed/ep/rides_nonoperating_bucket/swiss_bob_run.parquet

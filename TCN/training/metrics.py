@@ -115,7 +115,6 @@ def evaluate_autoregressive(model, gb_model, dataset, batch_size: int,
     actual_wait_times = []
     test_indices_used = []
     
-    # Create a copy of test dataset with high scheduled sampling for autoregressive evaluation
     autoregressive_dataset = CachedScheduledSamplingDataset(
         dataset.X_static, 
         dataset.residuals, 
@@ -124,7 +123,7 @@ def evaluate_autoregressive(model, gb_model, dataset, batch_size: int,
         dataset.timestamps, 
         dataset.opening_hour, 
         dataset.closing_hour,
-        current_epoch=99,  # High epoch = mostly scheduled sampling (5% teacher forcing)
+        current_epoch=100, # will set Teacher Forcing to 0
         total_epochs=100,
         sampling_strategy="linear",
         noise_factor=0.15,
@@ -143,10 +142,8 @@ def evaluate_autoregressive(model, gb_model, dataset, batch_size: int,
             
             for idx in range(start_idx, end_idx):
                 try:
-                    # Get autoregressive sequence
                     inputs, targets = autoregressive_dataset[idx]
                     
-                    # Model prediction
                     inputs = inputs.unsqueeze(0).to(device)
                     if scaler is not None:
                         with torch.amp.autocast(device_type="cuda"):
@@ -154,14 +151,11 @@ def evaluate_autoregressive(model, gb_model, dataset, batch_size: int,
                     else:
                         residual_pred = model(inputs).cpu().numpy().flatten()[0]
                     
-                    # Get corresponding dataset index and static features
                     dataset_idx = autoregressive_dataset.valid_indices[idx]
                     static_features = autoregressive_dataset.X_static[dataset_idx]
                     
-                    # Get baseline prediction
                     gb_pred = gb_model.predict(static_features.reshape(1, -1))[0]
                     
-                    # Combined prediction
                     combined_pred = gb_pred + residual_pred
                     actual_wait_time = autoregressive_dataset.wait_times[dataset_idx]
                     
@@ -173,30 +167,25 @@ def evaluate_autoregressive(model, gb_model, dataset, batch_size: int,
                     logger.debug(f"Autoregressive evaluation failed for sample {idx}: {e}")
                     continue
             
-            # Accumulate results
             autoregressive_preds.extend(batch_preds)
             actual_wait_times.extend(batch_actuals)
             test_indices_used.extend(batch_indices)
             
-            # Log progress
             if len(autoregressive_preds) % 1000 == 0:
                 logger.info(f"Processed {len(autoregressive_preds)} autoregressive samples...")
     
-    # Convert to arrays
+
     autoregressive_preds = np.array(autoregressive_preds)
     actual_wait_times = np.array(actual_wait_times)
     
     logger.info(f"Generated {len(autoregressive_preds)} autoregressive predictions")
     
-    # Create evaluation dataframe
     eval_df = test_df.iloc[test_indices_used].reset_index(drop=True)
     eval_df['autoregressive_pred'] = autoregressive_preds
     eval_df['actual_wait_time'] = actual_wait_times
     
-    # Evaluate
     metrics = evaluate_predictions(eval_df, 'autoregressive_pred', 'actual_wait_time')
     
-    # Add prefix to distinguish from teacher forcing
     return {f"test_{k}": v for k, v in metrics.items()}
 
 
