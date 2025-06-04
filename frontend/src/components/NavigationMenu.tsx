@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -9,8 +9,12 @@ import {
   ListItemText,
   useTheme,
   ListItemButton,
+  IconButton,
+  AppBar,
+  Toolbar,
+  useMediaQuery,
 } from '@mui/material';
-import { Home, Info, Attractions } from '@mui/icons-material';
+import { Home, Info, Attractions, Menu as MenuIcon } from '@mui/icons-material';
 import logo from '../img/logo.png';
 
 const drawerWidth = 240;
@@ -36,21 +40,15 @@ const menuItems = [
 const NavigationMenu: React.FC = () => {
   const theme = useTheme();
   const location = useLocation();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          backgroundColor: theme.palette.primary.main,
-          color: theme.palette.primary.contrastText,
-        },
-      }}
-    >
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const drawer = (
+    <>
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <img src={logo} alt="Logo" style={{ maxWidth: '80%', height: 'auto' }} />
       </Box>
@@ -61,6 +59,7 @@ const NavigationMenu: React.FC = () => {
               component={Link}
               to={item.path}
               selected={location.pathname === item.path}
+              onClick={() => isMobile && setMobileOpen(false)}
               sx={{
                 '&.Mui-selected': {
                   backgroundColor: theme.palette.primary.dark,
@@ -81,7 +80,79 @@ const NavigationMenu: React.FC = () => {
           </ListItem>
         ))}
       </List>
-    </Drawer>
+    </>
+  );
+
+  return (
+    <>
+      <AppBar
+        position="fixed"
+        sx={{
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          ml: { md: `${drawerWidth}px` },
+          display: { md: 'none' },
+          bgcolor: theme.palette.primary.main,
+        }}
+      >
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
+            <img src={logo} alt="Logo" style={{ height: '40px', width: 'auto' }} />
+          </Box>
+        </Toolbar>
+      </AppBar>
+      <Box
+        component="nav"
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+      >
+        {/* Mobile drawer */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile
+          }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+            },
+          }}
+        >
+          {drawer}
+        </Drawer>
+        {/* Desktop drawer */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+            },
+          }}
+          open
+        >
+          {drawer}
+        </Drawer>
+      </Box>
+      {/* Toolbar spacer for mobile */}
+      <Toolbar sx={{ display: { md: 'none' } }} />
+    </>
   );
 };
 

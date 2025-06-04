@@ -5,8 +5,6 @@ import {
   Container,
   Typography,
   Grid,
-  Tabs,
-  Tab,
   Card,
   CardContent,
   TextField,
@@ -15,9 +13,17 @@ import {
   Stack,
   Divider,
   CardActionArea,
+  Paper,
+  Fab,
+  Dialog,
+  DialogContent,
+  IconButton,
+  useMediaQuery,
+  useTheme,
+  Button,
 } from '@mui/material';
 import { Search, Place, Speed, Height, Timer, // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Group, Event } from '@mui/icons-material';
+  Group, Event, Close, FilterList } from '@mui/icons-material';
 import { motion, Variants } from 'framer-motion';
 import { Attraction } from '../types';
 
@@ -38,9 +44,12 @@ type Category = typeof categories[number];
 
 const ParkAttractionsPage: React.FC = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedCategory, setSelectedCategory] = useState<Category>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAttractions, setFilteredAttractions] = useState<Attraction[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const handleAttractionClick = (attractionId: string) => {
     navigate(`/attraction/${attractionId}`);
@@ -77,14 +86,85 @@ const ParkAttractionsPage: React.FC = () => {
     show: { opacity: 1, y: 0 }
   };
 
+  const CategoryContent = () => (
+    <Box 
+      sx={{ 
+        display: 'flex',
+        justifyContent: 'center'
+      }}
+    >
+      <Stack 
+        direction="row" 
+        spacing={1} 
+        sx={{ 
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: 1,
+          maxWidth: '100%',
+          '& .MuiPaper-root': {
+            minWidth: { xs: '120px', sm: '140px' },
+            textAlign: 'center'
+          }
+        }}
+      >
+        {categories.map((category) => (
+          <Paper
+            key={category}
+            elevation={selectedCategory === category ? 3 : 1}
+            onClick={() => {
+              setSelectedCategory(category);
+              if (isMobile) setIsSearchOpen(false);
+            }}
+            sx={{
+              px: 2,
+              py: 1,
+              cursor: 'pointer',
+              backgroundColor: selectedCategory === category ? 'primary.main' : 'background.paper',
+              color: selectedCategory === category ? 'black' : 'text.primary',
+              fontWeight: selectedCategory === category ? 'bold' : 'normal',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                backgroundColor: selectedCategory === category ? 'primary.dark' : 'action.hover',
+              },
+            }}
+          >
+            <Typography
+              sx={{
+                textTransform: 'capitalize',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {category}
+            </Typography>
+          </Paper>
+        ))}
+      </Stack>
+    </Box>
+  );
+
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ mb: 4 }}>
+    <Box sx={{ width: '100%' }}>
+      <Typography 
+        variant="h3" 
+        component="h1" 
+        gutterBottom 
+        align="center" 
+        sx={{ 
+          mb: { xs: 2, md: 4 },
+          fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' }
+        }}
+      >
         Park Attractions
       </Typography>
 
-      <Box sx={{ mb: 4 }}>
-        <Grid container spacing={3} justifyContent="center">
+      {/* Search Bar - Always visible */}
+      <Box sx={{ mb: { xs: 2, md: 4 } }}>
+        <Grid 
+          container 
+          spacing={{ xs: 1, sm: 2, md: 3 }} 
+          justifyContent="center" 
+          alignItems="center"
+        >
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
@@ -101,33 +181,82 @@ const ParkAttractionsPage: React.FC = () => {
               }}
             />
           </Grid>
+          {isMobile && (
+            <Grid item xs="auto">
+              <Button
+                variant="contained"
+                startIcon={<FilterList />}
+                onClick={() => setIsSearchOpen(true)}
+                sx={{
+                  height: '56px',
+                  px: 2,
+                }}
+              >
+                Filter
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </Box>
 
-      <Tabs
-        value={selectedCategory}
-        onChange={(_, newValue: Category) => setSelectedCategory(newValue)}
-        centered
-        sx={{ mb: 4 }}
+      {/* Desktop Categories */}
+      {!isMobile && (
+        <Box sx={{ mb: { xs: 2, md: 4 } }}>
+          <CategoryContent />
+        </Box>
+      )}
+
+      {/* Mobile Category Dialog */}
+      <Dialog
+        fullScreen
+        open={isMobile && isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        sx={{
+          '& .MuiDialog-paper': {
+            height: '100%',
+            maxHeight: '100%',
+          },
+        }}
       >
-        {categories.map((category) => (
-          <Tab
-            key={category}
-            label={category.charAt(0).toUpperCase() + category.slice(1)}
-            value={category}
-          />
-        ))}
-      </Tabs>
+        <DialogContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <IconButton onClick={() => setIsSearchOpen(false)}>
+              <Close />
+            </IconButton>
+          </Box>
+          <Typography variant="h6" gutterBottom>
+            Filter by Category
+          </Typography>
+          <CategoryContent />
+        </DialogContent>
+      </Dialog>
 
       <motion.div
         variants={container}
         initial="hidden"
         animate="show"
       >
-        <Grid container spacing={3}>
+        <Grid 
+          container 
+          spacing={{ xs: 2, sm: 3, md: 4 }}
+          sx={{
+            width: '100%',
+            m: 0, // Remove default margin
+          }}
+        >
           {filteredAttractions.map((attraction) => (
-            <Grid item xs={12} md={6} lg={4} key={attraction.id}>
-              <motion.div variants={item}>
+            <Grid 
+              item 
+              xs={12} 
+              sm={6} 
+              md={4} 
+              key={attraction.id}
+              sx={{
+                display: 'flex',
+                width: '100%',
+              }}
+            >
+              <motion.div variants={item} style={{ width: '100%' }}>
                 <Card
                   sx={{
                     height: '100%',
@@ -175,22 +304,48 @@ const ParkAttractionsPage: React.FC = () => {
                           right: 16,
                           backgroundColor: 'rgba(0, 0, 0, 0.6)',
                           color: 'white',
+                          textTransform: 'capitalize',
                         }}
                       />
                     </Box>
                     <CardContent sx={{ flexGrow: 1 }}>
-                      <Typography variant="h5" gutterBottom component="h2">
+                      <Typography 
+                        variant="h5" 
+                        gutterBottom 
+                        component="h2"
+                        sx={{
+                          fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
+                        }}
+                      >
                         {attraction.name}
                       </Typography>
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         <Place sx={{ verticalAlign: 'middle', mr: 0.5 }} fontSize="small" />
                         {attraction.area}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" paragraph>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        paragraph
+                        sx={{
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        }}
+                      >
                         {attraction.short_description}
                       </Typography>
                       <Divider sx={{ my: 2 }} />
-                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
+                      <Stack 
+                        direction="row" 
+                        spacing={1} 
+                        flexWrap="wrap" 
+                        useFlexGap 
+                        sx={{ 
+                          gap: 1,
+                          '& .MuiChip-root': {
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                          }
+                        }}
+                      >
                         {attraction.keyFacts.type && (
                           <Chip
                             size="small"
@@ -228,7 +383,7 @@ const ParkAttractionsPage: React.FC = () => {
           ))}
         </Grid>
       </motion.div>
-    </Container>
+    </Box>
   );
 };
 
