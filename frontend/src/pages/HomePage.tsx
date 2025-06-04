@@ -34,16 +34,35 @@ const HomePage: React.FC = () => {
   }, []);
   
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom align="center">
+    <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 1, md: 2 } }}>
+      <Box sx={{ py: { xs: 2, md: 4 } }}>
+        <Typography 
+          variant="h3" 
+          component="h1" 
+          gutterBottom 
+          align="center"
+          sx={{
+            fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' },
+            px: { xs: 2, sm: 3, md: 4 }
+          }}
+        >
           Welcome to wAItless
         </Typography>
-        <Typography variant="h5" align="center" color="text.secondary" paragraph sx={{ mb: 6 }}>
+        <Typography 
+          variant="h5" 
+          align="center" 
+          color="text.secondary" 
+          paragraph 
+          sx={{ 
+            mb: { xs: 3, md: 6 },
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+            px: { xs: 2, sm: 3, md: 4 }
+          }}
+        >
           Your real-time guide to Europa-Park attractions and wait times
         </Typography>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
           {/* First row */}
           <Grid item xs={12} sm={6} md={4}>
             <WeatherCard weather={weather} loading={loading} error={error} />

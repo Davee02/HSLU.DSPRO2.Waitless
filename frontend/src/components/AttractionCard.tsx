@@ -11,9 +11,11 @@ import {
   ListItem,
   ListItemText,
   CardActionArea,
+  CircularProgress,
 } from '@mui/material';
 import { AccessTime } from '@mui/icons-material';
 import { Attraction } from '../types';
+import { useQueueTimes } from '../hooks/useQueueTimes';
 
 interface AttractionCardProps {
   attraction: Attraction;
@@ -22,9 +24,40 @@ interface AttractionCardProps {
 
 const AttractionCard: React.FC<AttractionCardProps> = ({ attraction, showDetails = false }) => {
   const navigate = useNavigate();
+  const { getWaitTimeForRide, loading: queueLoading } = useQueueTimes();
+  const rideWaitTime = getWaitTimeForRide(attraction.id);
 
   const handleClick = () => {
     navigate(`/attraction/${attraction.id}`);
+  };
+
+  const getWaitTimeColor = () => {
+    if (!rideWaitTime || !rideWaitTime.isOpen) {
+      return 'default';
+    }
+    
+    const waitTime = rideWaitTime.waitTime;
+    if (waitTime === 0) return 'success';
+    if (waitTime <= 15) return 'success';
+    if (waitTime <= 30) return 'warning';
+    if (waitTime <= 60) return 'warning';
+    return 'error';
+  };
+
+  const formatWaitTime = () => {
+    if (queueLoading) {
+      return <CircularProgress size={16} />;
+    }
+    
+    if (!rideWaitTime) {
+      return 'No wait time data';
+    }
+    
+    if (!rideWaitTime.isOpen) {
+      return 'Closed';
+    }
+    
+    return rideWaitTime.waitTime === 0 ? 'No Wait' : `${rideWaitTime.waitTime} min`;
   };
 
   return (
@@ -56,8 +89,8 @@ const AttractionCard: React.FC<AttractionCardProps> = ({ attraction, showDetails
           <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
             <Chip
               icon={<AccessTime />}
-              label={attraction.waitTime ? `${attraction.waitTime} min wait` : 'No wait time data'}
-              color={attraction.waitTime && attraction.waitTime > 30 ? 'error' : 'success'}
+              label={formatWaitTime()}
+              color={getWaitTimeColor()}
             />
           </Box>
 
