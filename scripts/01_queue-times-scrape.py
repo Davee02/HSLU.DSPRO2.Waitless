@@ -16,6 +16,7 @@ import os
 import argparse
 import traceback
 from datetime import date, datetime, timedelta
+from collections import defaultdict
 from random import random
 from typing import List
 
@@ -25,6 +26,7 @@ from playwright.sync_api import sync_playwright
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+import time
 
 # Initialize Firebase Admin SDK if not already initialized
 if not firebase_admin._apps:
@@ -127,31 +129,6 @@ class QueueTimesScraper:
             self.error(f"Error navigating to {current_date}: {e}")
             raise
 
-    def save_ride_data_to_firestore(self, current_date: date) -> None:
-        """
-        Save the collected ride data for the current date to Firestore.
-        """
-        self.log(f"Saving ride data for {current_date} to Firestore")
-        try:
-            for record in self.ride_data:
-                ride_name = record["ride_name"]
-                timestamp = record["timestamp"]
-                wait_time = record["wait_time"]
-
-                # Use ride_name as the document ID in the 'attractions' collection
-                attraction_ref = self.db.collection('attractions').document(ride_name)
-
-                # Add a document to the 'queueTimes' subcollection
-                attraction_ref.collection('queueTimes').add({
-                    "timestamp": timestamp,
-                    "wait_time": wait_time
-                })
-            self.log(f"Successfully saved {len(self.ride_data)} ride records to Firestore for {current_date}")
-        except Exception as e:
-            self.error(f"Error saving ride data to Firestore for {current_date}: {e}")
-            self.error(traceback.format_exc())
-
-
     def process_date(self, current_date: date) -> None:
         """
         Process a single date: extract ride wait times and weather data,
@@ -216,10 +193,6 @@ class QueueTimesScraper:
                     }
                     self.ride_data.append(record)
                 self.trace("")
-
-            # Save ride data to Firestore after processing all rides for the date
-            if self.ride_data:
-                self.save_ride_data_to_firestore(current_date)
 
 
             # Process weather data (temperature, rain, wind)
@@ -291,7 +264,65 @@ class QueueTimesScraper:
         except Exception as e:
             self.error(f"Error saving checkpoint {checkpoint_index}: {e}")
             self.error(traceback.format_exc())
+            
+    def save_all_ride_data_to_firestore(self) -> None:
+        """
+        Saves all accumulated ride data (self.ride_data) to Firestore using batched writes.
+        Data is grouped by ride_name, and each entry is added to the 'queueTimes'
+        subcollection of the corresponding attraction document.
+        """
+        self.log(f"Saving all accumulated ride data to Firestore ({len(self.ride_data)} records)")
+        if not self.ride_data:
+            self.log("No ride data to save to Firestore.")
+            return
 
+        # Group ride data by ride name
+        ride_data_grouped = defaultdict(list)
+        for record in self.ride_data:
+            ride_data_grouped[record["ride_name"]].append(record)
+
+        total_records_saved = 0
+        batch = self.db.batch()
+        batch_size = 0
+        max_batch_size = 500 # Maximum operations per batch in Firestore
+
+        for ride_name, records in ride_data_grouped.items():
+            attraction_ref = self.db.collection('attractions').document(ride_name)
+            for record in records:
+                # Prepare the data for the subcollection document
+                record_data = {
+                    "timestamp": record["timestamp"],
+                    "wait_time": float(record["wait_time"]) # Ensure wait_time is float
+                }
+                # Add a set operation to the batch for the subcollection document
+                batch.set(attraction_ref.collection('queueTimes').document(), record_data)
+                batch_size += 1
+                total_records_saved += 1
+
+                if batch_size >= max_batch_size:
+                    try:
+                        batch.commit()
+                        self.log(f"Committed batch with {batch_size} writes. Total saved: {total_records_saved}")
+                        batch = self.db.batch()
+                        batch_size = 0
+                        time.sleep(60) # Add this line
+                    except Exception as e:
+                        self.error(f"Error committing batch: {e}")
+                        # Depending on your error handling needs, you might want to
+                        # implement retry logic or stop the process here.
+                        raise
+
+        # Commit any remaining writes in the last batch
+        if batch_size > 0:
+            try:
+                batch.commit()
+                self.log(f"Committed final batch with {batch_size} writes. Total saved: {total_records_saved}")
+                time.sleep(60) # Add this line
+            except Exception as e:
+                self.error(f"Error committing final batch: {e}")
+                raise
+
+        self.log(f"Finished saving all {total_records_saved} ride records to Firestore.")
 
 def main() -> None:
     """Main function to run the scraper with periodic checkpointing."""
@@ -347,12 +378,12 @@ def main() -> None:
                         scraper.error(f"Unhandled error saving checkpoint {checkpoint_index}: {e}")
                         scraper.error(traceback.format_exc())
 
-            # Final checkpoint if any data remains (should be empty if process_date works correctly)
-            if scraper.ride_data or scraper.weather_data:
+            # Save all accumulated ride data to Firestore after processing all dates
+            if scraper.ride_data:
                 try:
-                    scraper.save_checkpoint(checkpoint_index)
+                    scraper.save_all_ride_data_to_firestore()
                 except Exception as e:
-                    scraper.error(f"Unhandled error saving final checkpoint: {e}")
+                    scraper.error(f"Unhandled error saving data to Firestore: {e}")
                     scraper.error(traceback.format_exc())
 
             context.close()

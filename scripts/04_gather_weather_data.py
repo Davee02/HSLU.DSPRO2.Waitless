@@ -168,19 +168,32 @@ def main():
         """
         Save the weather DataFrame to Firestore.
         """
+        # Define the batch size
+        BATCH_SIZE = 500
+
         db = firestore.client()
         weather_location_ref = db.collection('weatherLocations').document(WEATHER_LOCATION_ID)
 
         print(f"Saving {len(df)} weather records to Firestore...")
         batch = db.batch()
+        batch_count = 0
         for index, row in df.iterrows():
             reading_data = {
                 'timestamp': row['timestamp'],
                 'temperature_C': row['temperature_C'],
                 'rain_mm': row.get('rain_mm_per_hour', row.get('rain_mm')) # Use interpolated rain if available
             }
-            batch.set(weather_location_ref.collection('readings').document(), reading_data)
-        batch.commit()
+            batch.set(weather_location_ref.collection('readings').document(), reading_data) # Firestore assigns a document ID
+            batch_count += 1
+
+            if batch_count == BATCH_SIZE:
+                batch.commit()
+                batch = db.batch()
+                batch_count = 0
+        
+        # Commit any remaining writes in the last batch
+        if batch_count > 0:
+            batch.commit()
     """
     Main function to execute the data collection and processing.
     Only collect temperature and rain data.
