@@ -13,6 +13,8 @@ import numpy as np
 import requests
 import time
 from datetime import datetime, timedelta
+import firebase_admin
+from firebase_admin import credentials, firestore
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -22,6 +24,12 @@ RUST_LON = 7.7224   # Longitude for Rust, Germany
 START_YEAR = 2017
 END_YEAR = datetime.now().year 
 API_BASE_URL = "https://archive-api.open-meteo.com/v1/archive"
+
+# Initialize Firebase Admin SDK
+if not firebase_admin._apps:
+    cred = credentials.ApplicationDefault()
+    firebase_admin.initialize_app(cred)
+WEATHER_LOCATION_ID = 'rust_germany'
 
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -156,6 +164,23 @@ def save_to_parquet(df, output_file='rust_weather_5min_rain_temperature.parquet'
     return full_path
 
 def main():
+    def save_weather_data_to_firestore(df):
+        """
+        Save the weather DataFrame to Firestore.
+        """
+        db = firestore.client()
+        weather_location_ref = db.collection('weatherLocations').document(WEATHER_LOCATION_ID)
+
+        print(f"Saving {len(df)} weather records to Firestore...")
+        batch = db.batch()
+        for index, row in df.iterrows():
+            reading_data = {
+                'timestamp': row['timestamp'],
+                'temperature_C': row['temperature_C'],
+                'rain_mm': row.get('rain_mm_per_hour', row.get('rain_mm')) # Use interpolated rain if available
+            }
+            batch.set(weather_location_ref.collection('readings').document(), reading_data)
+        batch.commit()
     """
     Main function to execute the data collection and processing.
     Only collect temperature and rain data.
@@ -182,6 +207,9 @@ def main():
         missing_values = combined_df.isna().sum()
         print("\nMissing values per column:")
         print(missing_values)
+
+        # Save data to Firestore
+        save_weather_data_to_firestore(combined_df)
 
         output_file = save_to_parquet(combined_df)
 
