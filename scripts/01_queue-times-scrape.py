@@ -22,6 +22,25 @@ from typing import List
 import pandas as pd
 from playwright.sync_api import sync_playwright
 
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+
+# Initialize Firebase Admin SDK if not already initialized
+if not firebase_admin._apps:
+    # You'll need to provide your Firebase Admin SDK credentials file
+    # This file should be downloaded from your Firebase project settings
+    # and its path should be accessible to the script.
+    # For local development, you can set the GOOGLE_APPLICATION_CREDENTIALS
+    # environment variable to the path of your credentials file.
+    try:
+        cred = credentials.ApplicationDefault()
+        firebase_admin.initialize_app(cred)
+    except Exception as e:
+        print(f"Error initializing Firebase Admin SDK: {e}")
+        print("Please ensure GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly.")
+        exit(1)
+
 
 def get_date_range(start_date: date, end_date: date) -> List[date]:
     """Generate a list of dates from start_date to end_date (inclusive)."""
@@ -57,6 +76,7 @@ class QueueTimesScraper:
         self.park_id = park_id
         # Create a URL template using the given park id.
         self.CALENDAR_URL_TEMPLATE = f"https://queue-times.com/parks/{park_id}/calendar/{{year}}/{{month:02d}}/{{day:02d}}"
+        self.db = firestore.client()
 
     def trace(self, message: str) -> None:
         if self.verbose:
@@ -70,12 +90,7 @@ class QueueTimesScraper:
 
     def login(self, username: str, password: str) -> None:
         """
-        Perform login with the provided credentials, including cookie handling.
-        
-        Args:
-            username: The user email.
-            password: The user password.
-        """
+        Perform login with the provided credentials, including cookie handling.\n        \n        Args:\n            username: The user email.\n            password: The user password.\n        """
         try:
             self.log("Navigating to the login page")
             self.page.goto(self.LOGIN_URL)
@@ -112,15 +127,44 @@ class QueueTimesScraper:
             self.error(f"Error navigating to {current_date}: {e}")
             raise
 
+    def save_ride_data_to_firestore(self, current_date: date) -> None:
+        """
+        Save the collected ride data for the current date to Firestore.
+        """
+        self.log(f"Saving ride data for {current_date} to Firestore")
+        try:
+            for record in self.ride_data:
+                ride_name = record["ride_name"]
+                timestamp = record["timestamp"]
+                wait_time = record["wait_time"]
+
+                # Use ride_name as the document ID in the 'attractions' collection
+                attraction_ref = self.db.collection('attractions').document(ride_name)
+
+                # Add a document to the 'queueTimes' subcollection
+                attraction_ref.collection('queueTimes').add({
+                    "timestamp": timestamp,
+                    "wait_time": wait_time
+                })
+            self.log(f"Successfully saved {len(self.ride_data)} ride records to Firestore for {current_date}")
+        except Exception as e:
+            self.error(f"Error saving ride data to Firestore for {current_date}: {e}")
+            self.error(traceback.format_exc())
+
+
     def process_date(self, current_date: date) -> None:
         """
         Process a single date: extract ride wait times and weather data,
-        then store the data in internal lists.
+        then store the data in internal lists and save to Firestore.
         
         Args:
             current_date: The date to be processed.
         """
         self.log(f"Processing data for {current_date}")
+        # Clear data from previous date
+        self.ride_data.clear()
+        self.weather_data.clear()
+
         try:
             self.go_to_date(current_date)
             time.sleep(1 + random())
@@ -173,6 +217,11 @@ class QueueTimesScraper:
                     self.ride_data.append(record)
                 self.trace("")
 
+            # Save ride data to Firestore after processing all rides for the date
+            if self.ride_data:
+                self.save_ride_data_to_firestore(current_date)
+
+
             # Process weather data (temperature, rain, wind)
             try:
                 temperature_data = self.page.evaluate('Chartkick.charts["chart-4"].rawData[0].data')
@@ -180,6 +229,7 @@ class QueueTimesScraper:
                 wind_data = self.page.evaluate('Chartkick.charts["chart-6"].rawData[0].data')
             except Exception as e:
                 self.error(f"Error extracting weather data for {current_date}: {e}")
+                # Continue to the next date even if weather data extraction fails
                 return
 
             self.trace(f"Temperature data: {temperature_data}")
@@ -201,7 +251,8 @@ class QueueTimesScraper:
                         "wind": wind
                     }
                     self.weather_data.append(record)
-            self.trace(f"Processed weather data for {current_date}\n")
+                # TODO: Add logic to save weather data to Firestore
+                self.trace(f"Processed weather data for {current_date}\n")
         except Exception as e:
             self.error(f"Error processing date {current_date}: {e}")
             self.error(traceback.format_exc())
@@ -209,7 +260,8 @@ class QueueTimesScraper:
     def save_checkpoint(self, checkpoint_index: int) -> None:
         """
         Save the current ride and weather data to Parquet files as a checkpoint
-        and clear the in-memory data to free up memory.
+        and clear the in-memory data to free up memory. This is now mainly for backup
+        or further processing outside of Firestore.
         
         Args:
             checkpoint_index: An index used in naming the checkpoint files.
@@ -222,7 +274,7 @@ class QueueTimesScraper:
                 rides_df.to_parquet(rides_file, engine="pyarrow")
                 self.log(f"Checkpoint {checkpoint_index}: Saved {len(rides_df)} ride records to '{rides_file}'")
             else:
-                self.log(f"Checkpoint {checkpoint_index}: No ride data to save.")
+                self.log(f"Checkpoint {checkpoint_index}: No ride data to save to checkpoint.")
 
             if self.weather_data:
                 weather_df = pd.DataFrame(self.weather_data)
@@ -231,11 +283,11 @@ class QueueTimesScraper:
                 weather_df.to_parquet(weather_file, engine="pyarrow")
                 self.log(f"Checkpoint {checkpoint_index}: Saved {len(weather_df)} weather records to '{weather_file}'")
             else:
-                self.log(f"Checkpoint {checkpoint_index}: No weather data to save.")
+                self.log(f"Checkpoint {checkpoint_index}: No weather data to save to checkpoint.")
 
-            # Clear in-memory data
-            self.ride_data.clear()
-            self.weather_data.clear()
+            # Clear in-memory data is now done at the beginning of process_date
+            # self.ride_data.clear()
+            # self.weather_data.clear()
         except Exception as e:
             self.error(f"Error saving checkpoint {checkpoint_index}: {e}")
             self.error(traceback.format_exc())
@@ -286,6 +338,7 @@ def main() -> None:
                     scraper.error(f"Unhandled error processing date {current_date}: {e}")
                     scraper.error(traceback.format_exc())
                 # Save a checkpoint every `checkpoint_interval` days.
+                # This is now mainly for backup, as data is saved to Firestore per date.
                 if idx % checkpoint_interval == 0:
                     try:
                         scraper.save_checkpoint(checkpoint_index)
@@ -294,7 +347,7 @@ def main() -> None:
                         scraper.error(f"Unhandled error saving checkpoint {checkpoint_index}: {e}")
                         scraper.error(traceback.format_exc())
 
-            # Final checkpoint if any data remains.
+            # Final checkpoint if any data remains (should be empty if process_date works correctly)
             if scraper.ride_data or scraper.weather_data:
                 try:
                     scraper.save_checkpoint(checkpoint_index)
