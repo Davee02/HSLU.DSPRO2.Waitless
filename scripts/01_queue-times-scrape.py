@@ -26,22 +26,8 @@ from playwright.sync_api import sync_playwright
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-import time
 
-# Initialize Firebase Admin SDK if not already initialized
-if not firebase_admin._apps:
-    # You'll need to provide your Firebase Admin SDK credentials file
-    # This file should be downloaded from your Firebase project settings
-    # and its path should be accessible to the script.
-    # For local development, you can set the GOOGLE_APPLICATION_CREDENTIALS
-    # environment variable to the path of your credentials file.
-    try:
-        cred = credentials.ApplicationDefault()
-        firebase_admin.initialize_app(cred)
-    except Exception as e:
-        print(f"Error initializing Firebase Admin SDK: {e}")
-        print("Please ensure GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly.")
-        exit(1)
+import json
 
 
 def get_date_range(start_date: date, end_date: date) -> List[date]:
@@ -52,6 +38,11 @@ def get_date_range(start_date: date, end_date: date) -> List[date]:
         dates.append(current_date)
         current_date += timedelta(days=1)
     return dates
+
+# Initialize Firebase Admin SDK if not already initialized
+if not firebase_admin._apps:
+    cred = credentials.ApplicationDefault()  # Or use credentials.Certificate("path/to/serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
 
 
 class QueueTimesScraper:
@@ -137,11 +128,6 @@ class QueueTimesScraper:
         Args:
             current_date: The date to be processed.
         """
-        self.log(f"Processing data for {current_date}")
-        # Clear data from previous date
-        self.ride_data.clear()
-        self.weather_data.clear()
-
         try:
             self.go_to_date(current_date)
             time.sleep(1 + random())
@@ -264,12 +250,11 @@ class QueueTimesScraper:
         except Exception as e:
             self.error(f"Error saving checkpoint {checkpoint_index}: {e}")
             self.error(traceback.format_exc())
-            
+
     def save_all_ride_data_to_firestore(self) -> None:
         """
         Saves all accumulated ride data (self.ride_data) to Firestore using batched writes.
-        Data is grouped by ride_name, and each entry is added to the 'queueTimes'
-        subcollection of the corresponding attraction document.
+        Data is structured under attractions/{ride_name}/queueTimes.
         """
         self.log(f"Saving all accumulated ride data to Firestore ({len(self.ride_data)} records)")
         if not self.ride_data:
@@ -281,48 +266,38 @@ class QueueTimesScraper:
         for record in self.ride_data:
             ride_data_grouped[record["ride_name"]].append(record)
 
-        total_records_saved = 0
         batch = self.db.batch()
         batch_size = 0
-        max_batch_size = 500 # Maximum operations per batch in Firestore
+        max_batch_size = 500 # Firestore limit is 500 operations per batch
 
-        for ride_name, records in ride_data_grouped.items():
-            attraction_ref = self.db.collection('attractions').document(ride_name)
-            for record in records:
-                # Prepare the data for the subcollection document
-                record_data = {
-                    "timestamp": record["timestamp"],
-                    "wait_time": float(record["wait_time"]) # Ensure wait_time is float
-                }
-                # Add a set operation to the batch for the subcollection document
-                batch.set(attraction_ref.collection('queueTimes').document(), record_data)
-                batch_size += 1
-                total_records_saved += 1
-
-                if batch_size >= max_batch_size:
-                    try:
+        try:
+            for ride_name, records in ride_data_grouped.items():
+                attraction_ref = self.db.collection('attractions').document(ride_name)
+                queue_times_collection_ref = attraction_ref.collection('queueTimes') # Get the subcollection reference
+                for record in records:
+                    # Prepare the data for the subcollection document
+                    record_data = {"timestamp": record["timestamp"], "wait_time": float(record["wait_time"])}                    
+                    # Use a timestamp as the document ID to ensure uniqueness and ordering
+                    doc_id = record_data["timestamp"].strftime("%Y%m%d%H%M%S%f")
+                    # Add a set operation to the batch for a new document in the subcollection
+                    batch.set(queue_times_collection_ref.document(doc_id), record_data) # Use the subcollection reference and the timestamp as ID
+                    batch_size += 1
+                    if batch_size >= max_batch_size:
                         batch.commit()
-                        self.log(f"Committed batch with {batch_size} writes. Total saved: {total_records_saved}")
-                        batch = self.db.batch()
+                        self.trace(f"Committed batch with {batch_size} writes for {ride_name}")
+                        batch = self.db.batch() # Start a new batch
                         batch_size = 0
-                        time.sleep(60) # Add this line
-                    except Exception as e:
-                        self.error(f"Error committing batch: {e}")
-                        # Depending on your error handling needs, you might want to
-                        # implement retry logic or stop the process here.
-                        raise
 
-        # Commit any remaining writes in the last batch
-        if batch_size > 0:
-            try:
+            # Commit any remaining operations
+            if batch_size > 0:
                 batch.commit()
-                self.log(f"Committed final batch with {batch_size} writes. Total saved: {total_records_saved}")
-                time.sleep(60) # Add this line
-            except Exception as e:
-                self.error(f"Error committing final batch: {e}")
-                raise
+                self.trace(f"Committed final batch with {batch_size} writes.")
 
-        self.log(f"Finished saving all {total_records_saved} ride records to Firestore.")
+            self.log("Successfully saved all ride data to Firestore.")
+        except Exception as e:
+            self.error(f"Error saving ride data to Firestore: {e}")
+            self.error(traceback.format_exc())
+
 
 def main() -> None:
     """Main function to run the scraper with periodic checkpointing."""
@@ -363,7 +338,7 @@ def main() -> None:
             scraper.login(args.login_email, args.login_password)
 
             for idx, current_date in enumerate(date_range, start=1):
-                try:
+                try: # This try block should contain the process_date call and subsequent actions
                     scraper.process_date(current_date)
                 except Exception as e:
                     scraper.error(f"Unhandled error processing date {current_date}: {e}")
@@ -380,11 +355,8 @@ def main() -> None:
 
             # Save all accumulated ride data to Firestore after processing all dates
             if scraper.ride_data:
-                try:
-                    scraper.save_all_ride_data_to_firestore()
-                except Exception as e:
-                    scraper.error(f"Unhandled error saving data to Firestore: {e}")
-                    scraper.error(traceback.format_exc())
+                scraper.save_all_ride_data_to_firestore()
+
 
             context.close()
             browser.close()
