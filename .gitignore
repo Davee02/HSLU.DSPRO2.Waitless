@@ -16,14 +16,10 @@ public
 .vscode
 .firebase
 
-models
-
-*.joblib
 
 notebooks/models/
 
 models
 
 *.joblib
-figures/
-data/processed
+venv
