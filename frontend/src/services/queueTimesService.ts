@@ -27,7 +27,7 @@ export interface QueueTimeData {
   }
   
   // Function to normalize ride names for comparison
-  const normalizeRideName = (name: string): string => {
+  export const normalizeRideName = (name: string): string => {
     return name
       .toLowerCase()
       .trim()
@@ -45,7 +45,7 @@ export interface QueueTimeData {
   };
   
   // Local ride name mappings (based on your attraction data)
-  const LOCAL_RIDE_MAPPINGS = [
+  export const LOCAL_RIDE_MAPPINGS = [
     { id: "silver-star", name: "Silver Star" },
     { id: "blue-fire", name: "Blue Fire Megacoaster" },
     { id: "wodan", name: "Wodan – Timburcoaster" },

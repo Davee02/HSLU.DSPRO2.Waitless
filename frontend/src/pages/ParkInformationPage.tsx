@@ -37,15 +37,6 @@ import {
   Zoom,
 } from '@mui/material';
 import {
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
-  TimelineOppositeContent,
-} from '@mui/lab';
-import {
   AccessTime,
   LocationOn,
   Euro,
@@ -1213,42 +1204,6 @@ const ParkInformationPage: React.FC = () => {
             </Grid>
           ))}
         </Grid>
-      </Box>
-
-      {/* History Timeline */}
-      <Box sx={{ mt: 8 }}>
-        <Fade in timeout={1000}>
-          <Typography variant="h4" gutterBottom sx={{ color: '#000000', mb: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <History /> Park History
-          </Typography>
-        </Fade>
-        <Box sx={{ overflowX: 'auto', pb: 2 }}>
-          <Timeline position="alternate" sx={{ minWidth: 800 }}>
-            {parkData.parkInfo.history.milestones.map((milestone, index) => (
-              <TimelineItem key={index}>
-                <TimelineOppositeContent color="text.secondary">
-                  {milestone.year}
-                </TimelineOppositeContent>
-                <TimelineSeparator>
-                  <TimelineDot color="primary" />
-                  <TimelineConnector />
-                </TimelineSeparator>
-                <TimelineContent>
-                  <Zoom in style={{ transitionDelay: `${100 * index}ms` }}>
-                    <Paper elevation={3} sx={{ p: 2 }}>
-                      <Typography variant="body1">
-                        {milestone.event}
-                      </Typography>
-                    </Paper>
-                  </Zoom>
-                </TimelineContent>
-              </TimelineItem>
-            ))}
-          </Timeline>
-        </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
-          {parkData.parkInfo.history.ownershipInfo}
-        </Typography>
       </Box>
 
       {/* Park Statistics */}
