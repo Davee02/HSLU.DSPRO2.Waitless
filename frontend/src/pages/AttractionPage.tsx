@@ -23,13 +23,12 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
+
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css'; // Import stylesheet
+
 import {
   ArrowBack,
-  Speed,
-  Height,
-  Timer,
-  Warning,
-  Category,
   CalendarToday,
   LocationOn,
   Person,
@@ -38,25 +37,44 @@ import {
   Info,
   AccessTime,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  DirectionsRun,
   CheckCircle,
   Cancel,
   Refresh,
+  Speed,
+  Height,
+  Timer,
+  Warning,
+  Category,
 } from '@mui/icons-material';
 
 // Import attraction data
 import attractionsData from '../data/attractions.json';
-// Import the new queue times hook
+// Import the real-time queue times hook
 import { useQueueTimes } from '../hooks/useQueueTimes';
+// Import the historical queue times hook
+import { useHistoricalQueueTimes } from '../hooks/useHistoricalQueueTimes';
+
+// Import Chart.js and react-chartjs-2 components
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js/auto'; // Import 'chart.js/auto' for automatic registration
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
 
 const AttractionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [attraction, setAttraction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Use the queue times hook
-  const { queueTimes, loading: queueLoading, error: queueError, getWaitTimeForRide } = useQueueTimes();
 
   useEffect(() => {
     // Find the attraction by ID
@@ -67,7 +85,16 @@ const AttractionPage: React.FC = () => {
     setLoading(false);
   }, [id]);
 
-  if (loading) {
+  // Use the real-time queue times hook
+  const { queueTimes, loading: queueLoading, error: queueError, getWaitTimeForRide } = useQueueTimes();
+
+  // State for historical data
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Use Date object for react-datepicker
+
+  // Use the historical queue times hook
+  const { historicalData, loading: loadingHistoricalData, error: historicalError } = useHistoricalQueueTimes(id, selectedDate);
+
+   if (loading) {
     return <Box sx={{ p: 4, textAlign: 'center' }}>Loading...</Box>;
   }
 
@@ -102,23 +129,24 @@ const AttractionPage: React.FC = () => {
   // Get real-time wait time data for this attraction
   const rideWaitTime = getWaitTimeForRide(attraction.id);
 
+
   const formatWaitTime = () => {
     if (queueLoading) {
       return <CircularProgress size={20} />;
     }
-    
+
     if (queueError) {
       return 'Error';
     }
-    
+
     if (!rideWaitTime) {
       return 'N/A';
     }
-    
+
     if (!rideWaitTime.isOpen) {
       return 'Closed';
     }
-    
+
     return rideWaitTime.waitTime === 0 ? 'No Wait' : `${rideWaitTime.waitTime} min`;
   };
 
@@ -126,7 +154,7 @@ const AttractionPage: React.FC = () => {
     if (!rideWaitTime || !rideWaitTime.isOpen) {
       return '#9e9e9e';
     }
-    
+
     const waitTime = rideWaitTime.waitTime;
     if (waitTime === 0) return '#4caf50';
     if (waitTime <= 15) return '#8bc34a';
@@ -137,19 +165,72 @@ const AttractionPage: React.FC = () => {
 
   const formatLastUpdated = () => {
     if (!rideWaitTime?.lastUpdated) return null;
-    
+
     const updatedTime = new Date(rideWaitTime.lastUpdated);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - updatedTime.getTime()) / (1000 * 60));
-    
+
     if (diffMinutes < 1) return 'Just updated';
     if (diffMinutes === 1) return '1 minute ago';
     if (diffMinutes < 60) return `${diffMinutes} minutes ago`;
-    
+
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours === 1) return '1 hour ago';
     return `${diffHours} hours ago`;
   };
+
+   // Chart data configuration
+   const chartData = {
+    labels: historicalData?.map(data => {
+      // Assuming timestamp is a Firestore Timestamp or similar object with a toDate() method
+      if (data.timestamp && typeof data.timestamp.toDate === 'function') {
+        return data.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      // Fallback for plain Date objects or other formats
+      if (data.timestamp instanceof Date) {
+        return data.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      return ''; // Or handle other timestamp formats
+    }) || [],
+    datasets: [{
+      label: 'Wait Time (min)',
+      data: historicalData?.map(data => data.wait_time) || [],
+      fill: false,
+      borderColor: '#3f51b5', // Using a consistent color
+      tension: 0.1,
+    }],
+  };
+
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false, // Allow the chart to adjust height
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: `Historical Wait Times for ${attraction?.name || ''} on ${selectedDate?.toLocaleDateString() || ''}`,
+      },
+    },
+     scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Wait Time (min)'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Time of Day'
+        }
+      }
+    }
+  };
+
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -192,8 +273,8 @@ const AttractionPage: React.FC = () => {
                   color: 'white',
                   fontWeight: 'bold',
                 }}
-                icon={rideWaitTime.isOpen ? 
-                  <CheckCircle sx={{ color: 'white' }} /> : 
+                icon={rideWaitTime.isOpen ?
+                  <CheckCircle sx={{ color: 'white' }} /> :
                   <Cancel sx={{ color: 'white' }} />
                 }
               />
@@ -239,7 +320,7 @@ const AttractionPage: React.FC = () => {
                       transform: 'scale(1.02)',
                     },
                   }}>
-                    <CardContent>
+                     <CardContent>
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                       </Typography>
@@ -263,9 +344,9 @@ const AttractionPage: React.FC = () => {
                 <AccessTime /> Current Wait Time
                 {queueLoading && <CircularProgress size={16} />}
               </Typography>
-              <Typography 
-                variant="h3" 
-                sx={{ 
+              <Typography
+                variant="h3"
+                sx={{
                   color: getWaitTimeColor(),
                   display: 'flex',
                   alignItems: 'center',
@@ -357,6 +438,52 @@ const AttractionPage: React.FC = () => {
             </Paper>
           </Slide>
         </Grid>
+
+        {/* Historical Data Section */}
+        <Grid item xs={12}>
+          <Fade in timeout={1000}>
+            <Paper elevation={3} sx={{ p: 3 }}>
+              <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>Historical Wait Times</Typography>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" gutterBottom>Select a Date:</Typography>
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={(date: Date | null) => setSelectedDate(date)}
+                  dateFormat="yyyy/MM/dd"
+                  isClearable
+                  placeholderText="Select a date"
+                  customInput={<input style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }} />}
+                />
+              </Box>
+
+              {loadingHistoricalData && (
+                <Box sx={{ textAlign: 'center', mt: 2 }}>
+                  <CircularProgress />
+                  <Typography>Loading historical data...</Typography>
+                </Box>
+              )}
+
+              {!loadingHistoricalData && historicalError && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  <Typography variant="body2">
+                    Error loading historical data: {historicalError.message}
+                  </Typography>
+                </Alert>
+              )}
+
+              {!loadingHistoricalData && !historicalError && historicalData && historicalData.length > 0 ? (
+                <Box sx={{ height: 400 }}> {/* Set a fixed height for the chart container */}
+                  <Line data={chartData} options={chartOptions} />
+                </Box>
+              ) : !loadingHistoricalData && !historicalError && (
+                <Typography variant="body1" sx={{ textAlign: 'center', mt: 2 }}>
+                  No historical data available for the selected date.
+                </Typography>
+              )}
+            </Paper>
+          </Fade>
+        </Grid>
+
       </Grid>
     </Container>
   );
