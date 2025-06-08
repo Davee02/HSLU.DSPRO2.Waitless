@@ -20,3 +20,4 @@ models
 
 *.joblib
 venv
+./frontend/src/firebase.ts
