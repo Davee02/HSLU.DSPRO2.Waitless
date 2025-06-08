@@ -1,0 +1,15 @@
+Flask==2.3.3
+gunicorn==21.2.0
+numpy==2.0.2
+pandas==2.2.3
+torch==2.7.0
+scikit-learn==1.6.1
+google-cloud-firestore==2.11.1
+google-cloud-storage==2.10.0
+pytorch-tcn==1.2.3
+python-dateutil==2.9.0
+pytz==2025.1
+requests==2.32.3
+psutil==7.0.0
+marshmallow==3.20.1
+holidays==0.70
