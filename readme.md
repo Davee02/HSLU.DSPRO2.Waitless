@@ -2,7 +2,7 @@
 
 The goal is to build a machine learning model that predicts queue times for amusement park attractions. The model will be trained on historical data from the amusement park and the weather and will be able to predict the queue time for a given attraction at a given time of day and weather conditions.
 
-In the first iteration, we will focus on the German amusement park "Europa-Park" , located in Rust. All the data will be collected from the website [queue-times.com](https://queue-times.com/) which provides real-time and historical queue times and weather data.
+In the first iteration, we will focus on the German amusement park "Europa-Park", located in Rust. All the data will be collected from the website [queue-times.com](https://queue-times.com/) which provides real-time and historical queue times and weather data.
 
 ## Team members
 
