@@ -45,23 +45,23 @@ RUST_LONGITUDE = 7.722
 # Ride mapping (from your queueTimesService.ts)
 LOCAL_RIDE_MAPPINGS = [
     {"id": "silver-star", "name": "Silver Star", "normalized_name": "Silver_Star"},
-    {"id": "blue-fire", "name": "Blue Fire Megacoaster", "normalized_name": "Blue_Fire_Megacoaster"},
-    {"id": "wodan", "name": "Wodan – Timburcoaster", "normalized_name": "Wodan_Timburcoaster"},
+    {"id": "blue-fire", "name": "blue fire Megacoaster", "normalized_name": "Blue_Fire_Megacoaster"},
+    {"id": "wodan", "name": "WODAN - Timburcoaster", "normalized_name": "Wodan_Timburcoaster"},
     {"id": "voletarium", "name": "Voletarium", "normalized_name": "Voletarium"},
-    {"id": "alpine-express-enzian", "name": "Alpine Express Enzian", "normalized_name": "Alpine_Express_Enzian"},
-    {"id": "arena-of-football", "name": "Arena of Football - Be Part of It", "normalized_name": "Arena_of_Football_Be_Part_of_It"},
-    {"id": "arthur", "name": "Arthur", "normalized_name": "Arthur"},
+    {"id": "alpine-express-enzian", "name": "Alpine Express 'Enzian'", "normalized_name": "Alpine_Express_Enzian"},
+    {"id": "arena-of-football", "name": "Arena of Football - Be Part of It!", "normalized_name": "Arena_of_Football_Be_Part_of_It"},
+    {"id": "arthur", "name": "ARTHUR", "normalized_name": "Arthur"},
     {"id": "atlantica-supersplash", "name": "Atlantica SuperSplash", "normalized_name": "Atlantica_SuperSplash"},
     {"id": "atlantis-adventure", "name": "Atlantis Adventure", "normalized_name": "Atlantis_Adventure"},
-    {"id": "baaa-express", "name": "Baaa Express", "normalized_name": "Baaa_Express"},
+    {"id": "baaa-express", "name": "Ba-a-a Express", "normalized_name": "Baaa_Express"},
     {"id": "bellevue-ferris-wheel", "name": "Bellevue Ferris Wheel", "normalized_name": "Bellevue_Ferris_Wheel"},
     {"id": "castello-dei-medici", "name": "Castello dei Medici", "normalized_name": "Castello_dei_Medici"},
     {"id": "dancing-dingie", "name": "Dancing Dingie", "normalized_name": "Dancing_Dingie"},
     {"id": "euromir", "name": "Euro-Mir", "normalized_name": "Euro_Mir"},
-    {"id": "eurosat-cancan-coaster", "name": "Eurosat CanCan Coaster", "normalized_name": "Eurosat_CanCan_Coaster"},
+    {"id": "eurosat-cancan-coaster", "name": "Eurosat - CanCan Coaster", "normalized_name": "Eurosat_CanCan_Coaster"},
     {"id": "eurotower", "name": "Euro-Tower", "normalized_name": "Euro_Tower"},
     {"id": "fjordrafting", "name": "Fjord-Rafting", "normalized_name": "Fjord_Rafting"},
-    {"id": "jim-button-journey", "name": "Jim Button - Journey Through Morrowland", "normalized_name": "Jim_Button_Journey_Through_Morrowland"},
+    {"id": "jim-button-journey", "name": "Jim Button - Journey through Morrowland", "normalized_name": "Jim_Button_Journey_Through_Morrowland"},
     {"id": "josefinas-imperial-journey", "name": "Josefina's Magical Imperial Journey", "normalized_name": "Josefinas_Magical_Imperial_Journey"},
     {"id": "kolumbusjolle", "name": "Kolumbusjolle", "normalized_name": "Kolumbusjolle"},
     {"id": "madame-freudenreich", "name": "Madame Freudenreich Curiosités", "normalized_name": "Madame_Freudenreich_Curiosites"},
@@ -70,17 +70,58 @@ LOCAL_RIDE_MAPPINGS = [
     {"id": "pegasus", "name": "Pegasus", "normalized_name": "Pegasus"},
     {"id": "pirates-in-batavia", "name": "Pirates in Batavia", "normalized_name": "Pirates_in_Batavia"},
     {"id": "poppy-towers", "name": "Poppy Towers", "normalized_name": "Poppy_Towers"},
-    {"id": "poseidon", "name": "Poseidon", "normalized_name": "Poseidon"},
+    {"id": "poseidon", "name": "Water rollercoaster Poseidon", "normalized_name": "Poseidon"},
     {"id": "snorri-touren", "name": "Snorri Touren", "normalized_name": "Snorri_Touren"},
     {"id": "swiss-bob-run", "name": "Swiss Bob Run", "normalized_name": "Swiss_Bob_Run"},
     {"id": "tirol-log-flume", "name": "Tirol Log Flume", "normalized_name": "Tirol_Log_Flume"},
     {"id": "tnnevirvel", "name": "Tnnevirvel", "normalized_name": "Tnnevirvel"},
-    {"id": "vienna-wave-swing", "name": "Vienna Wave Swing - Glckspilz", "normalized_name": "Vienna_Wave_Swing_Glckspilz"},
+    {"id": "vienna-wave-swing", "name": "Vienna Wave Swing - 'Glückspilz'", "normalized_name": "Vienna_Wave_Swing_Glckspilz"},
     {"id": "vindjammer", "name": "Vindjammer", "normalized_name": "Vindjammer"},
     {"id": "volo-da-vinci", "name": "Volo da Vinci", "normalized_name": "Volo_da_Vinci"},
-    {"id": "voltron-nevera", "name": "Voltron Nevera - Powered by Rimac", "normalized_name": "Voltron_Nevera_Powered_by_Rimac"},
+    {"id": "voltron-nevera", "name": "Voltron Nevera powered by Rimac", "normalized_name": "Voltron_Nevera_Powered_by_Rimac"},
     {"id": "whale-adventures", "name": "Whale Adventures - Northern Lights", "normalized_name": "Whale_Adventures_Northern_Lights"}
 ]
+
+MODEL_FILE_MAPPINGS = {
+    # Map from Firestore attraction names to model file names
+    "ARTHUR": "arthur",
+    "Alpine Express 'Enzian'": "alpine_express_enzian",
+    "Arena of Football - Be Part of It!": "arena_of_football__be_part_of_it",  # Note: double underscore
+    "Atlantica SuperSplash": "atlantica_supersplash", 
+    "Atlantis Adventure": "atlantis_adventure",
+    "Ba-a-a Express": "baaa_express",
+    "Bellevue Ferris Wheel": "bellevue_ferris_wheel",
+    "Castello dei Medici": "castello_dei_medici",
+    "Dancing Dingie": "dancing_dingie",
+    "Euro-Mir": "euromir",
+    "Euro-Tower": "eurotower",
+    "Eurosat - CanCan Coaster": "eurosat__cancan_coaster",  # Note: double underscore
+    "Fjord-Rafting": "fjordrafting", 
+    "Jim Button - Journey through Morrowland": "jim_button__journey_through_morrowland",
+    "Josefina's Magical Imperial Journey": "josefinas_magical_imperial_journey",
+    "Kolumbusjolle": "kolumbusjolle",
+    "Madame Freudenreich Curiosités": "madame_freudenreich_curiosits",  # Note: no 'e' in curiosits
+    "Matterhorn-Blitz": "matterhornblitz",
+    "Old Mac Donald's Tractor Fun": "old_mac_donalds_tractor_fun",
+    "Pegasus": "pegasus",
+    "Pirates in Batavia": "pirates_in_batavia",
+    "Poppy Towers": "poppy_towers",
+    "Water rollercoaster Poseidon": "poseidon",
+    "Silver Star": "silver_star",
+    "Snorri Touren": "snorri_touren",
+    "Swiss Bob Run": "swiss_bob_run",
+    "Tirol Log Flume": "tirol_log_flume",
+    "Tnnevirvel": "tnnevirvel",
+    "Vienna Wave Swing - 'Glückspilz'": "vienna_wave_swing_glckspilz",  # Note: no umlaut
+    "Vindjammer": "vindjammer",
+    "Voletarium": "voletarium",
+    "Volo da Vinci": "volo_da_vinci",
+    "Voltron Nevera powered by Rimac": "voltron_nevera_powered_by_rimac",
+    "WODAN - Timburcoaster": "wodan_timburcoaster",
+    "Whale Adventures - Northern Lights": "whale_adventures_northern_lights",
+    "blue fire Megacoaster": "blue_fire_megacoaster"
+}
+
 
 def convert_numpy_types(obj):
     """Convert numpy types to native Python types for JSON serialization"""
@@ -122,88 +163,136 @@ class ModelManager:
             return model
     
     def _load_model_from_storage(self, ride_name: str) -> WaitTimePredictor:
-        """Load model files from Cloud Storage"""
+        """Load model files from Cloud Storage using the correct model file naming - ENHANCED DEBUGGING"""
     
-        # Find the correct normalized name from LOCAL_RIDE_MAPPINGS
-        normalized_name = None
-        for mapping in LOCAL_RIDE_MAPPINGS:
-            if mapping["name"] == ride_name:
-                # CONVERT TO LOWERCASE - this was the missing piece!
-                normalized_name = mapping["normalized_name"].lower()
-                break
+        logger.info(f"🔍 ATTEMPTING MODEL LOAD for '{ride_name}'")
     
-        if not normalized_name:
-            # Fallback to simple conversion if not found in mappings
-            normalized_name = ride_name.lower().replace(' ', '_').replace('-', '_')
-            # Handle special characters that might be in ride names
-            normalized_name = normalized_name.replace('–', '_').replace('(', '').replace(')', '').replace(',', '').replace('.', '').replace("'", '').replace('"', '')
-            # Replace multiple underscores with single underscore
-            import re
-            normalized_name = re.sub(r'_+', '_', normalized_name)
-            # Remove leading/trailing underscores
-            normalized_name = normalized_name.strip('_')
+        # Use the MODEL_FILE_MAPPINGS for model files (not LOCAL_RIDE_MAPPINGS)
+        if ride_name in MODEL_FILE_MAPPINGS:
+            normalized_name = MODEL_FILE_MAPPINGS[ride_name]
+            logger.info(f"✅ Found model mapping for '{ride_name}' -> '{normalized_name}'")
+        else:
+            logger.error(f"❌ No model file mapping found for '{ride_name}'")
+            logger.error(f"Available mappings ({len(MODEL_FILE_MAPPINGS)}): {list(MODEL_FILE_MAPPINGS.keys())}")
+        
+            # Try to find similar names
+            similar_names = [name for name in MODEL_FILE_MAPPINGS.keys() if ride_name.lower() in name.lower() or name.lower() in ride_name.lower()]
+            if similar_names:
+                logger.error(f"Similar names found: {similar_names}")
+        
+            raise ValueError(f"No model file mapping found for attraction: {ride_name}")
     
-        logger.info(f"Loading model for '{ride_name}' using normalized name: '{normalized_name}'")
+        logger.info(f"Loading model for '{ride_name}' using model file name: '{normalized_name}'")
     
         # Download model files to temp directory
         temp_dir = f"/tmp/{normalized_name}"
         os.makedirs(temp_dir, exist_ok=True)
     
-        # Download GB model (with LOWERCASE naming)
-        gb_blob = self.bucket.blob(f"models/{normalized_name}_gb_baseline.pkl")
+        # Download GB model
+        gb_blob_path = f"models/{normalized_name}_gb_baseline.pkl"
+        gb_blob = self.bucket.blob(gb_blob_path)
         gb_path = f"{temp_dir}/{normalized_name}_gb_baseline.pkl"
     
-        logger.info(f"Downloading GB model from: models/{normalized_name}_gb_baseline.pkl")
+        logger.info(f"🔄 Downloading GB model from: {gb_blob_path}")
     
         try:
+            # Check if blob exists first
+            if not gb_blob.exists():
+                logger.error(f"❌ GB model blob does not exist: {gb_blob_path}")
+                # List similar files for debugging
+                try:
+                    blobs = list(self.bucket.list_blobs(prefix=f"models/{normalized_name}"))
+                    similar_files = [blob.name for blob in blobs]
+                    logger.error(f"Files starting with 'models/{normalized_name}': {similar_files}")
+                
+                    # Also list all GB models
+                    all_gb_blobs = list(self.bucket.list_blobs(prefix="models/"))
+                    all_gb_models = [blob.name for blob in all_gb_blobs if blob.name.endswith('_gb_baseline.pkl')]
+                    logger.error(f"All available GB models: {all_gb_models}")
+                except Exception as list_e:
+                    logger.error(f"Could not list available models: {list_e}")
+                raise FileNotFoundError(f"GB model blob not found: {gb_blob_path}")
+        
             gb_blob.download_to_filename(gb_path)
             logger.info(f"✅ Successfully downloaded GB model to {gb_path}")
         except Exception as e:
             logger.error(f"❌ Failed to download GB model: {e}")
-            # List available models for debugging
-            try:
-                blobs = list(self.bucket.list_blobs(prefix="models/"))
-                available_gb_models = [blob.name for blob in blobs if blob.name.endswith('_gb_baseline.pkl')]
-                logger.error(f"Available GB models: {available_gb_models}")
-            
-                # Check for similar names
-                similar_models = [name for name in available_gb_models if normalized_name in name.lower()]
-                if similar_models:
-                    logger.error(f"Similar model names found: {similar_models}")
-            except Exception as list_e:
-                logger.error(f"Could not list available models: {list_e}")
             raise
     
-        # Download TCN model (with LOWERCASE naming) 
-        tcn_blob = self.bucket.blob(f"models/{normalized_name}_cached_scheduled_sampling_tcn.pt")
+        # Download TCN model
+        tcn_blob_path = f"models/{normalized_name}_cached_scheduled_sampling_tcn.pt"
+        tcn_blob = self.bucket.blob(tcn_blob_path)
         tcn_path = f"{temp_dir}/{normalized_name}_cached_scheduled_sampling_tcn.pt"
     
-        logger.info(f"Downloading TCN model from: models/{normalized_name}_cached_scheduled_sampling_tcn.pt")
+        logger.info(f"🔄 Downloading TCN model from: {tcn_blob_path}")
     
         try:
+            # Check if blob exists first
+            if not tcn_blob.exists():
+                logger.error(f"❌ TCN model blob does not exist: {tcn_blob_path}")
+                # List similar files for debugging
+                try:
+                    blobs = list(self.bucket.list_blobs(prefix=f"models/{normalized_name}"))
+                    similar_files = [blob.name for blob in blobs]
+                    logger.error(f"Files starting with 'models/{normalized_name}': {similar_files}")
+                
+                    # Also list all TCN models
+                    all_tcn_blobs = list(self.bucket.list_blobs(prefix="models/"))
+                    all_tcn_models = [blob.name for blob in all_tcn_blobs if blob.name.endswith('_cached_scheduled_sampling_tcn.pt')]
+                    logger.error(f"All available TCN models: {all_tcn_models}")
+                except Exception as list_e:
+                    logger.error(f"Could not list available models: {list_e}")
+                raise FileNotFoundError(f"TCN model blob not found: {tcn_blob_path}")
+        
             tcn_blob.download_to_filename(tcn_path)
             logger.info(f"✅ Successfully downloaded TCN model to {tcn_path}")
         except Exception as e:
             logger.error(f"❌ Failed to download TCN model: {e}")
-            # List available models for debugging
-            try:
-                blobs = list(self.bucket.list_blobs(prefix="models/"))
-                available_tcn_models = [blob.name for blob in blobs if blob.name.endswith('_cached_scheduled_sampling_tcn.pt')]
-                logger.error(f"Available TCN models: {available_tcn_models}")
-            
-                # Check for similar names
-                similar_models = [name for name in available_tcn_models if normalized_name in name.lower()]
-                if similar_models:
-                    logger.error(f"Similar model names found: {similar_models}")
-            except Exception as list_e:
-                logger.error(f"Could not list available models: {list_e}")
             raise
     
         # Initialize predictor
-        predictor = WaitTimePredictor(ride_name, temp_dir)
-    
-        logger.info(f"Successfully loaded models for '{ride_name}'")
-        return predictor
+        try:
+            predictor = WaitTimePredictor(ride_name, temp_dir)
+        
+            # CRITICAL: Test feature compatibility immediately
+            logger.info(f"🔍 Testing feature compatibility for '{ride_name}'")
+        
+            # Create a small test dataset to verify features
+            test_timestamp = pd.Timestamp("2025-06-10 15:30:00")
+            test_data = pd.DataFrame({
+                'timestamp': [test_timestamp],
+                'wait_time': [15.0],
+                'closed': [0],
+                'temperature': [20.0],
+                'rain': [0.0],
+                'temperature_unscaled': [20.0],
+                'rain_unscaled': [0.0],
+                'is_german_holiday': [0],
+                'is_swiss_holiday': [0], 
+            '   is_french_holiday': [0]
+            })
+        
+            try:
+                # Test preprocessing
+                processed_test = predictor.preprocess_input(test_data)
+                logger.info(f"✅ Feature preprocessing successful for '{ride_name}'")
+                logger.info(f"Features created: {len(predictor.static_feature_cols)}")
+                logger.info(f"Expected features: {predictor.config['static_features_size']}")
+            
+                # Log first few features for debugging
+                if len(predictor.static_feature_cols) > 0:
+                    logger.info(f"First 10 features: {predictor.static_feature_cols[:10]}")
+                
+            except Exception as feature_error:
+                logger.error(f"❌ Feature preprocessing failed for '{ride_name}': {feature_error}")
+                raise
+        
+            logger.info(f"✅ Successfully loaded and tested predictor for '{ride_name}'")
+            return predictor
+        
+        except Exception as e:
+            logger.error(f"❌ Failed to create predictor for '{ride_name}': {e}")
+            raise
     
     def _evict_oldest_model(self):
         """Remove oldest model from cache to free memory"""
@@ -619,85 +708,81 @@ class FirestoreDataFetcher:
         return processed_df
     
     def preprocess_for_prediction(self, df: pd.DataFrame, ride_name: str) -> pd.DataFrame:
-        """Preprocess data to match training format"""
+        """
+        Preprocess data to match training format EXACTLY
+        This replaces the simple preprocessing with the full training pipeline
+        """
         if df.empty:
             return df
         
-        # Add temporal features
-        df['hour'] = df['timestamp'].dt.hour
-        df['day_of_week'] = df['timestamp'].dt.dayofweek
-        df['month'] = df['timestamp'].dt.month
-        df['is_weekend'] = (df['timestamp'].dt.dayofweek >= 5).astype(int)
+        logger.info(f"Starting comprehensive preprocessing for {ride_name}")
         
-        # Add cyclical encodings
-        df['hour_sin'] = np.sin(2 * np.pi * df['hour'] / 24)
-        df['hour_cos'] = np.cos(2 * np.pi * df['hour'] / 24)
-        df['month_sin'] = np.sin(2 * np.pi * df['month'] / 12)
-        df['month_cos'] = np.cos(2 * np.pi * df['month'] / 12)
-        df['weekday_sin'] = np.sin(2 * np.pi * df['day_of_week'] / 7)
-        df['weekday_cos'] = np.cos(2 * np.pi * df['day_of_week'] / 7)
-        df['minute_sin'] = np.sin(2 * np.pi * df['timestamp'].dt.minute / 60)
-        df['minute_cos'] = np.cos(2 * np.pi * df['timestamp'].dt.minute / 60)
+        # Import the corrected preprocessing function
+        from datasets.data_utils import preprocess_data
         
-        # Add part of day features
-        df['part_of_day_morning'] = ((df['hour'] >= 6) & (df['hour'] < 12)).astype(int)
-        df['part_of_day_afternoon'] = ((df['hour'] >= 12) & (df['hour'] < 18)).astype(int)
-        df['part_of_day_evening'] = ((df['hour'] >= 18) & (df['hour'] < 22)).astype(int)
-        df['part_of_day_night'] = ((df['hour'] >= 22) | (df['hour'] < 6)).astype(int)
+        # Apply the EXACT same preprocessing as training
+        processed_df = preprocess_data(df, ride_name)
         
-        # Add season features
-        month = df['month'].iloc[0] if not df.empty else 6
-        df['season_spring'] = int(month in [3, 4, 5])
-        df['season_summer'] = int(month in [6, 7, 8])
-        df['season_fall'] = int(month in [9, 10, 11])
-        df['season_winter'] = int(month in [12, 1, 2])
+        logger.info(f"Comprehensive preprocessing completed: {len(processed_df.columns)} features for {len(processed_df)} records")
         
-        # Add year features
-        year = df['timestamp'].dt.year.iloc[0] if not df.empty else 2024
-        for y in range(2017, 2025):
-            df[f'year_{y}'] = int(year == y)
+        # Log some key features to verify
+        key_features = ['closed', 'is_german_holiday', 'is_swiss_holiday', 'is_french_holiday', 
+                       'weekday', 'is_weekend', 'temperature', 'rain', 'temperature_unscaled', 'rain_unscaled']
         
-        # Add weekday feature
-        df['weekday'] = df['day_of_week']
+        for feature in key_features:
+            if feature in processed_df.columns:
+                logger.debug(f"Feature {feature}: min={processed_df[feature].min():.3f}, max={processed_df[feature].max():.3f}")
         
-        logger.info(f"Preprocessed data with {len(df.columns)} features for {len(df)} records")
-        return df
-
-    def generate_future_data(self, start_timestamp: pd.Timestamp, prediction_steps: int) -> pd.DataFrame:
-        """Generate future data with weather and holiday information (30-minute intervals)"""
-        # Generate future timestamps with 30-minute intervals
-        future_timestamps = pd.date_range(
-            start=start_timestamp,
-            periods=prediction_steps,
-            freq='30T'  # Changed from 15T to 30T
-        )
-        
-        future_data = []
-        
-        for ts in future_timestamps:
-            # Get weather data for this timestamp
-            weather_data = self.weather_service.fetch_weather_for_timestamp(ts)
-            
-            # Get holiday information
-            holiday_data = self.holiday_service.check_holidays_for_date(ts.date())
-            
-            future_data.append({
-                'timestamp': ts,
-                'wait_time': 0,  # Will be predicted
-                'closed': 0,     # Assume open for predictions
-                **weather_data,
-                **holiday_data
-            })
-        
-        df = pd.DataFrame(future_data)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        
-        # Apply same preprocessing
-        processed_df = self.preprocess_for_prediction(df, "")  # ride_name not needed for feature generation
-        
-        logger.info(f"Generated {len(df)} future data points (30-min intervals) starting from {start_timestamp}")
         return processed_df
 
+    def generate_future_data(self, start_timestamp: pd.Timestamp, prediction_steps: int, attraction_name: str = "") -> pd.DataFrame:
+        """Generate future data with weather and holiday information (30-minute intervals, 09:00-19:30)"""
+        # Generate future timestamps with 30-minute intervals, only during operating hours
+        future_data = []
+        current_time = start_timestamp
+        steps_generated = 0
+
+        while steps_generated < prediction_steps:
+            hour = current_time.hour
+            minute = current_time.minute
+
+            # FIXED: Operating hours 09:00 to 19:30 (not 08:00 to 18:30)
+            is_operating_hours = (hour >= 9 and hour < 19) or (hour == 19 and minute <= 30)
+
+            if is_operating_hours:
+                # Get weather data for this timestamp
+                weather_data = self.weather_service.fetch_weather_for_timestamp(current_time)
+    
+                # Get holiday information
+                holiday_data = self.holiday_service.check_holidays_for_date(current_time.date())
+
+                future_data.append({
+                    'timestamp': current_time,
+                    'wait_time': 0,  # Will be predicted
+                    'closed': 0,     # Assume open for predictions
+                    **weather_data,
+                    **holiday_data
+                })
+    
+                steps_generated += 1
+
+            # Move to next 30-minute interval
+            current_time += pd.Timedelta(minutes=30)
+
+            # Skip to next day if past operating hours
+            if hour >= 19 and minute > 30:
+                next_day = current_time.date() + timedelta(days=1)
+                current_time = pd.Timestamp.combine(next_day, pd.Timestamp("09:00:00").time())
+
+        df = pd.DataFrame(future_data)
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+        # Apply same preprocessing - PASS THE ATTRACTION NAME!
+        processed_df = self.preprocess_for_prediction(df, attraction_name)
+
+        logger.info(f"Generated {len(df)} future data points (30-min intervals, 09:00-19:30) starting from {start_timestamp}")
+        return processed_df
+    
 # Initialize services
 model_manager = ModelManager()
 data_fetcher = FirestoreDataFetcher()
@@ -800,7 +885,7 @@ def predict_wait_times():
             start_timestamp = pd.Timestamp.now().ceil('30T')  # Changed from 15T to 30T
         
         # Generate future data with dynamic weather and holidays
-        future_df = data_fetcher.generate_future_data(start_timestamp, prediction_steps)
+        future_df = data_fetcher.generate_future_data(start_timestamp, prediction_steps, attraction_name) 
         
         # Prepare future static features
         future_features = model.preprocess_input(future_df)
@@ -1191,6 +1276,620 @@ def debug_firestore():
             "error_type": type(e).__name__,
             "debug_timestamp": datetime.now().isoformat()
         }), 500
+        
+# Add this new endpoint to your main.py in the Cloud Run service
+
+@app.route('/predictions/fast/<attraction_id>', methods=['GET'])
+def get_predictions_fast(attraction_id: str):
+    """
+    Fast retrieval of pre-computed predictions for a specific attraction and date.
+    This reads from the predictedQueueTimes collection instead of computing predictions.
+    
+    Usage: GET /predictions/fast/silver-star?date=2025-06-09
+    """
+    try:
+        date_str = request.args.get('date')  # Format: YYYY-MM-DD
+        hours = request.args.get('hours', 24)  # How many hours of predictions to return
+        
+        if not date_str:
+            return jsonify({"error": "date parameter required (format: YYYY-MM-DD)"}), 400
+        
+        # Parse date
+        try:
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+        
+        # Map attraction ID to Firestore name
+        attraction_name = data_fetcher.get_firestore_attraction_name(attraction_id)
+        if not attraction_name:
+            return jsonify({"error": f"Unknown attraction_id: {attraction_id}"}), 400
+        
+        logger.info(f"Fast retrieval for {attraction_name} on {date_str}")
+        
+        # Get predictions from Firestore
+        predictions = get_saved_predictions(attraction_name, target_date, int(hours))
+        
+        if not predictions:
+            return jsonify({
+                "attraction_id": attraction_id,
+                "attraction_name": attraction_name,
+                "date": date_str,
+                "predictions": [],
+                "message": "No predictions found for this date. Run batch predictions first.",
+                "cache_miss": True
+            })
+        
+        response = {
+            "attraction_id": attraction_id,
+            "attraction_name": attraction_name,
+            "date": date_str,
+            "predictions_count": len(predictions),
+            "predictions": predictions,
+            "cache_hit": True,
+            "retrieved_at": datetime.now().isoformat()
+        }
+        
+        logger.info(f"Retrieved {len(predictions)} cached predictions for {attraction_name}")
+        return jsonify(response)
+        
+    except Exception as e:
+        logger.error(f"Error retrieving fast predictions: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Failed to retrieve predictions: {str(e)}"}), 500
+
+def get_saved_predictions(attraction_name: str, date: datetime.date, hours: int = 24) -> List[Dict]:
+    """
+    Retrieve saved predictions from the predictedQueueTimes collection.
+    """
+    try:
+        # Calculate time range
+        start_time = datetime.combine(date, datetime.min.time())
+        end_time = start_time + timedelta(hours=hours)
+        
+        # Format for document ID filtering
+        start_doc_id = start_time.strftime("%Y%m%d%H%M%S")
+        end_doc_id = end_time.strftime("%Y%m%d%H%M%S")
+        
+        logger.info(f"Querying predictions from {start_doc_id} to {end_doc_id}")
+        
+        # Get predictions collection
+        attraction_ref = db.collection("attractions").document(attraction_name)
+        predictions_ref = attraction_ref.collection("predictedQueueTimes")
+        
+        # Query for predictions in the date range
+        query = predictions_ref.order_by("__name__").start_at([start_doc_id]).end_before([end_doc_id])
+        docs = list(query.stream())
+        
+        logger.info(f"Found {len(docs)} prediction documents")
+        
+        predictions = []
+        for doc in docs:
+            doc_data = doc.to_dict()
+            
+            # Convert Firestore types to Python types
+            prediction = {
+                "timestamp": doc_data["timestamp"].isoformat() if hasattr(doc_data["timestamp"], 'isoformat') else str(doc_data["timestamp"]),
+                "predicted_wait_time": float(doc_data.get("predicted_wait_time", 0)),
+                "baseline_prediction": float(doc_data.get("baseline_prediction", 0)),
+                "residual_prediction": float(doc_data.get("residual_prediction", 0)),
+                "temperature": float(doc_data.get("temperature", 0)) if doc_data.get("temperature") is not None else None,
+                "rain": float(doc_data.get("rain", 0)) if doc_data.get("rain") is not None else None,
+                "is_holiday": bool(doc_data.get("is_holiday", False)),
+                "model_version": doc_data.get("model_version", "unknown"),
+                "prediction_created_at": doc_data.get("prediction_created_at").isoformat() if doc_data.get("prediction_created_at") else None
+            }
+            
+            predictions.append(prediction)
+        
+        # Sort by timestamp to ensure correct order
+        predictions.sort(key=lambda x: x["timestamp"])
+        
+        return predictions
+        
+    except Exception as e:
+        logger.error(f"Error getting saved predictions: {e}")
+        return []
+
+@app.route('/predictions/status', methods=['GET'])
+def prediction_status():
+    """
+    Get status of prediction system - shows what predictions are available.
+    """
+    try:
+        # Check which attractions have recent predictions
+        status = {}
+        
+        # Get sample of attractions
+        attractions_ref = db.collection("attractions")
+        attractions = list(attractions_ref.limit(10).stream())
+        
+        for attraction_doc in attractions:
+            attraction_name = attraction_doc.id
+            
+            try:
+                # Check for recent predictions
+                predictions_ref = attraction_doc.reference.collection("predictedQueueTimes")
+                recent_docs = list(predictions_ref.order_by("__name__", "DESCENDING").limit(5).stream())
+                
+                if recent_docs:
+                    latest_doc = recent_docs[0]
+                    latest_doc_data = latest_doc.to_dict()
+                    
+                    status[attraction_name] = {
+                        "has_predictions": True,
+                        "latest_prediction_time": latest_doc_data.get("timestamp").isoformat() if latest_doc_data.get("timestamp") else None,
+                        "prediction_count": len(recent_docs),
+                        "latest_created_at": latest_doc_data.get("prediction_created_at").isoformat() if latest_doc_data.get("prediction_created_at") else None
+                    }
+                else:
+                    status[attraction_name] = {
+                        "has_predictions": False,
+                        "prediction_count": 0
+                    }
+                    
+            except Exception as e:
+                status[attraction_name] = {
+                    "error": str(e)
+                }
+        
+        return jsonify({
+            "status": "success",
+            "timestamp": datetime.now().isoformat(),
+            "attractions": status,
+            "message": "Use /predictions/fast/<attraction_id>?date=YYYY-MM-DD for fast retrieval"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting prediction status: {e}")
+        return jsonify({"error": str(e)}), 500
+        
+@app.route('/debug/attractions', methods=['GET'])
+def debug_attractions():
+    """Debug endpoint to check attraction matching between mappings and Firestore"""
+    try:
+        debug_info = {
+            "timestamp": datetime.now().isoformat(),
+            "mapping_count": len(LOCAL_RIDE_MAPPINGS),
+            "mappings": [],
+            "firestore_attractions": [],
+            "matching_issues": []
+        }
+        
+        # First, get actual Firestore attractions to populate the list properly
+        try:
+            attractions_ref = db.collection("attractions")
+            firestore_docs = list(attractions_ref.limit(50).stream())
+            
+            for doc in firestore_docs:
+                debug_info["firestore_attractions"].append(doc.id)
+                
+            logger.info(f"Found {len(firestore_docs)} attractions in Firestore")
+                
+        except Exception as e:
+            debug_info["firestore_error"] = str(e)
+            logger.error(f"Error listing Firestore attractions: {e}")
+        
+        # Check all mapped attractions
+        for mapping in LOCAL_RIDE_MAPPINGS:
+            attraction_name = mapping["name"]
+            
+            # Check if attraction exists in Firestore
+            try:
+                attraction_ref = db.collection("attractions").document(attraction_name)
+                attraction_doc = attraction_ref.get()
+                
+                # FIXED: Proper document existence check
+                exists_in_firestore = attraction_doc.exists
+                
+                logger.debug(f"Checking {attraction_name}: exists = {exists_in_firestore}")
+                
+                # Check for recent queue times - SIMPLE APPROACH (no ordering to avoid index requirement)
+                queue_times_ref = attraction_ref.collection("queueTimes")
+                
+                # Just get a few documents without ordering (avoids index requirement)
+                recent_docs = list(queue_times_ref.limit(5).stream())
+                
+                mapping_info = {
+                    "id": mapping["id"],
+                    "name": mapping["name"],
+                    "normalized_name": mapping["normalized_name"],
+                    "exists_in_firestore": exists_in_firestore,
+                    "has_queue_times": len(recent_docs) > 0,
+                    "recent_queue_count": len(recent_docs),
+                    "sample_queue_doc_id": recent_docs[0].id if recent_docs else None
+                }
+                
+                # Check for model files
+                normalized_name = mapping["normalized_name"].lower()
+                try:
+                    storage_client = storage.Client()
+                    bucket = storage_client.bucket(MODEL_BUCKET)
+                    
+                    gb_blob = bucket.blob(f"models/{normalized_name}_gb_baseline.pkl")
+                    tcn_blob = bucket.blob(f"models/{normalized_name}_cached_scheduled_sampling_tcn.pt")
+                    
+                    mapping_info["has_gb_model"] = gb_blob.exists()
+                    mapping_info["has_tcn_model"] = tcn_blob.exists()
+                    mapping_info["has_both_models"] = gb_blob.exists() and tcn_blob.exists()
+                    
+                except Exception as e:
+                    mapping_info["model_check_error"] = str(e)
+                
+                debug_info["mappings"].append(mapping_info)
+                
+                # Flag potential issues
+                if not exists_in_firestore:
+                    debug_info["matching_issues"].append(f"Attraction '{attraction_name}' not found in Firestore")
+                elif not len(recent_docs) > 0:
+                    debug_info["matching_issues"].append(f"Attraction '{attraction_name}' has no queue times data")
+                elif not (mapping_info.get("has_both_models", False)):
+                    debug_info["matching_issues"].append(f"Attraction '{attraction_name}' missing model files")
+                    
+            except Exception as e:
+                debug_info["matching_issues"].append(f"Error checking '{attraction_name}': {str(e)}")
+                logger.error(f"Error checking attraction {attraction_name}: {e}")
+        
+        # Summary
+        total_mapped = len(LOCAL_RIDE_MAPPINGS)
+        valid_attractions = len([m for m in debug_info["mappings"] if m.get("exists_in_firestore") and m.get("has_queue_times")])
+        ready_for_prediction = len([m for m in debug_info["mappings"] if m.get("has_both_models", False)])
+        
+        debug_info["summary"] = {
+            "total_mapped_attractions": total_mapped,
+            "valid_in_firestore": valid_attractions,
+            "ready_for_prediction": ready_for_prediction,
+            "issues_count": len(debug_info["matching_issues"]),
+            "firestore_attractions_found": len(debug_info["firestore_attractions"])
+        }
+        
+        return jsonify(debug_info)
+        
+    except Exception as e:
+        logger.error(f"Debug attractions error: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/debug/simple-firestore', methods=['GET'])
+def debug_simple_firestore():
+    """Simplified debug to understand what's happening with Firestore"""
+    try:
+        debug_info = {
+            "timestamp": datetime.now().isoformat(),
+            "tests": []
+        }
+        
+        # Test 1: Try to list attractions collection
+        try:
+            attractions_ref = db.collection("attractions")
+            logger.info("Step 1: Got attractions collection reference")
+            
+            firestore_docs = list(attractions_ref.limit(10).stream())
+            logger.info(f"Step 2: Listed {len(firestore_docs)} documents")
+            
+            attraction_names = [doc.id for doc in firestore_docs]
+            
+            debug_info["tests"].append({
+                "test": "list_attractions_collection",
+                "success": True,
+                "result": f"Found {len(firestore_docs)} attractions",
+                "attraction_names": attraction_names
+            })
+            
+        except Exception as e:
+            debug_info["tests"].append({
+                "test": "list_attractions_collection", 
+                "success": False,
+                "error": str(e)
+            })
+            logger.error(f"Failed to list attractions: {e}")
+        
+        # Test 2: Try to get a specific attraction document (Silver Star)
+        try:
+            silver_star_ref = db.collection("attractions").document("Silver Star")
+            silver_star_doc = silver_star_ref.get()
+            
+            debug_info["tests"].append({
+                "test": "get_silver_star_document",
+                "success": True,
+                "exists": silver_star_doc.exists,
+                "doc_id": silver_star_doc.id if silver_star_doc.exists else None,
+                "has_data": bool(silver_star_doc.to_dict()) if silver_star_doc.exists else False
+            })
+            
+        except Exception as e:
+            debug_info["tests"].append({
+                "test": "get_silver_star_document",
+                "success": False, 
+                "error": str(e)
+            })
+        
+        # Test 3: Try to access queue times for Silver Star
+        try:
+            queue_ref = db.collection("attractions").document("Silver Star").collection("queueTimes")
+            queue_docs = list(queue_ref.limit(3).stream())
+            
+            debug_info["tests"].append({
+                "test": "get_silver_star_queue_times",
+                "success": True,
+                "queue_docs_found": len(queue_docs),
+                "sample_doc_ids": [doc.id for doc in queue_docs]
+            })
+            
+        except Exception as e:
+            debug_info["tests"].append({
+                "test": "get_silver_star_queue_times",
+                "success": False,
+                "error": str(e)
+            })
+        
+        # Test 4: Check Firestore client status
+        try:
+            # Try a simple query to check if client is working
+            test_query = db.collection("attractions").limit(1)
+            test_docs = list(test_query.stream())
+            
+            debug_info["tests"].append({
+                "test": "firestore_client_status",
+                "success": True,
+                "can_query": True,
+                "test_docs_count": len(test_docs)
+            })
+            
+        except Exception as e:
+            debug_info["tests"].append({
+                "test": "firestore_client_status",
+                "success": False,
+                "error": str(e)
+            })
+        
+        # Test 5: Check if specific known documents exist
+        known_attractions = ["Silver Star", "blue fire Megacoaster", "Voletarium"]
+        for attraction in known_attractions:
+            try:
+                doc_ref = db.collection("attractions").document(attraction)
+                doc = doc_ref.get()
+                
+                debug_info["tests"].append({
+                    "test": f"check_specific_attraction_{attraction.replace(' ', '_')}",
+                    "success": True,
+                    "attraction_name": attraction,
+                    "exists": doc.exists,
+                    "document_id": doc.id
+                })
+                
+            except Exception as e:
+                debug_info["tests"].append({
+                    "test": f"check_specific_attraction_{attraction.replace(' ', '_')}",
+                    "success": False,
+                    "attraction_name": attraction,
+                    "error": str(e)
+                })
+        
+        return jsonify(debug_info)
+        
+    except Exception as e:
+        logger.error(f"Simple debug error: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/debug/model-mappings', methods=['GET'])
+def debug_model_mappings():
+    """Debug endpoint to check model file mappings and availability"""
+    try:
+        debug_info = {
+            "timestamp": datetime.now().isoformat(),
+            "total_mapped_attractions": len(MODEL_FILE_MAPPINGS),
+            "model_mappings": [],
+            "storage_bucket": MODEL_BUCKET,
+            "issues": []
+        }
+        
+        # Check each mapping
+        for firestore_name, model_file_name in MODEL_FILE_MAPPINGS.items():
+            mapping_info = {
+                "firestore_name": firestore_name,
+                "model_file_name": model_file_name,
+                "gb_file": f"models/{model_file_name}_gb_baseline.pkl",
+                "tcn_file": f"models/{model_file_name}_cached_scheduled_sampling_tcn.pt"
+            }
+            
+            # Check if files exist in storage
+            try:
+                bucket = storage_client.bucket(MODEL_BUCKET)
+                
+                gb_blob = bucket.blob(mapping_info["gb_file"])
+                tcn_blob = bucket.blob(mapping_info["tcn_file"])
+                
+                mapping_info["gb_exists"] = gb_blob.exists()
+                mapping_info["tcn_exists"] = tcn_blob.exists()
+                mapping_info["both_exist"] = gb_blob.exists() and tcn_blob.exists()
+                
+                if not mapping_info["both_exist"]:
+                    issue = f"Missing files for {firestore_name}: "
+                    if not mapping_info["gb_exists"]:
+                        issue += f"GB model missing ({mapping_info['gb_file']}) "
+                    if not mapping_info["tcn_exists"]:
+                        issue += f"TCN model missing ({mapping_info['tcn_file']}) "
+                    debug_info["issues"].append(issue)
+                
+            except Exception as e:
+                mapping_info["error"] = str(e)
+                debug_info["issues"].append(f"Error checking {firestore_name}: {str(e)}")
+            
+            debug_info["model_mappings"].append(mapping_info)
+        
+        # Summary
+        existing_models = sum(1 for m in debug_info["model_mappings"] if m.get("both_exist", False))
+        debug_info["summary"] = {
+            "total_attractions": len(MODEL_FILE_MAPPINGS),
+            "attractions_with_models": existing_models,
+            "attractions_missing_models": len(MODEL_FILE_MAPPINGS) - existing_models,
+            "issues_count": len(debug_info["issues"])
+        }
+        
+        return jsonify(debug_info)
+        
+    except Exception as e:
+        logger.error(f"Error in debug model mappings: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/debug/model-file-mappings', methods=['GET'])  # RENAMED from debug/model-mappings
+def debug_model_file_mappings():  # RENAMED function name
+    """Debug endpoint to check model file mappings and availability"""
+    try:
+        debug_info = {
+            "timestamp": datetime.now().isoformat(),
+            "total_mapped_attractions": len(MODEL_FILE_MAPPINGS),
+            "model_mappings": [],
+            "storage_bucket": MODEL_BUCKET,
+            "issues": []
+        }
+        
+        # Check each mapping
+        for firestore_name, model_file_name in MODEL_FILE_MAPPINGS.items():
+            mapping_info = {
+                "firestore_name": firestore_name,
+                "model_file_name": model_file_name,
+                "gb_file": f"models/{model_file_name}_gb_baseline.pkl",
+                "tcn_file": f"models/{model_file_name}_cached_scheduled_sampling_tcn.pt"
+            }
+            
+            # Check if files exist in storage
+            try:
+                bucket = storage_client.bucket(MODEL_BUCKET)
+                
+                gb_blob = bucket.blob(mapping_info["gb_file"])
+                tcn_blob = bucket.blob(mapping_info["tcn_file"])
+                
+                mapping_info["gb_exists"] = gb_blob.exists()
+                mapping_info["tcn_exists"] = tcn_blob.exists()
+                mapping_info["both_exist"] = gb_blob.exists() and tcn_blob.exists()
+                
+                if not mapping_info["both_exist"]:
+                    issue = f"Missing files for {firestore_name}: "
+                    if not mapping_info["gb_exists"]:
+                        issue += f"GB model missing "
+                    if not mapping_info["tcn_exists"]:
+                        issue += f"TCN model missing "
+                    debug_info["issues"].append(issue)
+                
+            except Exception as e:
+                mapping_info["error"] = str(e)
+                debug_info["issues"].append(f"Error checking {firestore_name}: {str(e)}")
+            
+            debug_info["model_mappings"].append(mapping_info)
+        
+        # Summary
+        existing_models = sum(1 for m in debug_info["model_mappings"] if m.get("both_exist", False))
+        debug_info["summary"] = {
+            "total_attractions": len(MODEL_FILE_MAPPINGS),
+            "attractions_with_models": existing_models,
+            "attractions_missing_models": len(MODEL_FILE_MAPPINGS) - existing_models,
+            "issues_count": len(debug_info["issues"])
+        }
+        
+        return jsonify(debug_info)
+        
+    except Exception as e:
+        logger.error(f"Error in debug model mappings: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# 2. Add a debug endpoint to test time windows
+@app.route('/debug/time-windows', methods=['GET'])
+def debug_time_windows():
+    """Debug time window generation"""
+    try:
+        # Test time window generation
+        import pytz
+        zurich_tz = pytz.timezone('Europe/Zurich')
+        
+        # Get tomorrow in Zurich timezone
+        tomorrow_utc = datetime.now(pytz.UTC) + timedelta(days=1)
+        tomorrow_zurich = tomorrow_utc.astimezone(zurich_tz)
+        
+        # Set to 9 AM Zurich time
+        start_time_zurich = tomorrow_zurich.replace(hour=9, minute=0, second=0, microsecond=0)
+        
+        # Convert back to UTC for consistent handling
+        start_timestamp = start_time_zurich.astimezone(pytz.UTC)
+        start_timestamp = pd.Timestamp(start_timestamp).tz_localize(None)
+        
+        # Generate test time windows
+        current_time = start_timestamp
+        test_times = []
+        steps_generated = 0
+        max_steps = 25  # Test first 25 intervals
+        
+        while steps_generated < max_steps:
+            hour = current_time.hour
+            minute = current_time.minute
+            
+            # FIXED: Operating hours 09:00 to 19:30
+            is_operating_hours = (hour >= 9 and hour < 19) or (hour == 19 and minute <= 30)
+            
+            test_times.append({
+                "timestamp": current_time.isoformat(),
+                "hour": hour,
+                "minute": minute,
+                "is_operating_hours": is_operating_hours,
+                "step": steps_generated if is_operating_hours else "skipped"
+            })
+            
+            if is_operating_hours:
+                steps_generated += 1
+            
+            # Move to next 30-minute interval
+            current_time += pd.Timedelta(minutes=30)
+            
+            # Skip to next day if past operating hours
+            if hour >= 19 and minute > 30:
+                next_day = current_time.date() + timedelta(days=1)
+                current_time = pd.Timestamp.combine(next_day, pd.Timestamp("09:00:00").time())
+        
+        return jsonify({
+            "start_time_zurich": start_time_zurich.isoformat(),
+            "start_timestamp_utc": start_timestamp.isoformat(),
+            "operating_hours_logic": "09:00 to 19:30",
+            "test_intervals": test_times,
+            "operating_intervals_count": len([t for t in test_times if t["is_operating_hours"]])
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in debug time windows: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/debug/features/<attraction_name>', methods=['GET'])
+def debug_features(attraction_name: str):
+    """Debug feature creation for a specific attraction"""
+    try:
+        # Create test data
+        test_data = pd.DataFrame({
+            'timestamp': [pd.Timestamp("2025-06-10 15:30:00")],
+            'wait_time': [15.0],
+            'closed': [0],
+            'temperature': [20.0],
+            'rain': [0.0],
+            'temperature_unscaled': [20.0],
+            'rain_unscaled': [0.0],
+            'is_german_holiday': [0],
+            'is_swiss_holiday': [0], 
+            'is_french_holiday': [0]
+        })
+        
+        # Process features
+        processed_df = data_fetcher.preprocess_for_prediction(test_data, attraction_name)
+        
+        # Get feature names
+        feature_cols = [col for col in processed_df.columns if col not in ['wait_time', 'timestamp']]
+        
+        return jsonify({
+            "attraction_name": attraction_name,
+            "feature_count": len(feature_cols),
+            "features": feature_cols,
+            "sample_values": {col: float(processed_df[col].iloc[0]) for col in feature_cols[:20]},
+            "all_features": feature_cols
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
         
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))

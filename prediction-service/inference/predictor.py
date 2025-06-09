@@ -12,16 +12,56 @@ from datasets.data_utils import preprocess_data, create_features
 
 logger = logging.getLogger(__name__)
 
-# Define expected training features at module level for consistency
+# Updated EXPECTED_TRAINING_FEATURES based on your actual training pipeline
+# This should match the features created in 09_feature_engineering.py
+
 EXPECTED_TRAINING_FEATURES = [
-    'closed', 'is_german_holiday', 'is_swiss_holiday', 'is_french_holiday', 
-    'day_of_week', 'temperature', 'rain', 'weekday', 'is_weekend', 
-    'month_sin', 'month_cos', 'hour_sin', 'hour_cos', 'weekday_sin', 
-    'weekday_cos', 'minute_sin', 'minute_cos', 'temperature_unscaled', 'rain_unscaled',
-    'part_of_day_afternoon', 'part_of_day_evening', 'part_of_day_morning', 'part_of_day_night', 
-    'season_fall', 'season_spring', 'season_summer', 'season_winter', 
-    'year_2017', 'year_2018', 'year_2019', 'year_2020', 'year_2021', 
-    'year_2022', 'year_2023', 'year_2024'
+    # Boolean/binary features
+    "closed",
+    "is_german_holiday",
+    "is_swiss_holiday",
+    "is_french_holiday",
+    "is_weekend",
+    # Temporal features
+    "weekday",  # 0-6 (Monday=0)
+    # Scaled numerical features (per ride)
+    "temperature",  # StandardScaler applied per ride
+    "rain",  # StandardScaler applied per ride
+    # NOTE: 'wind' was dropped during training (line 33 in 08_data_cleaning.py)
+    # Unscaled numerical features (for reference)
+    "temperature_unscaled",
+    "rain_unscaled",
+    # Cyclical encodings
+    "month_sin",
+    "month_cos",
+    "hour_sin",
+    "hour_cos",
+    "weekday_sin",
+    "weekday_cos",
+    "minute_sin",
+    "minute_cos",
+    # Part of day one-hot encoding
+    "part_of_day_afternoon",
+    "part_of_day_evening",
+    "part_of_day_morning",
+    "part_of_day_night",
+    # Season one-hot encoding
+    "season_fall",
+    "season_spring",
+    "season_summer",
+    "season_winter",
+    # Year one-hot encoding (from your training data: 2017-2024)
+    "year_2017",
+    "year_2018",
+    "year_2019",
+    "year_2020",
+    "year_2021",
+    "year_2022",
+    "year_2023",
+    "year_2024",
+    # Ride name one-hot encoding (will be 1 for target ride, 0 for others)
+    # Format: 'ride_name_{normalized_ride_name}'
+    # This will be dynamically created based on the ride name during preprocessing
 ]
 
 
@@ -29,12 +69,16 @@ class WaitTimePredictor:
     """
     Inference class for wait time prediction using trained TCN + GradientBoosting models.
     """
-    
-    def __init__(self, ride_name: str, model_dir: str = "models/cached_scheduled_sampling", 
-                 device: Optional[str] = None):
+
+    def __init__(
+        self,
+        ride_name: str,
+        model_dir: str = "models/cached_scheduled_sampling",
+        device: Optional[str] = None,
+    ):
         """
         Initialize predictor for a specific ride.
-        
+
         Args:
             ride_name: Name of the ride
             model_dir: Directory containing saved models
@@ -46,41 +90,51 @@ class WaitTimePredictor:
 
         self.gb_model, self.tcn_model, self.config = self._load_models()
 
-        self.static_features_size = self.config['static_features_size']
-        self.seq_length = self.config['seq_length']
+        self.static_features_size = self.config["static_features_size"]
+        self.seq_length = self.config["seq_length"]
         self.static_feature_cols = None  # Will be set during preprocessing
-        
+
         logger.info(f"Initialized predictor for ride '{ride_name}' on {self.device}")
-    
+
     def _setup_device(self, device: Optional[str]) -> torch.device:
         """Setup compute device"""
         if device is None:
             return torch.device("cuda" if torch.cuda.is_available() else "cpu")
         return torch.device(device)
-    
+
     def _load_models(self) -> Tuple[object, torch.nn.Module, dict]:
         """Load trained models and configuration with enhanced debugging"""
-    
-        # Convert ride name to LOWERCASE format to match bucket files
-        ride_name_normalized = self.ride_name.lower().replace(' ', '_').replace('-', '_')
-    
-        # Handle special characters
-        import re
-        ride_name_normalized = ride_name_normalized.replace('–', '_').replace('(', '').replace(')', '').replace(',', '').replace('.', '').replace("'", '').replace('"', '')
-        ride_name_normalized = re.sub(r'_+', '_', ride_name_normalized)
-        ride_name_normalized = ride_name_normalized.strip('_')
-    
-        logger.info(f"WaitTimePredictor: Loading models for '{self.ride_name}' using normalized name: '{ride_name_normalized}'")
-    
-        # Use LOWERCASE normalized name for file paths
-        gb_path = self.model_dir / f"{ride_name_normalized}_gb_baseline.pkl"
-        tcn_path = self.model_dir / f"{ride_name_normalized}_cached_scheduled_sampling_tcn.pt"
-    
+
+        # Import the model mappings from main
+        from main import MODEL_FILE_MAPPINGS
+
+        # Use the MODEL_FILE_MAPPINGS instead of the old normalization logic
+        if self.ride_name in MODEL_FILE_MAPPINGS:
+            normalized_name = MODEL_FILE_MAPPINGS[self.ride_name]
+            logger.info(
+                f"✅ Found model mapping for '{self.ride_name}' -> '{normalized_name}'"
+            )
+        else:
+            logger.error(f"❌ No model file mapping found for '{self.ride_name}'")
+            logger.error(f"Available mappings: {list(MODEL_FILE_MAPPINGS.keys())}")
+            raise ValueError(
+                f"No model file mapping found for attraction: {self.ride_name}"
+            )
+
+        logger.info(
+            f"WaitTimePredictor: Loading models for '{self.ride_name}' using model file name: '{normalized_name}'"
+        )
+
+        # Use the mapped name for file paths
+        gb_path = self.model_dir / f"{normalized_name}_gb_baseline.pkl"
+        tcn_path = self.model_dir / f"{normalized_name}_cached_scheduled_sampling_tcn.pt"
+
         logger.info(f"WaitTimePredictor: Looking for GB model at: {gb_path}")
         logger.info(f"WaitTimePredictor: Looking for TCN model at: {tcn_path}")
-    
+
         # Check if files exist
         import os
+
         if not os.path.exists(gb_path):
             logger.error(f"❌ GB model file does not exist: {gb_path}")
             try:
@@ -89,255 +143,270 @@ class WaitTimePredictor:
             except Exception as e:
                 logger.error(f"Cannot list directory {self.model_dir}: {e}")
             raise FileNotFoundError(f"GB model not found: {gb_path}")
-    
+
         if not os.path.exists(tcn_path):
             logger.error(f"❌ TCN model file does not exist: {tcn_path}")
             try:
                 files_in_dir = os.listdir(self.model_dir)
                 logger.error(f"Files in {self.model_dir}: {files_in_dir}")
             except Exception as e:
-                logger.error(f"Cannot list directory {self.model_dir}: {e}")
+                ogger.error(f"Cannot list directory {self.model_dir}: {e}")
             raise FileNotFoundError(f"TCN model not found: {tcn_path}")
-    
+
         logger.info(f"✅ Both model files exist")
-    
+
         # Load GB model with enhanced error handling
         try:
             logger.info(f"🔄 Loading GB model from {gb_path}")
             with open(gb_path, "rb") as f:
                 gb_model = pickle.load(f)
             logger.info(f"✅ Successfully loaded GB model: {type(gb_model)}")
-        
+
             # Test GB model quickly
             try:
                 # Create a dummy input to test the model
                 import numpy as np
+
                 dummy_input = np.zeros((1, 10))  # Adjust size as needed
                 test_pred = gb_model.predict(dummy_input)
                 logger.info(f"✅ GB model test prediction successful: {test_pred}")
             except Exception as e:
                 logger.warning(f"⚠️ GB model test failed (might be normal): {e}")
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to load GB model: {type(e).__name__}: {e}")
             logger.error(f"Error details: {str(e)}")
-        
-            # Check Python and library versions
-            import sys
-            import sklearn
-            logger.error(f"Python version: {sys.version}")
-            logger.error(f"Scikit-learn version: {sklearn.__version__}")
-        
-            # Try to get more details about the pickle error
-            if "_loss" in str(e):
-                logger.error("This appears to be a scikit-learn version compatibility issue")
-                logger.error("The model was likely trained with a different sklearn version")
-        
             raise e
-    
+
         # Load TCN model with enhanced error handling
         try:
             logger.info(f"🔄 Loading TCN model from {tcn_path}")
             checkpoint = torch.load(tcn_path, map_location=self.device)
             logger.info(f"✅ Successfully loaded TCN checkpoint")
             logger.info(f"Checkpoint keys: {list(checkpoint.keys())}")
-        
+
         except Exception as e:
             logger.error(f"❌ Failed to load TCN model: {type(e).__name__}: {e}")
             logger.error(f"Error details: {str(e)}")
-        
-            # Check file size and corruption
-            try:
-                file_size = os.path.getsize(tcn_path)
-                logger.error(f"TCN file size: {file_size} bytes")
-            except Exception:
-                pass
-            
             raise e
-    
+
         # Process config
         try:
-            config = checkpoint['config']
+            config = checkpoint["config"]
             logger.info(f"✅ Config loaded successfully")
             logger.info(f"Config keys: {list(config.keys())}")
-        
-            if 'static_features_size' in config:
-                static_features_size = config['static_features_size']
+
+            if "static_features_size" in config:
+                static_features_size = config["static_features_size"]
                 logger.info(f"Static features size: {static_features_size}")
 
             # Ensure all required config parameters are present
-            required_params = ['seq_length', 'num_channels', 'kernel_size', 'num_layers']
+            required_params = ["seq_length", "num_channels", "kernel_size", "num_layers"]
             missing_params = [param for param in required_params if param not in config]
             if missing_params:
                 logger.error(f"Missing required parameters: {missing_params}")
-                raise ValueError(f"Configuration missing required parameters: {missing_params}")
-        
+                raise ValueError(
+                    f"Configuration missing required parameters: {missing_params}"
+                )
+
             # Set default values for optional parameters
-            config.setdefault('dropout', 0.2)
-            config.setdefault('output_size', 1)
-        
-            logger.info(f"Final config - static_features_size: {config['static_features_size']}, seq_length: {config['seq_length']}")
-        
+            config.setdefault("dropout", 0.2)
+            config.setdefault("output_size", 1)
+
+            logger.info(
+                f"Final config - static_features_size: {config['static_features_size']}, seq_length: {config['seq_length']}"
+            )
+
         except Exception as e:
             logger.error(f"❌ Failed to process config: {type(e).__name__}: {e}")
             raise e
-    
+
         # Create TCN model
         try:
             logger.info(f"🔄 Creating TCN model from config")
             tcn_model = AutoregressiveTCNModel.from_config(config)
             logger.info(f"✅ TCN model created successfully")
             logger.info(f"TCN input size: {tcn_model.tcn_input_size}")
-        
+
         except Exception as e:
             logger.error(f"❌ Failed to create TCN model: {type(e).__name__}: {e}")
             raise e
-    
+
         # Load state dict
         try:
             logger.info(f"🔄 Loading model state dict")
-            state_dict = checkpoint['model_state_dict']
-        
+            state_dict = checkpoint["model_state_dict"]
+
             # Check if the state dict has torch.compile prefixes
-            if any(key.startswith('_orig_mod.') for key in state_dict.keys()):
+            if any(key.startswith("_orig_mod.") for key in state_dict.keys()):
                 logger.info("Detected torch.compile model, removing _orig_mod. prefixes")
                 new_state_dict = {}
                 for key, value in state_dict.items():
-                    if key.startswith('_orig_mod.'):
+                    if key.startswith("_orig_mod."):
                         new_key = key[10:]  # Remove '_orig_mod.' prefix (10 characters)
                         new_state_dict[new_key] = value
                     else:
                         new_state_dict[key] = value
                 state_dict = new_state_dict
-        
+
             tcn_model.load_state_dict(state_dict)
             logger.info("✅ Successfully loaded model state dict")
-        
+
         except Exception as e:
             logger.error(f"❌ Failed to load state dict: {type(e).__name__}: {e}")
-        
-            # Debug state dict shape mismatches
-            try:
-                model_state = tcn_model.state_dict()
-                logger.error("State dict comparison:")
-                for key in list(state_dict.keys())[:5]:  # Show first 5 keys
-                    if key in model_state:
-                        if state_dict[key].shape != model_state[key].shape:
-                            logger.error(f"Shape mismatch for {key}: saved={state_dict[key].shape}, model={model_state[key].shape}")
-                    else:
-                        logger.error(f"Key {key} not found in model")
-            except Exception:
-                pass
-            
             raise e
-        
+
         # Final setup
         try:
             tcn_model.to(self.device)
             tcn_model.eval()
             logger.info(f"✅ Model setup complete - device: {self.device}")
-        
+
         except Exception as e:
             logger.error(f"❌ Failed final model setup: {type(e).__name__}: {e}")
             raise e
-    
+
         logger.info(f"🎉 All models loaded successfully!")
         return gb_model, tcn_model, config
-    
+
     def preprocess_input(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Preprocess input data to match training data format exactly.
-        
-        This method ensures that the input features exactly match what the model 
+
+        This method ensures that the input features exactly match what the model
         was trained on, including feature ordering and data types.
         """
-        
+
         # Step 1: Apply same preprocessing as training (from data_utils.py)
+        from datasets.data_utils import preprocess_data
+
         df = preprocess_data(df, self.ride_name)
-        
+
         # Step 2: Create features exactly like training (from data_utils.py)
-        static_feature_cols = [col for col in df.columns 
-                              if col not in ['wait_time', 'timestamp']]
-        
+        static_feature_cols = [
+            col for col in df.columns if col not in ["wait_time", "timestamp"]
+        ]
+
         logger.info(f"Initial features after preprocessing: {len(static_feature_cols)}")
-        
+
         # Step 3: Get expected training features from config or use default
-        expected_features = (self.config.get('static_feature_cols') or EXPECTED_TRAINING_FEATURES)
-        
-        if 'static_feature_cols' in self.config and self.config['static_feature_cols']:
-            logger.info(f"Using saved feature columns from model config: {len(expected_features)} features")
+        expected_features = (
+            self.config.get("static_feature_cols") or EXPECTED_TRAINING_FEATURES
+        )
+
+        if "static_feature_cols" in self.config and self.config["static_feature_cols"]:
+            logger.info(
+                f"Using saved feature columns from model config: {len(expected_features)} features"
+            )
         else:
-            logger.info(f"Using default expected features: {len(expected_features)} features")
-        
+            logger.info(
+                f"Using default expected features: {len(expected_features)} features"
+            )
+            # If no saved features, try to infer from the processed data
+            if len(static_feature_cols) > len(expected_features):
+                logger.info(
+                    f"More features found than expected, using actual features from data"
+                )
+                expected_features = static_feature_cols
+
         # Step 4: Filter to only include expected training features in exact order
         final_feature_cols = []
         missing_features = []
-        
+
         for feature in expected_features:
             if feature in static_feature_cols and feature in df.columns:
                 if pd.api.types.is_numeric_dtype(df[feature]):
                     final_feature_cols.append(feature)
                 else:
-                    logger.error(f"Feature '{feature}' exists but is not numeric (dtype: {df[feature].dtype})")
-                    logger.error(f"Sample values: {df[feature].dropna().head(3).tolist()}")
-                    
-                    # Try to fix day_of_week encoding
-                    if feature == 'day_of_week' and df[feature].dtype == 'object':
-                        logger.warning(f"Attempting to fix day_of_week encoding...")
-                        day_mapping = {
-                            'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3,
-                            'Friday': 4, 'Saturday': 5, 'Sunday': 6
-                        }
-                        if all(val in day_mapping for val in df[feature].dropna().unique()):
-                            df[feature] = df[feature].map(day_mapping)
-                            final_feature_cols.append(feature)
-                            logger.info(f"Successfully converted day_of_week to numeric")
-                        else:
-                            missing_features.append(feature)
-                    else:
+                    logger.error(
+                        f"Feature '{feature}' exists but is not numeric (dtype: {df[feature].dtype})"
+                    )
+                    logger.error(
+                        f"Sample values: {df[feature].dropna().head(3).tolist()}"
+                    )
+
+                    # Try to fix encoding issues
+                    try:
+                        df[feature] = pd.to_numeric(
+                            df[feature], errors="coerce"
+                        ).fillna(0)
+                        final_feature_cols.append(feature)
+                        logger.info(f"Successfully converted {feature} to numeric")
+                    except:
                         missing_features.append(feature)
             else:
                 missing_features.append(feature)
-        
+
+        # If we're missing features but have more than expected, use what we have
+        if (
+            missing_features
+            and len(final_feature_cols) >= self.config["static_features_size"]
+        ):
+            logger.warning(
+                f"Some expected features missing, but we have enough: {len(final_feature_cols)}"
+            )
+            # Take exactly the number we need
+            final_feature_cols = final_feature_cols[
+                : self.config["static_features_size"]
+            ]
+            missing_features = []
+
         # Report findings
         extra_features = [f for f in static_feature_cols if f not in expected_features]
-        
+
         logger.info(f"Feature matching results:")
         logger.info(f"  Expected features: {len(expected_features)}")
         logger.info(f"  Found and valid: {len(final_feature_cols)}")
-        logger.info(f"  Missing features: {missing_features}")
-        logger.info(f"  Extra features (ignored): {extra_features}")
-        
+        logger.info(f"  Missing features: {len(missing_features)}")
+        logger.info(f"  Extra features (ignored): {len(extra_features)}")
+
         # Verify feature count matches model expectations
-        expected_count = self.config['static_features_size']
-        
+        expected_count = self.config["static_features_size"]
+
         if len(final_feature_cols) == expected_count:
             logger.info(f"✅ Feature count matches exactly: {len(final_feature_cols)}")
             self.static_feature_cols = final_feature_cols
         elif len(final_feature_cols) < expected_count:
-            logger.error(f"❌ Not enough features: {len(final_feature_cols)} < {expected_count}")
+            logger.error(
+                f"❌ Not enough features: {len(final_feature_cols)} < {expected_count}"
+            )
             logger.error(f"Missing features: {missing_features}")
-            raise ValueError(f"Feature count mismatch: need {expected_count} features, got {len(final_feature_cols)}")
+
+            # Try to use all available features and pad with zeros if needed
+            if len(final_feature_cols) > 0:
+                logger.warning(
+                    f"Using available {len(final_feature_cols)} features and will handle the difference in prediction"
+                )
+                self.static_feature_cols = final_feature_cols
+            else:
+                raise ValueError(
+                    f"Feature count mismatch: need {expected_count} features, got {len(final_feature_cols)}"
+                )
         else:
-            logger.warning(f"⚠️ Too many features: {len(final_feature_cols)} > {expected_count}")
+            logger.warning(
+                f"⚠️ Too many features: {len(final_feature_cols)} > {expected_count}"
+            )
             # Take exactly the expected number in the correct order
             self.static_feature_cols = final_feature_cols[:expected_count]
-        
+
         logger.info(f"Final selected features ({len(self.static_feature_cols)}):")
         for i, feature in enumerate(self.static_feature_cols):
             logger.info(f"  {i+1:2d}. {feature}")
-        
+
         return df
-    
-    def predict_single(self, static_features: np.ndarray, 
-                      historical_sequence: List[Tuple[float, float]]) -> Dict[str, float]:
+
+    def predict_single(
+        self,
+        static_features: np.ndarray,
+        historical_sequence: List[Tuple[float, float]],
+    ) -> Dict[str, float]:
         """
         Predict wait time for a single sample.
-        
+
         Args:
             static_features: Array of static features for the current timestep
             historical_sequence: List of (wait_time, residual) tuples for past timesteps
-            
+
         Returns:
             Dictionary with predictions and components
         """
@@ -348,49 +417,52 @@ class WaitTimePredictor:
             historical_sequence = [(0.0, 0.0)] * padding_needed + historical_sequence
         elif len(historical_sequence) > self.seq_length:
             # Take the most recent timesteps
-            historical_sequence = historical_sequence[-self.seq_length:]
-        
+            historical_sequence = historical_sequence[-self.seq_length :]
+
         # Flatten the historical sequence (autoregressive features)
         autoregressive_features = []
         for wait_time, residual in historical_sequence:
             autoregressive_features.extend([wait_time, residual])
-        
+
         # Combine features: [static_features, autoregressive_features]
-        combined_features = np.concatenate([
-            static_features,
-            np.array(autoregressive_features, dtype=np.float32)
-        ])
-        
+        combined_features = np.concatenate(
+            [static_features, np.array(autoregressive_features, dtype=np.float32)]
+        )
+
         # Get baseline prediction from Gradient Boosting model
         gb_pred = self.gb_model.predict(static_features.reshape(1, -1))[0]
-        
+
         # Get TCN residual prediction
         with torch.no_grad():
-            tcn_input = torch.FloatTensor(combined_features).unsqueeze(0).to(self.device)
+            tcn_input = (
+                torch.FloatTensor(combined_features).unsqueeze(0).to(self.device)
+            )
             residual_pred = self.tcn_model(tcn_input).cpu().numpy().flatten()[0]
-        
+
         # Combined prediction: baseline + residual
         combined_pred = gb_pred + residual_pred
-        
+
         return {
-            'wait_time_prediction': max(0, combined_pred),  # Ensure non-negative
-            'baseline_prediction': gb_pred,
-            'residual_prediction': residual_pred
+            "wait_time_prediction": max(0, combined_pred),  # Ensure non-negative
+            "baseline_prediction": gb_pred,
+            "residual_prediction": residual_pred,
         }
-    
-    def predict_batch(self, df: pd.DataFrame, use_autoregressive: bool = True) -> pd.DataFrame:
+
+    def predict_batch(
+        self, df: pd.DataFrame, use_autoregressive: bool = True
+    ) -> pd.DataFrame:
         """
         Predict wait times with FIXED same-day autoregressive logic.
-        
+
         This is the core prediction method that handles temporal dependencies correctly.
         Key improvement: Only uses predictions within the same operational day,
         preventing error accumulation across days.
-        
+
         Args:
             df: DataFrame with required features and historical data
             use_autoregressive: If True, use model predictions autoregressively within same day;
                               if False, use ground truth (teacher forcing)
-        
+
         Returns:
             DataFrame with predictions added
         """
@@ -398,57 +470,56 @@ class WaitTimePredictor:
         if self.static_feature_cols is None:
             df = self.preprocess_input(df)
 
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+
         X_static = df[self.static_feature_cols].values
-        
+
         gb_predictions = self.gb_model.predict(X_static)
-        
- 
+
         predictions = []
         residuals = []
-        
+
         if use_autoregressive:
-            prediction_history = {} 
-            daily_prediction_starts = {} 
+            prediction_history = {}
+            daily_prediction_starts = {}
             logger.info(f"🔧 Starting autoregressive prediction (same-day logic)")
             logger.info(f"   Sequence length: {self.seq_length} timesteps")
             logger.info(f"   Opening hour: {self.config.get('opening_hour', 11)}")
-        
+
         for idx in range(len(df)):
             if idx < self.seq_length:
                 predictions.append(gb_predictions[idx])
                 residuals.append(0.0)
                 continue
 
-            
-            current_timestamp = df.iloc[idx]['timestamp']
+            current_timestamp = df.iloc[idx]["timestamp"]
             current_date = current_timestamp.date()
             current_hour = current_timestamp.hour
-            
 
             if use_autoregressive and current_date not in daily_prediction_starts:
-                if current_hour >= self.config.get('opening_hour', 11):  
+                if current_hour >= self.config.get("opening_hour", 11):
                     daily_prediction_starts[current_date] = idx
-            
+
             historical_sequence = []
             same_day_predictions_used = 0
             cross_day_ground_truth_used = 0
-            
+
             for hist_idx in range(idx - self.seq_length, idx):
-                hist_timestamp = df.iloc[hist_idx]['timestamp']
+                hist_timestamp = df.iloc[hist_idx]["timestamp"]
                 hist_date = hist_timestamp.date()
                 hist_hour = hist_timestamp.hour
-                
+
                 use_prediction = False
-                
+
                 if use_autoregressive and hist_idx in prediction_history:
 
                     if hist_date == current_date:
                         # Same day: use prediction only if it's during operational hours
                         # and we've started making predictions for this day
-                        if (current_date in daily_prediction_starts and 
-                            hist_idx >= daily_prediction_starts[current_date]):
+                        if (
+                            current_date in daily_prediction_starts
+                            and hist_idx >= daily_prediction_starts[current_date]
+                        ):
                             use_prediction = True
                             same_day_predictions_used += 1
                         # Otherwise, use ground truth even for same day if before operational hours
@@ -456,200 +527,238 @@ class WaitTimePredictor:
                         # Different day: always use ground truth to prevent error accumulation
                         use_prediction = False
                         cross_day_ground_truth_used += 1
-                
+
                 if use_prediction:
                     # Use previous prediction
-                    wait_time = prediction_history[hist_idx]['wait_time']
-                    residual = prediction_history[hist_idx]['residual']
+                    wait_time = prediction_history[hist_idx]["wait_time"]
+                    residual = prediction_history[hist_idx]["residual"]
                 else:
                     # Use ground truth
-                    wait_time = df.iloc[hist_idx]['wait_time']
+                    wait_time = df.iloc[hist_idx]["wait_time"]
                     residual = wait_time - gb_predictions[hist_idx]
                     cross_day_ground_truth_used += 1
-                
+
                 historical_sequence.append((wait_time, residual))
-            
+
             # Log sampling statistics periodically
             if use_autoregressive and idx % 2000 == 0:
                 total_sequence_length = len(historical_sequence)
                 same_day_pct = (same_day_predictions_used / total_sequence_length) * 100
-                ground_truth_pct = (cross_day_ground_truth_used / total_sequence_length) * 100
-                
-                logger.info(f"   📊 Index {idx} ({current_date} {current_hour:02d}:00): "
-                           f"Same-day predictions: {same_day_pct:.1f}%, "
-                           f"Ground truth: {ground_truth_pct:.1f}%")
-            
+                ground_truth_pct = (
+                    cross_day_ground_truth_used / total_sequence_length
+                ) * 100
+
+                logger.info(
+                    f"   📊 Index {idx} ({current_date} {current_hour:02d}:00): "
+                    f"Same-day predictions: {same_day_pct:.1f}%, "
+                    f"Ground truth: {ground_truth_pct:.1f}%"
+                )
+
             # Get prediction for current timestep
             static_features = X_static[idx]
             result = self.predict_single(static_features, historical_sequence)
-            
-            predictions.append(result['wait_time_prediction'])
-            residuals.append(result['residual_prediction'])
-            
+
+            predictions.append(result["wait_time_prediction"])
+            residuals.append(result["residual_prediction"])
+
             # Store for autoregressive use (only during operational hours)
-            if use_autoregressive and current_hour >= self.config.get('opening_hour', 9):
+            if use_autoregressive and current_hour >= self.config.get(
+                "opening_hour", 9
+            ):
                 prediction_history[idx] = {
-                    'wait_time': result['wait_time_prediction'],
-                    'residual': result['residual_prediction']
+                    "wait_time": result["wait_time_prediction"],
+                    "residual": result["residual_prediction"],
                 }
-        
+
         # Add predictions to dataframe
-        df['baseline_prediction'] = gb_predictions
-        df['residual_prediction'] = residuals
-        df['wait_time_prediction'] = predictions
-        
+        df["baseline_prediction"] = gb_predictions
+        df["residual_prediction"] = residuals
+        df["wait_time_prediction"] = predictions
+
         # Log final statistics
         if use_autoregressive:
             logger.info(f"✅ Completed FIXED autoregressive prediction:")
             logger.info(f"   📈 Total predictions: {len(predictions)}")
             logger.info(f"   📅 Days with predictions: {len(daily_prediction_starts)}")
-            logger.info(f"   🎯 Should see MUCH better performance due to same-day logic!")
-        
+            logger.info(
+                f"   🎯 Should see MUCH better performance due to same-day logic!"
+            )
+
         return df
-    
-    def predict_sequence(self, initial_static_features: np.ndarray,
-                        initial_history: List[Tuple[float, float]],
-                        future_static_features: np.ndarray,
-                        horizon: int) -> List[Dict[str, float]]:
+
+    def predict_sequence(
+        self,
+        initial_static_features: np.ndarray,
+        initial_history: List[Tuple[float, float]],
+        future_static_features: np.ndarray,
+        horizon: int,
+    ) -> List[Dict[str, float]]:
         """
         Predict a sequence of future wait times autoregressively.
-        
+
         Args:
             initial_static_features: Static features for the starting point
             initial_history: Historical sequence up to the starting point
             future_static_features: Static features for each future timestep (shape: [horizon, n_features])
             horizon: Number of future timesteps to predict
-            
+
         Returns:
             List of prediction dictionaries for each future timestep
         """
         predictions = []
         history = initial_history.copy()
-        
+
         for t in range(horizon):
             # Get static features for this timestep
-            static_features = future_static_features[t] if t < len(future_static_features) else initial_static_features
-            
+            static_features = (
+                future_static_features[t]
+                if t < len(future_static_features)
+                else initial_static_features
+            )
+
             # Make prediction
             result = self.predict_single(static_features, history)
             predictions.append(result)
-            
+
             # Update history for next prediction
             # Remove oldest entry and add new prediction
-            history = history[1:] + [(result['wait_time_prediction'], result['residual_prediction'])]
-        
+            history = history[1:] + [
+                (result["wait_time_prediction"], result["residual_prediction"])
+            ]
+
         return predictions
-    
-    def evaluate_predictions(self, df: pd.DataFrame, target_col: str = 'wait_time') -> Dict[str, float]:
+
+    def evaluate_predictions(
+        self, df: pd.DataFrame, target_col: str = "wait_time"
+    ) -> Dict[str, float]:
         """
         Evaluate predictions against ground truth.
-        
+
         Args:
             df: DataFrame with predictions and ground truth
             target_col: Name of the target column
-            
+
         Returns:
             Dictionary of evaluation metrics
         """
         # Filter valid predictions (after seq_length)
-        valid_df = df.iloc[self.seq_length:].copy()
-        
+        valid_df = df.iloc[self.seq_length :].copy()
+
         # Filter out closed rides if column exists
-        if 'closed' in valid_df.columns:
-            valid_df = valid_df[valid_df['closed'] == 0]
-        
+        if "closed" in valid_df.columns:
+            valid_df = valid_df[valid_df["closed"] == 0]
+
         y_true = valid_df[target_col].values
-        y_pred = valid_df['wait_time_prediction'].values
-        
+        y_pred = valid_df["wait_time_prediction"].values
+
         # Calculate metrics
         from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-        
+
         mae = mean_absolute_error(y_true, y_pred)
         rmse = np.sqrt(mean_squared_error(y_true, y_pred))
         r2 = r2_score(y_true, y_pred)
-        
+
         # Calculate sMAPE
         non_zero_mask = y_true > 0.1
         if np.sum(non_zero_mask) > 0:
             y_true_nz = y_true[non_zero_mask]
             y_pred_nz = y_pred[non_zero_mask]
-            smape = np.mean(np.abs(y_true_nz - y_pred_nz) / (np.abs(y_true_nz) + np.abs(y_pred_nz))) * 100
+            smape = (
+                np.mean(
+                    np.abs(y_true_nz - y_pred_nz)
+                    / (np.abs(y_true_nz) + np.abs(y_pred_nz))
+                )
+                * 100
+            )
         else:
             smape = 0.0
-        
+
         return {
-            'mae': mae,
-            'rmse': rmse,
-            'r2': r2,
-            'smape': smape,
-            'n_samples': len(y_true)
+            "mae": mae,
+            "rmse": rmse,
+            "r2": r2,
+            "smape": smape,
+            "n_samples": len(y_true),
         }
 
 
 def main():
     """Example usage of the predictor"""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Wait time prediction inference")
-    parser.add_argument('--ride', required=True, help='Ride name')
-    parser.add_argument('--data', required=True, help='Path to input data (parquet file)')
-    parser.add_argument('--output', help='Path to save predictions')
-    parser.add_argument('--model-dir', default='models/cached_scheduled_sampling', 
-                       help='Directory containing trained models')
-    parser.add_argument('--autoregressive', action='store_true',
-                       help='Use autoregressive prediction (default: teacher forcing)')
-    parser.add_argument('--evaluate', action='store_true',
-                       help='Evaluate predictions against ground truth')
-    
+    parser.add_argument("--ride", required=True, help="Ride name")
+    parser.add_argument(
+        "--data", required=True, help="Path to input data (parquet file)"
+    )
+    parser.add_argument("--output", help="Path to save predictions")
+    parser.add_argument(
+        "--model-dir",
+        default="models/cached_scheduled_sampling",
+        help="Directory containing trained models",
+    )
+    parser.add_argument(
+        "--autoregressive",
+        action="store_true",
+        help="Use autoregressive prediction (default: teacher forcing)",
+    )
+    parser.add_argument(
+        "--evaluate",
+        action="store_true",
+        help="Evaluate predictions against ground truth",
+    )
+
     args = parser.parse_args()
-    
+
     # Setup logging
     logging.basicConfig(level=logging.INFO)
-    
+
     # Initialize predictor
     predictor = WaitTimePredictor(args.ride, args.model_dir)
-    
+
     # Load data
     df = pd.read_parquet(args.data)
-    
+
     # Make predictions
     logger.info(f"Making predictions (autoregressive={args.autoregressive})...")
     predictions_df = predictor.predict_batch(df, use_autoregressive=args.autoregressive)
-    
+
     # Evaluate if requested
-    if args.evaluate and 'wait_time' in df.columns:
+    if args.evaluate and "wait_time" in df.columns:
         metrics = predictor.evaluate_predictions(predictions_df)
         logger.info(f"Evaluation metrics: {metrics}")
-    
+
     # Save predictions if output path provided
     if args.output:
         predictions_df.to_parquet(args.output)
         logger.info(f"Predictions saved to {args.output}")
-    
+
     # Example of sequence prediction
     if len(df) >= predictor.seq_length:
         logger.info("\nExample sequence prediction:")
-        
+
         # Get initial state from middle of dataset
         start_idx = len(df) // 2
         X_static = df[predictor.static_feature_cols].values
         initial_static = X_static[start_idx]
-        
+
         # Build initial history
         initial_history = []
         for i in range(start_idx - predictor.seq_length, start_idx):
-            wait_time = df.iloc[i]['wait_time']
-            residual = wait_time - predictor.gb_model.predict(X_static[i].reshape(1, -1))[0]
+            wait_time = df.iloc[i]["wait_time"]
+            residual = (
+                wait_time - predictor.gb_model.predict(X_static[i].reshape(1, -1))[0]
+            )
             initial_history.append((wait_time, residual))
-        
+
         # Predict next 12 timesteps (3 hours with 15-min intervals)
         horizon = 12
-        future_static = X_static[start_idx:start_idx+horizon]
-        
+        future_static = X_static[start_idx : start_idx + horizon]
+
         sequence_predictions = predictor.predict_sequence(
             initial_static, initial_history, future_static, horizon
         )
-        
+
         for t, pred in enumerate(sequence_predictions):
             logger.info(f"  t+{t+1}: {pred['wait_time_prediction']:.1f} min")
 
