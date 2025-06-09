@@ -45,6 +45,7 @@ import {
   Timer,
   Warning,
   Category,
+  TrendingUp,
 } from '@mui/icons-material';
 
 // Import attraction data
@@ -53,6 +54,8 @@ import attractionsData from '../data/attractions.json';
 import { useQueueTimes } from '../hooks/useQueueTimes';
 // Import the historical queue times hook
 import { useHistoricalQueueTimes } from '../hooks/useHistoricalQueueTimes';
+// Import the predicted queue times hook
+import { usePredictedQueueTimes } from '../hooks/usePredictedQueueTimes';
 
 // Import Chart.js and react-chartjs-2 components
 import { Line } from 'react-chartjs-2';
@@ -91,8 +94,14 @@ const AttractionPage: React.FC = () => {
   // State for historical data
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Use Date object for react-datepicker
 
+  // State for predicted data
+  const [selectedPredictedDate, setSelectedPredictedDate] = useState<Date | null>(null);
+
   // Use the historical queue times hook
   const { historicalData, loading: loadingHistoricalData, error: historicalError } = useHistoricalQueueTimes(id, selectedDate);
+
+  // Use the predicted queue times hook
+  const { predictedData, loading: loadingPredictedData, error: predictedError } = usePredictedQueueTimes(id, selectedPredictedDate);
 
    if (loading) {
     return <Box sx={{ p: 4, textAlign: 'center' }}>Loading...</Box>;
@@ -179,7 +188,7 @@ const AttractionPage: React.FC = () => {
     return `${diffHours} hours ago`;
   };
 
-   // Chart data configuration
+   // Chart data configuration for historical data
    const chartData = {
     labels: historicalData?.map(data => {
       // Assuming timestamp is a Firestore Timestamp or similar object with a toDate() method
@@ -201,7 +210,7 @@ const AttractionPage: React.FC = () => {
     }],
   };
 
-  // Chart options
+  // Chart options for historical data
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false, // Allow the chart to adjust height
@@ -231,6 +240,66 @@ const AttractionPage: React.FC = () => {
     }
   };
 
+  // Chart data configuration for predicted data
+  const predictedChartData = {
+    labels: predictedData?.map(data => {
+      // Assuming timestamp is a Firestore Timestamp or similar object with a toDate() method
+      if (data.timestamp && typeof data.timestamp.toDate === 'function') {
+        return data.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      // Fallback for plain Date objects or other formats
+      if (data.timestamp instanceof Date) {
+        return data.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      return ''; // Or handle other timestamp formats
+    }) || [],
+    datasets: [{
+      label: 'Predicted Wait Time (min)',
+      data: predictedData?.map(data => data.wait_time) || [], // Using the rounded wait_time field
+      fill: false,
+      borderColor: '#ff9800', // Orange color for predictions
+      backgroundColor: '#ff9800',
+      borderDash: [5, 5], // Dashed line to indicate predictions
+      tension: 0.1,
+    }],
+  };
+
+  // Chart options for predicted data
+  const predictedChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false, // Allow the chart to adjust height
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: `Predicted Wait Times for ${attraction?.name || ''} on ${selectedPredictedDate?.toLocaleDateString() || ''}`,
+      },
+    },
+     scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Wait Time (min)'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Time of Day'
+        }
+      }
+    }
+  };
+
+  // Function to filter dates to only allow future dates for predictions
+  const filterFutureDates = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date > today;
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -478,6 +547,67 @@ const AttractionPage: React.FC = () => {
               ) : !loadingHistoricalData && !historicalError && (
                 <Typography variant="body1" sx={{ textAlign: 'center', mt: 2 }}>
                   No historical data available for the selected date.
+                </Typography>
+              )}
+            </Paper>
+          </Fade>
+        </Grid>
+
+        {/* Predicted Data Section */}
+        <Grid item xs={12}>
+          <Fade in timeout={1000}>
+            <Paper elevation={3} sx={{ p: 3 }}>
+              <Typography variant="h5" gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TrendingUp /> Predicted Wait Times
+              </Typography>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" gutterBottom>Select a Future Date:</Typography>
+                <DatePicker
+                  selected={selectedPredictedDate}
+                  onChange={(date: Date | null) => setSelectedPredictedDate(date)}
+                  dateFormat="yyyy/MM/dd"
+                  isClearable
+                  placeholderText="Select a future date"
+                  filterDate={filterFutureDates}
+                  minDate={new Date(Date.now() + 24 * 60 * 60 * 1000)} // Tomorrow as minimum date
+                  customInput={<input style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }} />}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  Note: Predictions are only available for future dates
+                </Typography>
+              </Box>
+
+              {loadingPredictedData && (
+                <Box sx={{ textAlign: 'center', mt: 2 }}>
+                  <CircularProgress />
+                  <Typography>Loading predicted data...</Typography>
+                </Box>
+              )}
+
+              {!loadingPredictedData && predictedError && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  <Typography variant="body2">
+                    {predictedError.message.includes("future dates") 
+                      ? "Please select a future date to view predictions."
+                      : `Error loading predicted data: ${predictedError.message}`
+                    }
+                  </Typography>
+                </Alert>
+              )}
+
+              {!loadingPredictedData && !predictedError && predictedData && predictedData.length > 0 ? (
+                <Box sx={{ height: 400 }}> {/* Set a fixed height for the chart container */}
+                  <Line data={predictedChartData} options={predictedChartOptions} />
+                </Box>
+              ) : !loadingPredictedData && !predictedError && selectedPredictedDate && (
+                <Typography variant="body1" sx={{ textAlign: 'center', mt: 2 }}>
+                  No predictions available for the selected date.
+                </Typography>
+              )}
+
+              {!selectedPredictedDate && !loadingPredictedData && (
+                <Typography variant="body1" sx={{ textAlign: 'center', mt: 2, color: 'text.secondary' }}>
+                  Select a future date to view predicted wait times.
                 </Typography>
               )}
             </Paper>
