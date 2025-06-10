@@ -19,6 +19,7 @@ from functools import lru_cache
 # Import your model classes
 from ml_models.tcn_model import AutoregressiveTCNModel
 from inference.predictor import WaitTimePredictor
+from single_day_predictor import SingleDayPredictor
 
 app = Flask(__name__)
 
@@ -736,23 +737,33 @@ class FirestoreDataFetcher:
         return processed_df
 
     def generate_future_data(self, start_timestamp: pd.Timestamp, prediction_steps: int, attraction_name: str = "") -> pd.DataFrame:
-        """Generate future data with weather and holiday information (30-minute intervals, 09:00-19:30)"""
-        # Generate future timestamps with 30-minute intervals, only during operating hours
+        """Generate future data with weather and holiday information (30-minute intervals, 09:00-17:30 CEST)"""
+        import pytz
+    
+        # Define CEST timezone
+        cest_tz = pytz.timezone('Europe/Zurich')
+    
         future_data = []
         current_time = start_timestamp
         steps_generated = 0
+    
+        logger.info(f"Generating {prediction_steps} future data points (30-min intervals, 09:00-17:30 CEST)")
 
         while steps_generated < prediction_steps:
-            hour = current_time.hour
-            minute = current_time.minute
+            # Convert to CEST for hour checking
+            current_time_cest = current_time.tz_localize('UTC').astimezone(cest_tz) if current_time.tz is None else current_time.astimezone(cest_tz)
+            hour = current_time_cest.hour
+            minute = current_time_cest.minute
 
-            # FIXED: Operating hours 09:00 to 19:30 (not 08:00 to 18:30)
-            is_operating_hours = (hour >= 9 and hour < 19) or (hour == 19 and minute <= 30)
+            # ENFORCED: Operating hours 09:00 to 17:30 in CEST
+            is_operating_hours = (hour >= 9 and hour < 17) or (hour == 17 and minute <= 30)
+        
+            logger.debug(f"Time {current_time_cest.strftime('%H:%M')} CEST: operating_hours={is_operating_hours}")
 
             if is_operating_hours:
                 # Get weather data for this timestamp
                 weather_data = self.weather_service.fetch_weather_for_timestamp(current_time)
-    
+
                 # Get holiday information
                 holiday_data = self.holiday_service.check_holidays_for_date(current_time.date())
 
@@ -763,16 +774,22 @@ class FirestoreDataFetcher:
                     **weather_data,
                     **holiday_data
                 })
-    
-                steps_generated += 1
+
+            steps_generated += 1
 
             # Move to next 30-minute interval
             current_time += pd.Timedelta(minutes=30)
 
-            # Skip to next day if past operating hours
-            if hour >= 19 and minute > 30:
-                next_day = current_time.date() + timedelta(days=1)
-                current_time = pd.Timestamp.combine(next_day, pd.Timestamp("09:00:00").time())
+            # Skip to next day if past operating hours (17:30 CEST)
+            if hour >= 17 and minute > 30:
+                # Move to next day at 09:00 CEST
+                next_day = current_time_cest.date() + timedelta(days=1)
+                next_day_9am_cest = cest_tz.localize(
+                    datetime.combine(next_day, datetime.strptime("09:00:00", "%H:%M:%S").time())
+                )
+                # Convert back to UTC
+                current_time = pd.Timestamp(next_day_9am_cest.astimezone(pytz.UTC)).tz_localize(None)
+                logger.debug(f"Moving to next day: {current_time} UTC (09:00 CEST)")
 
         df = pd.DataFrame(future_data)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -780,7 +797,7 @@ class FirestoreDataFetcher:
         # Apply same preprocessing - PASS THE ATTRACTION NAME!
         processed_df = self.preprocess_for_prediction(df, attraction_name)
 
-        logger.info(f"Generated {len(df)} future data points (30-min intervals, 09:00-19:30) starting from {start_timestamp}")
+        logger.info(f"Generated {len(processed_df)} future data points starting from {start_timestamp}")
         return processed_df
     
 # Initialize services
@@ -1792,45 +1809,52 @@ def debug_model_file_mappings():  # RENAMED function name
         logger.error(f"Error in debug model mappings: {e}")
         return jsonify({"error": str(e)}), 500
 
-# 2. Add a debug endpoint to test time windows
 @app.route('/debug/time-windows', methods=['GET'])
 def debug_time_windows():
-    """Debug time window generation"""
+    """Debug time window generation for 09:00-17:30 CEST - FIXED interval counting"""
     try:
         # Test time window generation
         import pytz
-        zurich_tz = pytz.timezone('Europe/Zurich')
+        cest_tz = pytz.timezone('Europe/Zurich')
         
-        # Get tomorrow in Zurich timezone
+        # Get tomorrow in CEST timezone
         tomorrow_utc = datetime.now(pytz.UTC) + timedelta(days=1)
-        tomorrow_zurich = tomorrow_utc.astimezone(zurich_tz)
+        tomorrow_cest = tomorrow_utc.astimezone(cest_tz)
         
-        # Set to 9 AM Zurich time
-        start_time_zurich = tomorrow_zurich.replace(hour=9, minute=0, second=0, microsecond=0)
+        # Set to 9 AM CEST time
+        start_time_cest = tomorrow_cest.replace(hour=9, minute=0, second=0, microsecond=0)
         
         # Convert back to UTC for consistent handling
-        start_timestamp = start_time_zurich.astimezone(pytz.UTC)
+        start_timestamp = start_time_cest.astimezone(pytz.UTC)
         start_timestamp = pd.Timestamp(start_timestamp).tz_localize(None)
         
-        # Generate test time windows
+        # Generate test time windows - SIMULATE THE REAL LOGIC
         current_time = start_timestamp
         test_times = []
         steps_generated = 0
-        max_steps = 25  # Test first 25 intervals
+        max_operating_steps = 34  # Test 2 full days (17 × 2)
+        safety_counter = 0
+        max_safety_counter = 100  # Prevent infinite loops
         
-        while steps_generated < max_steps:
-            hour = current_time.hour
-            minute = current_time.minute
+        while steps_generated < max_operating_steps and safety_counter < max_safety_counter:
+            safety_counter += 1
             
-            # FIXED: Operating hours 09:00 to 19:30
-            is_operating_hours = (hour >= 9 and hour < 19) or (hour == 19 and minute <= 30)
+            # Convert to CEST for hour checking
+            current_time_cest = current_time.tz_localize('UTC').astimezone(cest_tz)
+            hour = current_time_cest.hour
+            minute = current_time_cest.minute
+            
+            # ENFORCED: Operating hours 09:00 to 17:30 CEST
+            is_operating_hours = (hour >= 9 and hour < 17) or (hour == 17 and minute <= 30)
             
             test_times.append({
-                "timestamp": current_time.isoformat(),
-                "hour": hour,
-                "minute": minute,
+                "timestamp_utc": current_time.isoformat(),
+                "timestamp_cest": current_time_cest.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                "hour_cest": hour,
+                "minute_cest": minute,
                 "is_operating_hours": is_operating_hours,
-                "step": steps_generated if is_operating_hours else "skipped"
+                "step": steps_generated if is_operating_hours else "skipped",
+                "safety_counter": safety_counter
             })
             
             if is_operating_hours:
@@ -1839,17 +1863,70 @@ def debug_time_windows():
             # Move to next 30-minute interval
             current_time += pd.Timedelta(minutes=30)
             
-            # Skip to next day if past operating hours
-            if hour >= 19 and minute > 30:
-                next_day = current_time.date() + timedelta(days=1)
-                current_time = pd.Timestamp.combine(next_day, pd.Timestamp("09:00:00").time())
+            # CRITICAL: Skip to next day if past operating hours (17:30 CEST)
+            current_time_cest_check = current_time.tz_localize('UTC').astimezone(cest_tz)
+            hour_check = current_time_cest_check.hour
+            minute_check = current_time_cest_check.minute
+            
+            # If we just moved past 17:30, jump to next day at 09:00
+            if hour_check >= 18 or (hour_check == 17 and minute_check > 30):
+                # Move to next day at 09:00 CEST
+                next_day = current_time_cest_check.date() + timedelta(days=1)
+                next_day_9am_cest = cest_tz.localize(
+                    datetime.combine(next_day, datetime.strptime("09:00:00", "%H:%M:%S").time())
+                )
+                # Convert back to UTC
+                current_time = pd.Timestamp(next_day_9am_cest.astimezone(pytz.UTC)).tz_localize(None)
+                
+                # Add a marker for the jump
+                test_times.append({
+                    "timestamp_utc": current_time.isoformat(),
+                    "timestamp_cest": f"JUMPED TO NEXT DAY: {current_time.tz_localize('UTC').astimezone(cest_tz).strftime('%Y-%m-%d %H:%M:%S %Z')}",
+                    "hour_cest": 9,
+                    "minute_cest": 0,
+                    "is_operating_hours": True,
+                    "step": "DAY_JUMP",
+                    "safety_counter": safety_counter
+                })
+        
+        # Calculate actual intervals per day from the data
+        operating_intervals = [t for t in test_times if t["is_operating_hours"] and isinstance(t["step"], int)]
+        
+        # Group by date to count intervals per day
+        intervals_by_date = {}
+        for interval in operating_intervals:
+            timestamp_cest = pd.to_datetime(interval["timestamp_cest"])
+            date_key = timestamp_cest.date()
+            if date_key not in intervals_by_date:
+                intervals_by_date[date_key] = []
+            intervals_by_date[date_key].append(interval)
+        
+        # Calculate the intervals per day
+        intervals_per_day_actual = [len(intervals) for intervals in intervals_by_date.values()]
         
         return jsonify({
-            "start_time_zurich": start_time_zurich.isoformat(),
+            "timezone": "Central European Summer Time (CEST, GMT+2)",
+            "start_time_cest": start_time_cest.isoformat(),
             "start_timestamp_utc": start_timestamp.isoformat(),
-            "operating_hours_logic": "09:00 to 19:30",
+            "operating_hours_logic": "09:00 to 17:30 CEST",
+            "expected_intervals_per_day": 17,
+            "actual_intervals_per_day": intervals_per_day_actual,
             "test_intervals": test_times,
-            "operating_intervals_count": len([t for t in test_times if t["is_operating_hours"]])
+            "operating_intervals_count": len(operating_intervals),
+            "total_intervals_tested": len(test_times),
+            "days_tested": len(intervals_by_date),
+            "sample_operating_times_cest": [
+                t["timestamp_cest"] for t in operating_intervals[:10]
+            ],
+            "intervals_by_date": {
+                str(date): len(intervals) for date, intervals in intervals_by_date.items()
+            },
+            "validation": {
+                "expected_per_day": 17,
+                "actual_per_day": intervals_per_day_actual,
+                "is_correct": all(count == 17 for count in intervals_per_day_actual),
+                "safety_counter_used": safety_counter
+            }
         })
         
     except Exception as e:
@@ -1890,6 +1967,69 @@ def debug_features(attraction_name: str):
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/predict-single-day', methods=['POST'])
+def predict_single_day():
+    """
+    Predict wait times for a single day for all attractions.
+    This endpoint supports incremental prediction where previous predictions
+    can be used as historical data for subsequent days.
+    """
+    try:
+        data = request.get_json() or {}
+        target_date = data.get('target_date')  # Format: YYYY-MM-DD
+        previous_predictions = data.get('previous_predictions', {})  # Dict of attraction -> predictions
+        trigger_source = data.get('trigger_source', 'manual')
+        
+        if not target_date:
+            return jsonify({"error": "target_date is required (format: YYYY-MM-DD)"}), 400
+        
+        # Parse target date
+        try:
+            target_date_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+        
+        # Validate it's a future date
+        if target_date_obj <= datetime.now().date():
+            return jsonify({"error": "target_date must be a future date"}), 400
+        
+        logger.info(f"Starting single day prediction for {target_date} (triggered by: {trigger_source})")
+        
+        # Import here to avoid circular imports
+        from single_day_predictor import SingleDayPredictor
+        
+        predictor = SingleDayPredictor()
+        results = predictor.predict_single_day_all_attractions(
+            target_date_obj, 
+            previous_predictions
+        )
+        
+        # Count successful predictions
+        successful = sum(1 for r in results.values() if r["status"] == "success")
+        total = len(results)
+        
+        response = {
+            "status": "completed",
+            "target_date": target_date,
+            "trigger_source": trigger_source,
+            "total_attractions": total,
+            "successful_attractions": successful,
+            "failed_attractions": total - successful,
+            "results": results,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        logger.info(f"Single day prediction completed: {successful}/{total} attractions successful for {target_date}")
+        return jsonify(response)
+        
+    except Exception as e:
+        logger.error(f"Single day prediction error: {str(e)}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
         
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
