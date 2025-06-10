@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """
-Batch Prediction System for Queue Times
+Single Day Prediction System for Queue Times
 
-This script runs weekly predictions for all attractions and saves them to Firestore.
-It's designed to be triggered by Firebase Functions or Cloud Scheduler.
+This handles predicting a single day while incorporating previous predictions
+into the historical data window for the TCN model.
 """
 
 import os
 import logging
-import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import pandas as pd
 import numpy as np
 from google.cloud import firestore
-from collections import defaultdict
 
 # Import your existing classes
 from main import (
@@ -25,8 +23,8 @@ from main import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class BatchPredictor:
-    """Handles batch predictions for all attractions"""
+class SingleDayPredictor:
+    """Handles single day predictions for all attractions with historical data integration"""
     
     def __init__(self):
         self.db = firestore.Client()
@@ -36,26 +34,42 @@ class BatchPredictor:
         # All attractions we have models for
         self.attractions = [mapping["name"] for mapping in LOCAL_RIDE_MAPPINGS]
         
-    def run_weekly_predictions(self, prediction_days: int = 7) -> Dict[str, Dict]:
+    def predict_single_day_all_attractions(
+        self, 
+        target_date: datetime.date, 
+        previous_predictions: Dict[str, List[Dict]] = None
+    ) -> Dict[str, Dict]:
         """
-        Run predictions for all attractions for the upcoming week
+        Predict wait times for a single day for all attractions.
         
         Args:
-            prediction_days: Number of days to predict (default: 7)
+            target_date: Date to predict (must be future date)
+            previous_predictions: Dict mapping attraction names to list of previous predictions
             
         Returns:
             Dictionary with results for each attraction
         """
-        logger.info(f"Starting weekly predictions for {len(self.attractions)} attractions")
+        if previous_predictions is None:
+            previous_predictions = {}
+            
+        logger.info(f"Starting single day prediction for {target_date}")
+        logger.info(f"Previous predictions available for {len(previous_predictions)} attractions")
         
         results = {}
         
         for attraction_name in self.attractions:
             try:
-                logger.info(f"🔄 Processing predictions for {attraction_name}")
+                logger.info(f"🔄 Processing single day prediction for {attraction_name}")
+                
+                # Get previous predictions for this attraction
+                attraction_prev_predictions = previous_predictions.get(attraction_name, [])
                 
                 # Generate predictions for this attraction
-                predictions = self._predict_attraction_week(attraction_name, prediction_days)
+                predictions = self._predict_attraction_single_day(
+                    attraction_name, 
+                    target_date,
+                    attraction_prev_predictions
+                )
                 
                 if predictions:
                     # Save predictions to Firestore
@@ -63,13 +77,15 @@ class BatchPredictor:
                     results[attraction_name] = {
                         "status": "success",
                         "predictions_count": len(predictions),
-                        "date_range": f"{predictions[0]['timestamp']} to {predictions[-1]['timestamp']}"
+                        "target_date": target_date.isoformat(),
+                        "used_previous_predictions": len(attraction_prev_predictions)
                     }
                     logger.info(f"✅ Successfully processed {attraction_name}: {len(predictions)} predictions")
                 else:
                     results[attraction_name] = {
                         "status": "failed",
-                        "error": "No predictions generated"
+                        "error": "No predictions generated",
+                        "target_date": target_date.isoformat()
                     }
                     logger.warning(f"❌ No predictions generated for {attraction_name}")
                     
@@ -77,21 +93,30 @@ class BatchPredictor:
                 logger.error(f"❌ Error processing {attraction_name}: {e}", exc_info=True)
                 results[attraction_name] = {
                     "status": "error",
-                    "error": str(e)
+                    "error": str(e),
+                    "target_date": target_date.isoformat()
                 }
         
         # Log summary
         successful = sum(1 for r in results.values() if r["status"] == "success")
-        logger.info(f"Batch prediction summary: {successful}/{len(self.attractions)} attractions successful")
+        logger.info(f"Single day prediction summary: {successful}/{len(self.attractions)} attractions successful for {target_date}")
         
         return results
     
-    def _predict_attraction_week(self, attraction_name: str, prediction_days: int) -> List[Dict]:
-        """Generate weekly predictions for a single attraction with 09:00-17:30 CEST window"""
+    def _predict_attraction_single_day(
+        self, 
+        attraction_name: str, 
+        target_date: datetime.date,
+        previous_predictions: List[Dict] = None
+    ) -> List[Dict]:
+        """Generate single day predictions for one attraction with enhanced historical data integration"""
+        if previous_predictions is None:
+            previous_predictions = []
+            
         try:
-            logger.info(f"🔄 Starting prediction for '{attraction_name}'")
+            logger.info(f"🔄 Starting single day prediction for '{attraction_name}' on {target_date}")
     
-            # Fetch historical data with enhanced error handling
+            # Fetch historical data
             try:
                 historical_df = self.data_fetcher.fetch_historical_data(attraction_name, hours_back=72)
                 if historical_df.empty:
@@ -102,7 +127,13 @@ class BatchPredictor:
                 logger.error(f"❌ Historical data fetch failed for '{attraction_name}': {e}")
                 return []
     
-            # Preprocess data with enhanced error handling
+            # Integrate previous predictions into historical data
+            if previous_predictions:
+                logger.info(f"🔗 Integrating {len(previous_predictions)} previous predictions into historical data")
+                historical_df = self._integrate_previous_predictions(historical_df, previous_predictions)
+                logger.info(f"✅ Enhanced historical data: {len(historical_df)} records")
+    
+            # Preprocess data
             try:
                 processed_df = self.data_fetcher.preprocess_for_prediction(historical_df, attraction_name)
                 if processed_df.empty:
@@ -113,7 +144,7 @@ class BatchPredictor:
                 logger.error(f"❌ Data preprocessing failed for '{attraction_name}': {e}")
                 return []
     
-            # Get model with enhanced error handling
+            # Get model
             try:
                 model = self.model_manager.get_model(attraction_name)
                 logger.info(f"✅ Model loaded successfully for '{attraction_name}'")
@@ -121,7 +152,7 @@ class BatchPredictor:
                 logger.error(f"❌ Model loading failed for '{attraction_name}': {e}")
                 return []
     
-            # Prepare data for prediction with enhanced error handling
+            # Prepare data for prediction
             try:
                 prediction_df = model.preprocess_input(processed_df)
                 logger.info(f"✅ Model preprocessing completed for '{attraction_name}': {len(prediction_df)} records")
@@ -129,32 +160,28 @@ class BatchPredictor:
                 logger.error(f"❌ Model preprocessing failed for '{attraction_name}': {e}")
                 return []
     
-            # Calculate prediction parameters - UPDATED for 09:00-17:30 CEST
-            # Operating hours: 09:00, 09:30, 10:00, ..., 17:00, 17:30 = 17 intervals per day
-            intervals_per_day = 18 # 09:00 to 17:30 in 30-minute intervals
-            total_prediction_steps = prediction_days * intervals_per_day
+            # Calculate prediction parameters for single day (18 intervals: 09:00-17:30 CEST)
+            intervals_per_day = 18  # 09:00 to 17:30 in 30-minute intervals
+            total_prediction_steps = intervals_per_day
     
-            # ENFORCED: Start predictions from tomorrow at 9 AM in Europe/Zurich (CEST)
+            # Set start time to target date at 9 AM CEST
             import pytz
             cest_tz = pytz.timezone('Europe/Zurich')
+            
+            # Create target date at 9 AM CEST
+            start_time_cest = cest_tz.localize(
+                datetime.combine(target_date, datetime.strptime("09:00:00", "%H:%M:%S").time())
+            )
     
-            # Get tomorrow in CEST timezone
-            tomorrow_utc = datetime.now(pytz.UTC) + timedelta(days=1)
-            tomorrow_cest = tomorrow_utc.astimezone(cest_tz)
-    
-            # Set to 9 AM CEST time
-            start_time_cest = tomorrow_cest.replace(hour=9, minute=0, second=0, microsecond=0)
-    
-            # Convert back to UTC for consistent handling
+            # Convert to UTC for consistent handling
             start_timestamp = start_time_cest.astimezone(pytz.UTC)
-            start_timestamp = pd.Timestamp(start_timestamp).tz_localize(None)  # Remove timezone for pandas
+            start_timestamp = pd.Timestamp(start_timestamp).tz_localize(None)
     
-            logger.info(f"🎯 Generating {total_prediction_steps} predictions for '{attraction_name}' starting {start_timestamp} (9 AM CEST)")
-            logger.info(f"📅 Operating hours: 09:00-17:30 CEST ({intervals_per_day} intervals/day)")
+            logger.info(f"🎯 Generating {total_prediction_steps} predictions for '{attraction_name}' on {target_date} starting {start_timestamp} (9 AM CEST)")
         
-            # Generate future data with weather and holidays - PASS ATTRACTION NAME!
+            # Generate future data for single day
             try:
-                future_df = self._generate_weekly_future_data(start_timestamp, total_prediction_steps, attraction_name)
+                future_df = self._generate_single_day_future_data(start_timestamp, total_prediction_steps, attraction_name)
                 if future_df.empty:
                     logger.error(f"❌ No future data generated for {attraction_name}")
                     return []
@@ -163,7 +190,7 @@ class BatchPredictor:
                 logger.error(f"❌ Future data generation failed for '{attraction_name}': {e}")
                 return []
     
-            # Prepare future static features with enhanced error handling
+            # Prepare future static features
             try:
                 future_features = model.preprocess_input(future_df)
                 future_static_features = future_features[model.static_feature_cols].values
@@ -172,14 +199,14 @@ class BatchPredictor:
                 logger.error(f"❌ Future feature preparation failed for '{attraction_name}': {e}")
                 return []
     
-            # Get recent sequence for autoregressive prediction with enhanced error handling
+            # Get recent sequence for autoregressive prediction (48 timesteps = 24 hours)
             try:
-                recent_data = prediction_df.tail(model.seq_length).copy()
+                recent_data = prediction_df.tail(48).copy()  # TCN needs 48 timesteps
         
                 # Handle insufficient data
-                if len(recent_data) < model.seq_length:
+                if len(recent_data) < 48:
                     avg_wait_time = processed_df['wait_time'].mean() if not processed_df.empty else 15.0
-                    padding_needed = model.seq_length - len(recent_data)
+                    padding_needed = 48 - len(recent_data)
             
                     logger.info(f"⚠️ Padding {padding_needed} records for '{attraction_name}' (avg wait time: {avg_wait_time:.1f})")
             
@@ -200,12 +227,12 @@ class BatchPredictor:
                 logger.error(f"❌ Sequence preparation failed for '{attraction_name}': {e}")
                 return []
     
-            # Build initial sequence with enhanced error handling
+            # Build initial sequence
             try:
                 initial_history = []
                 gb_model = model.gb_model
         
-                for _, row in recent_data.tail(model.seq_length).iterrows():
+                for _, row in recent_data.tail(48).iterrows():  # Use exactly 48 timesteps
                     wait_time = row['wait_time']
                     static_features = np.array([row[col] for col in model.static_feature_cols])
                     gb_pred = gb_model.predict(static_features.reshape(1, -1))[0]
@@ -217,7 +244,7 @@ class BatchPredictor:
                 logger.error(f"❌ Initial sequence building failed for '{attraction_name}': {e}")
                 return []
     
-            # Generate predictions with enhanced error handling
+            # Generate predictions
             try:
                 initial_static = future_static_features[0] if len(future_static_features) > 0 else np.zeros(len(model.static_feature_cols))
         
@@ -245,33 +272,86 @@ class BatchPredictor:
                         "temperature": future_df.iloc[i]['temperature'],
                         "rain": future_df.iloc[i]['rain'],
                         "is_holiday": any([
-                        future_df.iloc[i]['is_german_holiday'],
-                        future_df.iloc[i]['is_swiss_holiday'],
-                        future_df.iloc[i]['is_french_holiday']
+                            future_df.iloc[i]['is_german_holiday'],
+                            future_df.iloc[i]['is_swiss_holiday'],
+                            future_df.iloc[i]['is_french_holiday']
                         ]),
                         "prediction_created_at": datetime.now(),
-                        "model_version": "cached_scheduled_sampling_tcn_v1"
+                        "model_version": "cached_scheduled_sampling_tcn_v1",
+                        "prediction_type": "single_day_incremental"
                     })
     
-            logger.info(f"🎉 Successfully completed prediction for '{attraction_name}': {len(formatted_predictions)} formatted predictions")
+            logger.info(f"🎉 Successfully completed single day prediction for '{attraction_name}': {len(formatted_predictions)} formatted predictions")
             return formatted_predictions
     
         except Exception as e:
-            logger.error(f"❌ Unexpected error generating predictions for {attraction_name}: {e}", exc_info=True)
+            logger.error(f"❌ Unexpected error generating single day predictions for {attraction_name}: {e}", exc_info=True)
             return []
-
-    def _generate_weekly_future_data(self, start_timestamp: pd.Timestamp, total_steps: int, attraction_name: str) -> pd.DataFrame:
-        """Generate future data for weekly predictions (only during park hours 09:00-17:30 CEST) - ENFORCED"""
-        import pytz
     
+    def _integrate_previous_predictions(self, historical_df: pd.DataFrame, previous_predictions: List[Dict]) -> pd.DataFrame:
+        """Integrate previous predictions into historical data for TCN model input"""
+        if not previous_predictions:
+            return historical_df
+        
+        logger.info(f"Integrating {len(previous_predictions)} previous predictions into historical data")
+        
+        # Convert previous predictions to DataFrame format
+        prediction_records = []
+        for pred in previous_predictions:
+            try:
+                timestamp = pd.to_datetime(pred['timestamp'])
+                prediction_records.append({
+                    'timestamp': timestamp,
+                    'wait_time': pred['predicted_wait_time'],
+                    'closed': 0,  # Assume open during predictions
+                    'temperature': pred.get('temperature', 20.0),
+                    'rain': pred.get('rain', 0.0),
+                    'temperature_unscaled': pred.get('temperature', 20.0),
+                    'rain_unscaled': pred.get('rain', 0.0),
+                    'is_german_holiday': 1 if pred.get('is_holiday', False) else 0,
+                    'is_swiss_holiday': 1 if pred.get('is_holiday', False) else 0,
+                    'is_french_holiday': 1 if pred.get('is_holiday', False) else 0,
+                    'data_source': 'previous_prediction'
+                })
+            except Exception as e:
+                logger.warning(f"Skipping invalid prediction record: {e}")
+                continue
+        
+        if not prediction_records:
+            logger.warning("No valid prediction records to integrate")
+            return historical_df
+        
+        # Create DataFrame from predictions
+        predictions_df = pd.DataFrame(prediction_records)
+        predictions_df['timestamp'] = pd.to_datetime(predictions_df['timestamp'])
+        
+        # Add data source marker to historical data
+        historical_df = historical_df.copy()
+        historical_df['data_source'] = 'historical'
+        
+        # Combine historical and prediction data
+        combined_df = pd.concat([historical_df, predictions_df], ignore_index=True)
+        combined_df = combined_df.sort_values('timestamp').reset_index(drop=True)
+        
+        # Remove duplicates based on timestamp (prefer historical data)
+        combined_df = combined_df.drop_duplicates(subset=['timestamp'], keep='first')
+        
+        logger.info(f"Combined data: {len(historical_df)} historical + {len(predictions_df)} predictions = {len(combined_df)} total records")
+        
+        return combined_df
+    
+    def _generate_single_day_future_data(self, start_timestamp: pd.Timestamp, total_steps: int, attraction_name: str) -> pd.DataFrame:
+        """Generate future data for single day predictions (09:00-17:30 CEST)"""
+        import pytz
+        
         # Define CEST timezone
         cest_tz = pytz.timezone('Europe/Zurich')
-    
+        
         future_data = []
         current_time = start_timestamp
         steps_generated = 0
 
-        logger.info(f"🕐 Starting time generation from {start_timestamp} for {total_steps} steps (09:00-17:30 CEST)")
+        logger.info(f"🕐 Generating single day data from {start_timestamp} for {total_steps} steps (09:00-17:30 CEST)")
 
         while steps_generated < total_steps:
             # Convert to CEST for hour checking
@@ -279,10 +359,8 @@ class BatchPredictor:
             hour = current_time_cest.hour
             minute = current_time_cest.minute
 
-            # ENFORCED: Check if time is within operating hours: 09:00 to 17:30 CEST
+            # Check if time is within operating hours: 09:00 to 17:30 CEST
             is_operating_hours = (hour >= 9 and hour < 17) or (hour == 17 and minute <= 30)
-
-            logger.debug(f"Time {current_time_cest.strftime('%H:%M')} CEST: operating_hours={is_operating_hours}")
 
             if is_operating_hours:
                 # Get weather data for this timestamp
@@ -305,30 +383,18 @@ class BatchPredictor:
             # Move to next 30-minute interval
             current_time += pd.Timedelta(minutes=30)
 
-            # ENFORCED: Skip to next day if we're past operating hours (17:30 CEST)
-            if hour >= 17 and minute > 30:
-                # Move to next day at 09:00 CEST
-                next_day = current_time_cest.date() + timedelta(days=1)
-                next_day_9am_cest = cest_tz.localize(
-                    datetime.combine(next_day, datetime.strptime("09:00:00", "%H:%M:%S").time())
-                )
-                # Convert back to UTC
-                current_time = pd.Timestamp(next_day_9am_cest.astimezone(pytz.UTC)).tz_localize(None)
-                logger.info(f"🌅 Moving to next day: {current_time} UTC (09:00 CEST)")
+            # Stop if we've moved past the target day
+            if current_time_cest.date() != start_timestamp.tz_localize('UTC').astimezone(cest_tz).date():
+                break
 
         df = pd.DataFrame(future_data)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
 
-        logger.info(f"Generated {len(df)} future data points for weekly prediction")
+        logger.info(f"Generated {len(df)} future data points for single day prediction")
         if len(df) > 0:
             logger.info(f"Time range: {df['timestamp'].min()} to {df['timestamp'].max()}")
-            # Convert to CEST for logging
-            df_cest = df.copy()
-            df_cest['timestamp_cest'] = df_cest['timestamp'].dt.tz_localize('UTC').dt.tz_convert('Europe/Zurich')
-            logger.info(f"First 3 times (CEST): {df_cest['timestamp_cest'].head(3).dt.strftime('%H:%M').tolist()}")
-            logger.info(f"Last 3 times (CEST): {df_cest['timestamp_cest'].tail(3).dt.strftime('%H:%M').tolist()}")
 
-        # Apply same preprocessing - PASS THE ATTRACTION NAME!
+        # Apply same preprocessing
         processed_df = self.data_fetcher.preprocess_for_prediction(df, attraction_name)
 
         return processed_df
@@ -338,7 +404,7 @@ class BatchPredictor:
         if not predictions:
             return
         
-        logger.info(f"Saving {len(predictions)} predictions for {attraction_name} to Firestore")
+        logger.info(f"Saving {len(predictions)} single day predictions for {attraction_name} to Firestore")
         
         # Get reference to predictedQueueTimes subcollection
         collection_ref = self.db.collection("attractions").document(attraction_name).collection("predictedQueueTimes")
@@ -367,7 +433,8 @@ class BatchPredictor:
                     "rain": float(prediction["rain"]),
                     "is_holiday": bool(prediction["is_holiday"]),
                     "prediction_created_at": prediction["prediction_created_at"],
-                    "model_version": prediction["model_version"]
+                    "model_version": prediction["model_version"],
+                    "prediction_type": prediction.get("prediction_type", "single_day_incremental")
                 }
                 
                 # Add to batch
@@ -386,63 +453,38 @@ class BatchPredictor:
                 batch.commit()
                 logger.debug(f"Committed final batch with {batch_size} predictions for {attraction_name}")
             
-            logger.info(f"✅ Successfully saved all predictions for {attraction_name}")
+            logger.info(f"✅ Successfully saved all single day predictions for {attraction_name}")
             
         except Exception as e:
-            logger.error(f"Error saving predictions for {attraction_name}: {e}")
+            logger.error(f"Error saving single day predictions for {attraction_name}: {e}")
             raise
-    
-    def get_predictions_for_attraction(self, attraction_name: str, date: datetime.date) -> List[Dict]:
-        """Retrieve predictions for a specific attraction and date"""
-        try:
-            date_string = date.strftime("%Y%m%d")
-            
-            collection_ref = self.db.collection("attractions").document(attraction_name).collection("predictedQueueTimes")
-            
-            query = collection_ref.where(
-                "__name__", ">=", date_string
-            ).where(
-                "__name__", "<", date_string + "z"
-            ).order_by("__name__")
-            
-            docs = query.stream()
-            
-            predictions = []
-            for doc in docs:
-                doc_data = doc.to_dict()
-                predictions.append(doc_data)
-            
-            return predictions
-            
-        except Exception as e:
-            logger.error(f"Error retrieving predictions for {attraction_name} on {date}: {e}")
-            return []
 
 
 def main():
-    """Main function for batch prediction"""
+    """Main function for testing single day prediction"""
     import argparse
     
-    parser = argparse.ArgumentParser(description="Batch Queue Time Predictions")
-    parser.add_argument('--prediction-days', type=int, default=7, 
-                       help='Number of days to predict (default: 7)')
-    parser.add_argument('--attractions', nargs='*',
-                       help='Specific attractions to predict (default: all)')
+    parser = argparse.ArgumentParser(description="Single Day Queue Time Predictions")
+    parser.add_argument('--target-date', required=True, help='Target date (YYYY-MM-DD)')
+    parser.add_argument('--attractions', nargs='*', help='Specific attractions to predict (default: all)')
     
     args = parser.parse_args()
     
-    predictor = BatchPredictor()
+    # Parse target date
+    target_date = datetime.strptime(args.target_date, "%Y-%m-%d").date()
+    
+    predictor = SingleDayPredictor()
     
     # Override attractions if specified
     if args.attractions:
         predictor.attractions = args.attractions
     
     # Run predictions
-    results = predictor.run_weekly_predictions(args.prediction_days)
+    results = predictor.predict_single_day_all_attractions(target_date)
     
     # Print summary
     print("\n" + "="*50)
-    print("BATCH PREDICTION SUMMARY")
+    print(f"SINGLE DAY PREDICTION SUMMARY - {target_date}")
     print("="*50)
     
     for attraction, result in results.items():
